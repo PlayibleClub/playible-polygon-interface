@@ -11,7 +11,7 @@ const PackComponent = (props) => {
   let href = '';
 
   switch (true) {
-    case media.includes('nfl'):
+    case media.includes('Football'):
       href = `/PackDetails/football/${encodeURIComponent(id)}/`;
       break;
     case media.includes('nba'):

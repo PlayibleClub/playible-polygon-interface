@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { ethers } from 'ethers';
+import { fetchTokensByOwner, fetchTokenSupplyByOwner } from 'utils/polygon/ethers';
 import PortfolioContainer from '../../components/containers/PortfolioContainer';
 import Container from '../../components/containers/Container';
 import Main from '../../components/Main';
@@ -17,11 +18,6 @@ import { SPORT_TYPES, getSportType, SPORT_NAME_LOOKUP } from 'data/constants/spo
 export default function Packs() {
   const router = useRouter();
   const dispatch = useDispatch();
-
-  const contractABI = [' ']; // ERC1155 contract ABI
-  const contractAddress = '0x...'; // ERC1155 contract address
-  const userAddress = '0x...'; // User's Ethereum address
-  const tokenId = 1;
 
   // const provider = new ethers.providers.JsonRpcProvider(
   //   'https://mainnet.infura.io/v3/YOUR_INFURA_PROJECT_ID'
@@ -167,19 +163,105 @@ export default function Packs() {
     e.preventDefault();
     dispatch(setSportTypeRedux(currentSport));
   };
+  const userAccount = '0x8F60285800f298F24244ECfe969F2c8A3D2Cb2BC';
+  async function fetchTokens() {
+    try {
+      const tokens = await fetchTokensByOwner(userAccount, packOffset, packLimit);
+
+      //change metadata to contents instead of just retrieving the IPFS Link
+      const updatedTokens = await Promise.all(
+        tokens.metadata
+          .filter((metadataObject) => metadataObject) // Filter out empty metadataObjects
+          .map(async (metadataObject) => {
+            const metadata = JSON.parse(metadataObject).metadata;
+            const response = await fetch(metadata);
+            return response.json(); // Directly parse the response as JSON
+          })
+      );
+
+      const tokenIdsArray = Object.values(tokens.tokenIds);
+      //restructures array for better mapping
+      const structuredTokens = tokenIdsArray
+        .filter((_, index) => updatedTokens[index] !== undefined)
+        .map((tokenId, index) => {
+          return {
+            token_id: Number(tokenId),
+            metadata: updatedTokens[index], // Assuming updatedTokens is an array of objects
+          };
+        });
+
+      setFootballSbPacks(structuredTokens);
+    } catch (error) {
+      console.error('Error parsing JSON:', error);
+    }
+  }
+
+  async function fetchTokenSupply() {
+    const resultFootballSb = fetchTokenSupplyByOwner(userAccount)
+      .then((supply) => setTotalSupply(supply))
+      .catch((error) => console.error(error));
+
+    setTotalSupply(Number(resultFootballSb));
+  }
+
+  // async function fetchSoulboundTokens() {
+  //   try {
+  //     const tokens = await fetchTokensByOwner(userAccount, packOffset, packLimit);
+
+  //     //change metadata to contents instead of just retrieving the IPFS Link
+  //     const updatedTokens = await Promise.all(
+  //       tokens.metadata
+  //         .filter((metadataObject) => metadataObject) // Filter out empty metadataObjects
+  //         .map(async (metadataObject) => {
+  //           const metadata = JSON.parse(metadataObject).metadata;
+  //           const response = await fetch(metadata);
+  //           return response.json(); // Directly parse the response as JSON
+  //         })
+  //     );
+
+  //     const tokenIdsArray = Object.values(tokens.tokenIds);
+  //     //restructures array for better mapping
+  //     const structuredTokens = tokenIdsArray
+  //       .filter((_, index) => updatedTokens[index] !== undefined)
+  //       .map((tokenId, index) => {
+  //         return {
+  //           token_id: Number(tokenId),
+  //           metadata: updatedTokens[index], // Assuming updatedTokens is an array of objects
+  //         };
+  //       });
+
+  //     setSoulboundPacks(structuredTokens);
+  //   } catch (error) {
+  //     console.error('Error parsing JSON:', error);
+  //   }
+  // }
+
+  // async function fetchSoulboundTokenSupply() {
+  //   const resultFootballSb = fetchTokenSupplyByOwner(userAccount)
+  //     .then((supply) => setTotalSupply(supply))
+  //     .catch((error) => console.error(error));
+
+  //   setTotalSoulboundPacks(Number(resultFootballSb));
+  // }
 
   useEffect(() => {
+    fetchTokenSupply();
     getPackLimit();
     setPageCount(
       categoryList[0].isActive
-        ? Math.floor(totalSupply / packLimit)
+        ? Math.floor(Number(totalSupply) / packLimit)
         : Math.ceil(totalPacks / packLimit)
     );
     const endOffset = packOffset + packLimit;
     console.log(`Loading packs from ${packOffset} to ${endOffset}`);
+    fetchTokens();
+    console.log(allPacks);
   }, [totalPacks, packLimit, packOffset, currentSport, totalSupply, categoryList, sportList]);
 
-  useEffect(() => {}, [currentSport]);
+  useEffect(() => {
+    // fetchSoulboundTokenSupply();
+    // fetchSoulboundTokens();
+  }, [currentSport]);
 
   useEffect(() => {
     if (remountComponent !== 0) {
@@ -310,10 +392,10 @@ export default function Packs() {
                         .map(({ metadata, token_id }) => (
                           <PackComponent
                             key={token_id}
-                            image={metadata.media}
+                            image={metadata.image}
                             id={token_id}
                             sport={currentSport}
-                            media={metadata.media}
+                            media={metadata.name}
                           ></PackComponent>
                         ))
                     : (categoryList[1].isActive ? soulboundPacks : packs).length > 0 &&
@@ -322,10 +404,10 @@ export default function Packs() {
                         .map(({ metadata, token_id }) => (
                           <PackComponent
                             key={token_id}
-                            image={metadata.media}
+                            image={metadata.image}
                             id={token_id}
                             sport={currentSport}
-                            media={metadata.media}
+                            media={metadata.name}
                           ></PackComponent>
                         ))}
                 </div>
