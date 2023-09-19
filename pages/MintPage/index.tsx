@@ -43,6 +43,7 @@ import { getUTCDateFromLocal } from 'utils/date/helper';
 import moment from 'moment';
 import Button from 'components/buttons/Button';
 import { number } from 'prop-types';
+import { claimSoulboundPack, fetchClaimSoulboundStatus } from 'utils/polygon/ethers';
 const DECIMALS_NEAR = 1000000000000000000000000;
 const RESERVED_AMOUNT = 200;
 const NANO_TO_SECONDS_DENOMINATOR = 1000000;
@@ -137,6 +138,7 @@ export default function Home(props) {
     //   await query_claim_status(accountId, getSportType('CRICKET').packPromoContract)
     // );
   }
+
   function query_config_contract() {
     provider
       .query({
@@ -625,8 +627,26 @@ export default function Home(props) {
     execute_claim_soulbound_pack(selector, getSportType(sport).packPromoContract);
   };
 
-  async function get_soulbound_pack(selector) {}
+  async function fetchClaimStatus(accountId) {
+    const isClaimed = await fetchClaimSoulboundStatus(accountId);
+    setIsClaimedFootball(isClaimed);
+  }
 
+  const handleClaimButton = async () => {
+    try {
+      await claimSoulboundPack()
+        .then((txHash) => {
+          console.log('Transaction Hash:', txHash);
+          // Handle the transaction hash as needed (e.g., display it on the UI)
+        })
+        .catch((error) => {
+          console.error('Error:', error);
+          // Handle the error (e.g., display an error message on the UI)
+        });
+    } catch (error) {
+      console.error('Error claiming Soulbound Pack:', error);
+    }
+  };
   useEffect(() => {
     query_config_contract();
     query_storage_deposit_account_id();
@@ -754,19 +774,9 @@ export default function Home(props) {
                   ) : (
                     <button
                       className="w-60 flex text-center justify-center items-center iphone5:w-64 bg-indigo-buttonblue font-montserrat text-indigo-white p-3 mb-4 md:mr-4 text-xs "
-                      onClick={(e) => handleButtonClick(e, 'FOOTBALL')}
+                      onClick={(e) => handleClaimButton()}
                     >
                       CLAIM FOOTBALL PACK
-                    </button>
-                  )}
-                  {isClaimedBaseball ? (
-                    ''
-                  ) : (
-                    <button
-                      className="w-60 flex text-center justify-center items-center iphone5:w-64 bg-indigo-buttonblue font-montserrat text-indigo-white p-3 mb-4 md:mr-4 text-xs "
-                      onClick={(e) => handleButtonClick(e, 'BASEBALL')}
-                    >
-                      CLAIM BASEBALL PACK
                     </button>
                   )}
                 </div>

@@ -1,6 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { ethers } from 'ethers';
-import { fetchTokensByOwner, fetchTokenSupplyByOwner } from 'utils/polygon/ethers';
+import {
+  claimSoulboundPack,
+  fetchClaimSoulboundStatus,
+  fetchTokensByOwner,
+  fetchTokenSupplyByOwner,
+} from 'utils/polygon/ethers';
 import PortfolioContainer from '../../components/containers/PortfolioContainer';
 import Container from '../../components/containers/Container';
 import Main from '../../components/Main';
@@ -197,70 +202,54 @@ export default function Packs() {
   }
 
   async function fetchTokenSupply() {
-    const resultFootballSb = fetchTokenSupplyByOwner(userAccount)
-      .then((supply) => setTotalSupply(supply))
-      .catch((error) => console.error(error));
-
-    setTotalSupply(Number(resultFootballSb));
+    try {
+      const resultFootballSb = await fetchTokenSupplyByOwner(userAccount);
+      setTotalSupply(Number(resultFootballSb));
+      console.log('totalSupply:', totalSupply);
+    } catch (error) {
+      console.error(error);
+    }
   }
 
-  // async function fetchSoulboundTokens() {
-  //   try {
-  //     const tokens = await fetchTokensByOwner(userAccount, packOffset, packLimit);
+  async function fetchClaimStatus(accountId) {
+    const isClaimed = await fetchClaimSoulboundStatus(accountId);
+    setIsClaimed(isClaimed);
+  }
 
-  //     //change metadata to contents instead of just retrieving the IPFS Link
-  //     const updatedTokens = await Promise.all(
-  //       tokens.metadata
-  //         .filter((metadataObject) => metadataObject) // Filter out empty metadataObjects
-  //         .map(async (metadataObject) => {
-  //           const metadata = JSON.parse(metadataObject).metadata;
-  //           const response = await fetch(metadata);
-  //           return response.json(); // Directly parse the response as JSON
-  //         })
-  //     );
-
-  //     const tokenIdsArray = Object.values(tokens.tokenIds);
-  //     //restructures array for better mapping
-  //     const structuredTokens = tokenIdsArray
-  //       .filter((_, index) => updatedTokens[index] !== undefined)
-  //       .map((tokenId, index) => {
-  //         return {
-  //           token_id: Number(tokenId),
-  //           metadata: updatedTokens[index], // Assuming updatedTokens is an array of objects
-  //         };
-  //       });
-
-  //     setSoulboundPacks(structuredTokens);
-  //   } catch (error) {
-  //     console.error('Error parsing JSON:', error);
-  //   }
-  // }
-
-  // async function fetchSoulboundTokenSupply() {
-  //   const resultFootballSb = fetchTokenSupplyByOwner(userAccount)
-  //     .then((supply) => setTotalSupply(supply))
-  //     .catch((error) => console.error(error));
-
-  //   setTotalSoulboundPacks(Number(resultFootballSb));
-  // }
+  const handleClaimButton = async () => {
+    try {
+      await claimSoulboundPack()
+        .then((txHash) => {
+          console.log('Transaction Hash:', txHash);
+          // Handle the transaction hash as needed (e.g., display it on the UI)
+        })
+        .catch((error) => {
+          console.error('Error:', error);
+          // Handle the error (e.g., display an error message on the UI)
+        });
+    } catch (error) {
+      console.error('Error claiming Soulbound Pack:', error);
+    }
+  };
 
   useEffect(() => {
     fetchTokenSupply();
     getPackLimit();
     setPageCount(
       categoryList[0].isActive
-        ? Math.floor(Number(totalSupply) / packLimit)
+        ? Math.floor(totalSupply / packLimit)
         : Math.ceil(totalPacks / packLimit)
     );
     const endOffset = packOffset + packLimit;
     console.log(`Loading packs from ${packOffset} to ${endOffset}`);
     fetchTokens();
-    console.log(allPacks);
+    console.log('isClaimedStatus', isClaimed);
   }, [totalPacks, packLimit, packOffset, currentSport, totalSupply, categoryList, sportList]);
 
   useEffect(() => {
     // fetchSoulboundTokenSupply();
     // fetchSoulboundTokens();
+    fetchClaimStatus(userAccount);
   }, [currentSport]);
 
   useEffect(() => {
@@ -336,7 +325,7 @@ export default function Packs() {
 
               <div className="flex flex-col">
                 <hr className="opacity-10 -ml-6" />
-                <div className="flex flex-row first:md:ml-10 iphone5:ml-2">
+                {/* <div className="flex flex-row first:md:ml-10 iphone5:ml-2">
                   {sportList.map((x, index) => {
                     return (
                       <button
@@ -355,7 +344,7 @@ export default function Packs() {
                       </button>
                     );
                   })}
-                </div>
+                </div> */}
                 <div className="iphone5:ml-6 md:ml-9 iphone5:mr-0 md:mr-4 iphone5:mt-4">
                   {categoryList[0].isActive ? null : isClaimed ? (
                     ''
@@ -371,7 +360,7 @@ export default function Packs() {
                       <button
                         className="bg-indigo-buttonblue text-indigo-white iphone5:w-full md:w-80 h-10 
       text-center font-bold text-xs"
-                        onClick={(e) => handleButtonClick(e)}
+                        onClick={(e) => handleClaimButton()}
                       >
                         {currentSport === SPORT_NAME_LOOKUP.basketball
                           ? 'CLAIM BASKETBALL PACK'
