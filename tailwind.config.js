@@ -31,6 +31,8 @@ module.exports = {
             }
         },
         colors: {
+            darkblue: "#5660a6",
+            lightblue: "#6bbfea",
             indigo: {
                 light: '#2A2C42',
                 DEFAULT: '#5c6ac4',
