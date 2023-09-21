@@ -47,13 +47,9 @@ import { current } from '@reduxjs/toolkit';
 const NANO_TO_SECONDS_DENOMINATOR = 1000000;
 const DECIMALS_USDC = 1000000000000000000;
 export default function Home(props) {
-  const { selector, modal, accounts, accountId } = useWalletSelector();
+  const { accountId } = useWalletSelector();
 
-  //const { network } = selector.options;
-  const provider = new providers.JsonRpcProvider({
-    url: getRPCProvider(),
-  });
-  const { contract } = selector.store.getState();
+  // const { contract } = selector.store.getState();
   const dispatch = useDispatch();
   const [positionList, setPositionList] = useState(SPORT_TYPES[0].positionList);
   const sportObj = SPORT_TYPES.filter(
@@ -371,9 +367,9 @@ export default function Home(props) {
   function formatTime(time) {
     return time < 10 ? '0' + time : time;
   }
-  const logIn = () => {
-    modal.show();
-  };
+  // const logIn = () => {
+  //   modal.show();
+  // };
 
   useEffect(() => {
     setDay(0);
@@ -436,7 +432,7 @@ export default function Home(props) {
               <div className="ml-8">
                 <ModalPortfolioContainer title="MINT PACKS" textcolor="text-indigo-black" />
               </div>
-              {selector.isSignedIn() ? (
+              {accountId ? (
                 <div className="ml-12 mt-4 md:flex md:flex-row md:ml-8">
                   {isClaimedFootball ? (
                     ''
@@ -456,7 +452,7 @@ export default function Home(props) {
                   ) : (
                     <button
                       className="w-60 flex text-center justify-center items-center iphone5:w-64 bg-indigo-buttonblue font-montserrat text-indigo-white p-3 mb-4 md:mr-4 text-xs "
-                      onClick={logIn}
+                      // onClick={logIn}
                     >
                       CLAIM FOOTBALL PACK
                     </button>
@@ -624,7 +620,7 @@ export default function Home(props) {
                     {/*  <p>Gas price {utils.format.formatNearAmount(BigInt(selectedMintAmount * MINT_STORAGE_COST).toString()).toString()}N</p>*/}
                     {/*</div>*/}
                     {Math.floor(minterConfig.public_sale_start / NANO_TO_SECONDS_DENOMINATOR) <=
-                      Date.now() && selector.isSignedIn() ? (
+                      Date.now() && accountId ? (
                       {
                         /*parseInt(String(storageDepositAccountBalance)) >= selectedMintAmount * MINT_STORAGE_COST*/
                       } ? (
@@ -700,14 +696,14 @@ export default function Home(props) {
                           N
                         </button>
                       )
-                    ) : selector.isSignedIn() ? (
+                    ) : accountId ? (
                       //Change "MINT BASKETBALL STARTER PACK SOON" based on new sport that will be added
                       <div className="w-9/12 flex text-center justify-center items-center bg-indigo-buttonblue font-montserrat text-indigo-white p-4 text-xs mt-8 ">
                         MINT {currentSport} STARTER PACK SOON
                       </div>
                     ) : (
                       <button
-                        onClick={logIn}
+                        // onClick={logIn}
                         className="w-9/12 flex text-center justify-center items-center bg-indigo-buttonblue font-montserrat text-indigo-white p-4 text-xs mt-8 "
                       >
                         WALLET CONNECTION REQUIRED
