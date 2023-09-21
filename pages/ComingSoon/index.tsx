@@ -2,7 +2,7 @@ import Image from 'next/image';
 
 export default function ComingSoonPage() {
   return (
-    <div className="flex w-full h-screen justify-center bg-gradient-to-b from-darkblue to-lightblue">
+    <div className="select-none flex w-full h-screen justify-center bg-gradient-to-b from-darkblue to-lightblue">
       <div className="w-3/4 flex flex-col h-screen justify-center items-center gap-4 pb-48">
         <div className="flex flex-row gap-4 content-between font-monument text-4xl">
           <Image width={53} height={63} src="/images/logo.png" alt="playible logo" />

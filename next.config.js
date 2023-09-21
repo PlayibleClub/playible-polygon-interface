@@ -1,6 +1,42 @@
 const withImages = require('next-images');
 
-nextConfig = {
+const customRedirects = {
+  async redirects() {
+    return [
+      {
+        source: '/',
+        destination: '/ComingSoon',
+        permanent: false,
+      },
+      {
+        source: '/Play',
+        destination: '/ComingSoon',
+        permanent: false,
+        locale: false,
+      },
+      {
+        source: '/MintPage',
+        destination: '/ComingSoon',
+        permanent: false,
+        locale: false,
+      },
+      {
+        source: '/Portfolio',
+        destination: '/ComingSoon',
+        permanent: false,
+        locale: false,
+      },
+      {
+        source: '/Packs',
+        destination: '/ComingSoon',
+        permanent: false,
+        locale: false,
+      },
+    ];
+  },
+};
+
+const customImages = {
   images: {
     domains: [
       'playible-api-production.s3.ap-southeast-1.amazonaws.com',
@@ -18,6 +54,11 @@ nextConfig = {
     AWS_ACCESS_KEY: process.env.AWS_ACCESS_KEY,
     AWS_SECRET_KEY: process.env.AWS_SECRET_KEY,
   },
+};
+
+const nextConfig = {
+  ...customRedirects,
+  ...customImages,
 };
 
 module.exports = withImages(nextConfig);
