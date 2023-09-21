@@ -3,8 +3,16 @@ import { ethers } from 'ethers';
 import {
   claimSoulboundPack,
   fetchClaimSoulboundStatus,
+<<<<<<< Updated upstream
   fetchTokensByOwner,
   fetchTokenSupplyByOwner,
+=======
+  fetchPromoPackTokensByOwner,
+  fetchPromoPackTokenSupplyByOwner,
+  fetchRegularPackTokenMetadata,
+  fetchRegularPackTokenSupplyByOwner,
+  fetchRegularPackTokensByOwner,
+>>>>>>> Stashed changes
 } from 'utils/polygon/ethers';
 import PortfolioContainer from '../../components/containers/PortfolioContainer';
 import Container from '../../components/containers/Container';
@@ -171,7 +179,11 @@ export default function Packs() {
   const userAccount = '0x8F60285800f298F24244ECfe969F2c8A3D2Cb2BC';
   async function fetchTokens() {
     try {
+<<<<<<< Updated upstream
       const tokens = await fetchTokensByOwner(userAccount, packOffset, packLimit);
+=======
+      const tokens = await fetchPromoPackTokensByOwner(userAccount, packOffset, packLimit);
+>>>>>>> Stashed changes
 
       //change metadata to contents instead of just retrieving the IPFS Link
       const updatedTokens = await Promise.all(
@@ -203,7 +215,11 @@ export default function Packs() {
 
   async function fetchTokenSupply() {
     try {
+<<<<<<< Updated upstream
       const resultFootballSb = await fetchTokenSupplyByOwner(userAccount);
+=======
+      const resultFootballSb = await fetchPromoPackTokenSupplyByOwner(userAccount);
+>>>>>>> Stashed changes
       setTotalSupply(Number(resultFootballSb));
       console.log('totalSupply:', totalSupply);
     } catch (error) {
