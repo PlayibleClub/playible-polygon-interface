@@ -1,12 +1,14 @@
 // src/utils/ethers.js
 import { ethers } from 'ethers';
-import { packNFT, promotionalPackNFT } from 'utils/polygonContracts/polygonInterface';
+import { packNFT, promotionalPackNFT, AthleteLogic } from 'utils/polygonContracts/polygonInterface';
 import promotional_pack_nft from '../polygonContracts/contractABI/promotional_pack_nft.json';
 import pack_nft from '../polygonContracts/contractABI/pack_nft.json';
+import athlete_logic from '../polygonContracts/contractABI/athletelogic_abi.json';
 
 const promoPackContractAddress = '0xecdf1d718adf8930661a80b37bdbda83fdc538e3';
 const regularPackContractAddress = '0xbAfd91F2AB0d596f55DD74657381A9D9E9029777';
-
+const regularNFLAthleteStorageAddress = '0x5f577e912438A911C6205b17Abfd043AAfe2F6c3';
+const regularNFLAthleteLogicAddress = '0xFf180e4cA94c6730da92226cE54C3197233B2EF1';
 export async function fetchPromoPackTokenMetadata(tokenId) {
   try {
     if (window.ethereum) {
@@ -262,5 +264,31 @@ export async function fetchRegularPackPrice() {
     }
   } catch (error) {
     console.error('Error fetching pack price:', error);
+  }
+}
+
+export async function fetchFilteredAthleteTokensForOwner() {
+  try {
+    if (window.ethereum) {
+      const provider = new ethers.BrowserProvider(window.ethereum);
+
+      await window.ethereum.request({ method: 'eth_requestAccounts' });
+
+      const athleteLogic = new ethers.Contract(
+        regularNFLAthleteLogicAddress,
+        athlete_logic,
+        await provider.getSigner()
+      ) as unknown as AthleteLogic;
+
+      const test = athleteLogic.getFilteredTokensForOwner(
+        '0x1bd561c6571cCae8dC7E5018f9d5F78B1B3c6C57',
+        'allNames',
+        'allTeams',
+        'allPos'
+      );
+      console.log(test);
+    }
+  } catch (error) {
+    console.log(error);
   }
 }
