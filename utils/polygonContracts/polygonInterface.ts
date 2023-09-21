@@ -25,4 +25,13 @@ interface packNFT {
   mintPacks(amount: number): Promise<void>;
 }
 
-export type { promotionalPackNFT, packNFT };
+interface AthleteLogic {
+  getFilteredTokensForOwner(
+    address: string,
+    name: string,
+    team: string,
+    position: string
+  ): Promise<string[]>; //might change if flat array is hard
+}
+
+export type { promotionalPackNFT, packNFT, AthleteLogic };
