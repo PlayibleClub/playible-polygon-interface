@@ -3,11 +3,8 @@ import { ethers } from 'ethers';
 import {
   claimSoulboundPack,
   fetchClaimSoulboundStatus,
-  fetchPromoTokensByOwner,
-  fetchPromoTokenSupplyByOwner,
-  fetchRegularTokenMetadata,
-  fetchRegularTokenSupplyByOwner,
-  fetchRegularTokensByOwner,
+  fetchTokensByOwner,
+  fetchTokenSupplyByOwner,
 } from 'utils/polygon/ethers';
 import PortfolioContainer from '../../components/containers/PortfolioContainer';
 import Container from '../../components/containers/Container';
@@ -171,11 +168,10 @@ export default function Packs() {
     e.preventDefault();
     dispatch(setSportTypeRedux(currentSport));
   };
-
   const userAccount = '0x8F60285800f298F24244ECfe969F2c8A3D2Cb2BC';
-  async function fetchPromoTokens() {
+  async function fetchTokens() {
     try {
-      const tokens = await fetchPromoTokensByOwner(userAccount, packOffset, packLimit);
+      const tokens = await fetchTokensByOwner(userAccount, packOffset, packLimit);
 
       //change metadata to contents instead of just retrieving the IPFS Link
       const updatedTokens = await Promise.all(
@@ -205,9 +201,9 @@ export default function Packs() {
     }
   }
 
-  async function fetchPromoTokenSupply() {
+  async function fetchTokenSupply() {
     try {
-      const resultFootballSb = await fetchPromoTokenSupplyByOwner(userAccount);
+      const resultFootballSb = await fetchTokenSupplyByOwner(userAccount);
       setTotalSupply(Number(resultFootballSb));
       console.log('totalSupply:', totalSupply);
     } catch (error) {
@@ -237,7 +233,7 @@ export default function Packs() {
   };
 
   useEffect(() => {
-    fetchPromoTokenSupply();
+    fetchTokenSupply();
     getPackLimit();
     setPageCount(
       categoryList[0].isActive
@@ -246,7 +242,7 @@ export default function Packs() {
     );
     const endOffset = packOffset + packLimit;
     console.log(`Loading packs from ${packOffset} to ${endOffset}`);
-    fetchPromoTokens();
+    fetchTokens();
     console.log('isClaimedStatus', isClaimed);
   }, [totalPacks, packLimit, packOffset, currentSport, totalSupply, categoryList, sportList]);
 
