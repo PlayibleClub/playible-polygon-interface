@@ -9,45 +9,11 @@ import Header from '../headers/Header';
 import { useWalletSelector } from '../../contexts/WalletSelectorContext';
 import { AccountView } from 'near-api-js/lib/providers/provider';
 import { getRPCProvider } from 'utils/near';
-import useViewport  from 'utils/address/helper';
+import useViewport from 'utils/address/helper';
 
 const HeaderBase = () => {
-  const { selector, modal, accounts, accountId } = useWalletSelector();
-  const [account, setAccount] = useState<Account | null>(null);
   const { entryCut } = useViewport();
-
-  const getAccount = useCallback(async () => {
-    if (!accountId) {
-      return null;
-    }
-
-    const { network } = selector.options;
-    const provider = new providers.JsonRpcProvider({ url: getRPCProvider() });
-
-    return provider
-      .query<AccountView>({
-        request_type: 'view_account',
-        finality: 'final',
-        account_id: accountId,
-      })
-      .then((data) => ({
-        ...data,
-        account_id: accountId,
-      }));
-  }, [accountId, selector.options]);
-
-  const logOut = async () => {
-    const wallet = await selector.wallet();
-
-    wallet.signOut().catch((err) => {
-      console.log('Failed to sign out');
-      console.error(err);
-    });
-  };
-
-  const logIn = () => {
-    modal.show();
-  };
+  const { accountId, connectWallet, disconnectWallet } = useWalletSelector();
 
   const renderWallet = () => {
     {
@@ -58,7 +24,7 @@ const HeaderBase = () => {
             color="indigo-buttonblue"
             rounded="rounded-md"
             size="h-full py-1 px-1"
-            onClick={logOut}
+            onClick={disconnectWallet}
           >
             {entryCut(accountId)}
           </Button>
@@ -69,7 +35,7 @@ const HeaderBase = () => {
             rounded="rounded-sm"
             textColor="white-light"
             color="indigo-buttonblue"
-            onClick={logIn}
+            onClick={connectWallet}
             size="py-1 px-1 h-full"
           >
             <div className="flex flex-row text-sm h-12 items-center">
