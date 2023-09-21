@@ -231,10 +231,10 @@ export async function fetchAccountBalance() {
       ) as unknown as packNFT;
 
       // Call the claimSoulboundPack function
-      const transaction = await packNFT.getUserTokenBalance();
-      console.log('User account balance fetched successfully');
+      const balance = await packNFT.getUserTokenBalance();
+      console.log('Account balance fetched successfully');
 
-      return transaction;
+      return balance;
     }
   } catch (error) {
     console.error('Error fetching account balance:', error);
@@ -255,10 +255,10 @@ export async function fetchRegularPackPrice() {
       ) as unknown as packNFT;
 
       // Call the claimSoulboundPack function
-      const transaction = await packNFT.getPackPrice();
+      const price = await packNFT.getPackPrice();
       console.log('Pack price fetched successfully');
 
-      return transaction;
+      return price;
     }
   } catch (error) {
     console.error('Error fetching pack price:', error);
