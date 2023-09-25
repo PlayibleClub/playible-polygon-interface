@@ -103,7 +103,7 @@ const TokenDrawPage = (props) => {
     }
   }
 
-  const { selector, accountId } = useWalletSelector();
+  const { accountId } = useWalletSelector();
 
   const query_transaction_testnet = useCallback(async () => {
     const queryFromNear = await provider.sendJsonRpc<responseExperimentalTxStatus>(
