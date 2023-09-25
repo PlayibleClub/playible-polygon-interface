@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
-import { fetchTokenMetadata } from 'utils/polygon/ethers';
+import { fetchPromoPackTokenMetadata, fetchRegularPackTokenMetadata } from 'utils/polygon/ethers';
 import Container from 'components/containers/Container';
 import 'regenerator-runtime/runtime';
 import BackFunction from 'components/buttons/BackFunction';
@@ -9,25 +9,25 @@ import Link from 'next/link';
 
 export default function PackDetails(props) {
   const { query } = props;
-  const router = useRouter();
   const id = query.id.toString();
+  const packType = id % 100000;
   const myPack = {
     packName:
-      id.length === 6 || id.includes('SB')
+      id.length === 6 || packType === 2
         ? 'SOULBOUND PACK'
-        : id.includes('PR')
+        : packType === 1
         ? 'PROMO PACK'
         : 'STARTER PACK',
     id: id,
     sport: query.sport.toString().toUpperCase(),
   };
-  const tokenId = 200001;
+
   const [packDetails, setPackDetails] = useState([]);
   const [hasFetchedData, setHasFetchedData] = useState(false);
 
   async function fetchData() {
     try {
-      const metadataResponse = await fetchTokenMetadata(tokenId);
+      const metadataResponse = await fetchRegularPackTokenMetadata(id);
       const metadataObject = JSON.parse(metadataResponse);
 
       const metadataUrl = metadataObject.metadata;
@@ -57,7 +57,7 @@ export default function PackDetails(props) {
       fetchData();
     }
     console.log(packDetails);
-  }, [tokenId, hasFetchedData]);
+  }, [hasFetchedData]);
 
   return (
     <Container activeName="PACKS">
