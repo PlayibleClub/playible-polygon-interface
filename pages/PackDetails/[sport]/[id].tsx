@@ -6,6 +6,8 @@ import 'regenerator-runtime/runtime';
 import BackFunction from 'components/buttons/BackFunction';
 import Image from 'next/image';
 import Link from 'next/link';
+import openPack from 'utils/polygonContracts/contractABI/openpack.json';
+import { ethers } from 'ethers';
 
 export default function PackDetails(props) {
   const { query } = props;
@@ -24,6 +26,48 @@ export default function PackDetails(props) {
   const tokenId = 200001;
   const [packDetails, setPackDetails] = useState([]);
   const [hasFetchedData, setHasFetchedData] = useState(false);
+  const openPackContractAddress = '0x797de2d10Ee96a91495F6B8CC8eD575a79957b08';
+
+  async function requestAndMint() {
+    try {
+      if (window.ethereum) {
+        const provider = new ethers.BrowserProvider(window.ethereum);
+        await window.ethereum.request({ method: 'eth_requestAccounts' });
+
+        const OpenPack = new ethers.Contract(
+          openPackContractAddress,
+          openPack,
+          await provider.getSigner()
+        );
+
+        // Request random words
+        const requestTransaction = await OpenPack.requestRandomWords();
+        console.log('Random words requested successfully');
+
+        // Wait for the transaction to be mined
+        await provider.waitForTransaction(requestTransaction.hash);
+
+        // Fetch the lastRequestId
+        const lastRequestId = await OpenPack.lastRequestId();
+        console.log('Last Request ID:', lastRequestId); // Log the lastRequestId
+
+        // Poll for request status until it's fulfilled
+        let requestStatus = await OpenPack.getRequestStatus(lastRequestId);
+        while (!requestStatus) {
+          await new Promise((resolve) => setTimeout(resolve, 5000)); // Wait for 5 seconds before checking again
+          requestStatus = await OpenPack.getRequestStatus(lastRequestId);
+        }
+
+        // Once the request is fulfilled, mint the batch
+        const mintTransaction = await OpenPack.mintBatch();
+        console.log('Batch minted successfully');
+
+        return mintTransaction;
+      }
+    } catch (error) {
+      console.error('Error in request and mint process:', error);
+    }
+  }
 
   async function fetchData() {
     try {
@@ -80,12 +124,12 @@ export default function PackDetails(props) {
               #{myPack.id}
             </div>
             <div className="text-sm">RELEASE 1</div>
-            {/* <button
+            <button
               className="bg-indigo-buttonblue text-indigo-white w-5/6 md:w-80 h-10 text-center font-bold text-sm mt-4"
-              onClick={() => execute_open_pack()}
+              onClick={() => requestAndMint()}
             >
               OPEN PACK
-            </button> */}
+            </button>
 
             {/* <Link
               href={`/TransferPack/${myPack.sport.toLowerCase()}/${encodeURIComponent(id)}/`}
