@@ -8,7 +8,6 @@ import BaseModal from '../../../components/modals/BaseModal';
 import TimeAgo from 'javascript-time-ago';
 import en from 'javascript-time-ago/locale/en.json';
 import ReactTimeAgo from 'react-time-ago';
-import { GAME_NFL, ORACLE } from '../../../data/constants/nearContracts';
 import { SPORT_TYPES, getSportType } from 'data/constants/sportConstants';
 import 'regenerator-runtime/runtime';
 import { format } from 'prettier';
@@ -18,15 +17,12 @@ import { useSelector } from 'react-redux';
 import { useMutation } from '@apollo/client';
 import { CREATE_GAME } from '../../../utils/mutations';
 import { useWalletSelector } from 'contexts/WalletSelectorContext';
-import { getContract, getRPCProvider } from 'utils/near';
 import { DEFAULT_MAX_FEES, MINT_STORAGE_COST } from 'data/constants/gasFees';
-import { transactions, utils, WalletConnection, providers } from 'near-api-js';
 import { getGameInfoById } from 'utils/game/helper';
 import AdminGameComponent from './components/AdminGameComponent';
 import moment, { utc } from 'moment';
 import { getUTCDateFromLocal, getUTCTimestampFromLocal } from 'utils/date/helper';
 import ReactPaginate from 'react-paginate';
-import { query_games_list, query_game_supply } from 'utils/near/helper';
 import { position } from 'utils/athlete/position';
 import ReactS3Client from 'react-aws-s3-typescript';
 import secretKeys from 's3config';
@@ -38,7 +34,7 @@ TimeAgo.addDefaultLocale(en);
 
 export default function Index(props) {
   const [createNewGame, { data, error }] = useMutation(CREATE_GAME);
-  const { selector, accountId } = useWalletSelector();
+  const { accountId } = useWalletSelector();
   const connectedWallet = {};
   const router = useRouter();
   const [loading, setLoading] = useState(false);
@@ -225,9 +221,7 @@ export default function Index(props) {
     'Enter a team into the The Blitz tournament to compete for cash prizes. Create a lineup by selecting 8 Playible Football Athlete Tokens now.';
   const defaultPrizeDescription = '$100 + 2 Championship Tickets';
   const defaultGameImage = 'https://playible-game-image.s3.ap-southeast-1.amazonaws.com/game.png';
-  const provider = new providers.JsonRpcProvider({
-    url: getRPCProvider(),
-  });
+
   const [endMsg, setEndMsg] = useState({
     title: '',
     content: '',
@@ -795,40 +789,37 @@ export default function Index(props) {
   const endFormattedTimestamp = moment(dateEndFormatted).toLocaleString();
 
   async function get_game_supply() {
-    setTotalGames(await query_game_supply(getSportType(currentSport).gameContract));
+    setTotalGames(0);
   }
 
   function get_games_list(totalGames) {
-    query_games_list(totalGames, getSportType(currentSport).gameContract).then(async (data) => {
-      //@ts-ignore:next-line
-      const result = JSON.parse(Buffer.from(data.result).toString());
-
-      const upcomingGames = await Promise.all(
-        result
-          .filter((x) => x[1].start_time > getUTCTimestampFromLocal())
-          .map((item) => getGameInfoById(accountId, item, 'new', currentSport))
-      );
-
-      const completedGames = await Promise.all(
-        result
-          .filter((x) => x[1].end_time < getUTCTimestampFromLocal())
-          .map((item) => getGameInfoById(accountId, item, 'completed', currentSport))
-      );
-
-      const ongoingGames = await Promise.all(
-        result
-          .filter(
-            (x) =>
-              x[1].start_time < getUTCTimestampFromLocal() &&
-              x[1].end_time > getUTCTimestampFromLocal()
-          )
-          .map((item) => getGameInfoById(accountId, item, 'on-going', currentSport))
-      );
-      setCurrentTotal(upcomingGames.length);
-      setNewGames(upcomingGames);
-      setCompletedGames(completedGames);
-      setOngoingGames(ongoingGames);
-    });
+    // query_games_list(totalGames, getSportType(currentSport).gameContract).then(async (data) => {
+    //   //@ts-ignore:next-line
+    //   const result = JSON.parse(Buffer.from(data.result).toString());
+    //   const upcomingGames = await Promise.all(
+    //     result
+    //       .filter((x) => x[1].start_time > getUTCTimestampFromLocal())
+    //       .map((item) => getGameInfoById(accountId, item, 'new', currentSport))
+    //   );
+    //   const completedGames = await Promise.all(
+    //     result
+    //       .filter((x) => x[1].end_time < getUTCTimestampFromLocal())
+    //       .map((item) => getGameInfoById(accountId, item, 'completed', currentSport))
+    //   );
+    //   const ongoingGames = await Promise.all(
+    //     result
+    //       .filter(
+    //         (x) =>
+    //           x[1].start_time < getUTCTimestampFromLocal() &&
+    //           x[1].end_time > getUTCTimestampFromLocal()
+    //       )
+    //       .map((item) => getGameInfoById(accountId, item, 'on-going', currentSport))
+    //   );
+    //   setCurrentTotal(upcomingGames.length);
+    //   setNewGames(upcomingGames);
+    //   setCompletedGames(completedGames);
+    //   setOngoingGames(ongoingGames);
+    // });
   }
 
   function getLineupLength(currentSport) {
@@ -869,16 +860,6 @@ export default function Index(props) {
       })
     );
 
-    const action_add_game = {
-      type: 'FunctionCall',
-      params: {
-        methodName: 'add_game',
-        args: addGameArgs,
-        gas: DEFAULT_MAX_FEES,
-      },
-    };
-    const wallet = await selector.wallet();
-
     console.log(
       JSON.stringify({
         game_id: details.gameId.toString(),
@@ -899,17 +880,6 @@ export default function Index(props) {
         game_image: gameImage,
       })
     );
-
-    // @ts-ignore:next-line
-    const tx = wallet.signAndSendTransactions({
-      transactions: [
-        {
-          receiverId: getSportType(currentSport).gameContract,
-          // @ts-ignore:next-line
-          actions: [action_add_game],
-        },
-      ],
-    });
   }
 
   useEffect(() => {
