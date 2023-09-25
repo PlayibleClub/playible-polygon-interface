@@ -11,20 +11,20 @@ const PackComponent = (props) => {
   let href = '';
 
   switch (true) {
-    case media.includes('Football'):
+    case media?.includes('Football'):
       href = `/PackDetails/football/${encodeURIComponent(id)}/`;
       break;
-    case media.includes('nba'):
+    case media?.includes('nba'):
       href = `/PackDetails/basketball/${encodeURIComponent(id)}/`;
       break;
-    case media.includes('ipl'):
+    case media?.includes('ipl'):
       href = `/PackDetails/cricket/${encodeURIComponent(id)}/`;
       break;
-    case media.includes('mlb'):
+    case media?.includes('mlb'):
       href = `/PackDetails/baseball/${encodeURIComponent(id)}/`;
       break;
     default:
-      href = `/PackDetails/${sport.toLowerCase()}/${encodeURIComponent(id)}/`;
+      href = `/PackDetails/${sport?.toLowerCase()}/${encodeURIComponent(id)}/`;
   }
 
   return (
