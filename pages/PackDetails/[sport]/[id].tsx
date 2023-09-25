@@ -52,17 +52,18 @@ export default function PackDetails(props) {
         console.log('Last Request ID:', lastRequestId); // Log the lastRequestId
 
         // Poll for request status until it's fulfilled
-        let requestStatus = await OpenPack.getRequestStatus(lastRequestId);
-        while (!requestStatus) {
-          await new Promise((resolve) => setTimeout(resolve, 5000)); // Wait for 5 seconds before checking again
-          requestStatus = await OpenPack.getRequestStatus(lastRequestId);
-        }
-
-        // Once the request is fulfilled, mint the batch
-        const mintTransaction = await OpenPack.mintBatch();
-        console.log('Batch minted successfully');
-
-        return mintTransaction;
+        let loopCount = 0; // Initialize loop counter
+        const intervalId = setInterval(async () => {
+          loopCount++; // Increment loop counter
+          console.log('Checking request status...', loopCount); // Log each loop iteration
+          let requestStatus = await OpenPack.getRequestStatus(lastRequestId);
+          if (requestStatus.fulfilled) {
+            clearInterval(intervalId);
+            // Once the request is fulfilled, mint the batch
+            const mintTransaction = await OpenPack.mintBatch();
+            console.log('Batch minted successfully');
+          }
+        }, 5000); // Check every 5 seconds
       }
     } catch (error) {
       console.error('Error in request and mint process:', error);
