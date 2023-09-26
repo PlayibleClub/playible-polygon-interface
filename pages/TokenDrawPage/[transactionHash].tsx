@@ -7,6 +7,8 @@ import HeaderBase from '../../components/headers/HeaderBase';
 import Navbar from '../../components/navbars/Navbar';
 import TokenComponent from '../../components/TokenComponent';
 import Main from '../../components/Main';
+import { ethers } from 'ethers';
+import openPack from 'utils/polygonContracts/contractABI/openpack.json';
 
 import 'regenerator-runtime/runtime';
 import { BrowserView, MobileView, isBrowser, isMobile } from 'react-device-detect';
@@ -83,9 +85,53 @@ const TokenDrawPage = (props) => {
     },
   ]);
   const [videoFile, setVideoFile] = useState('');
-  const provider = new providers.JsonRpcProvider({
-    url: getRPCProvider(),
-  });
+
+  // async function getReceipt() {
+  //   const provider = new ethers.BrowserProvider(window.ethereum, 'any');
+
+  //   // Assume you have a transaction hash
+  //   const transactionHash = '0xf72a3fe23b81c106c2027df7b7b81908f4dd4b65f1c1065916d75dd16faddaf8';
+  //   const receipt = await provider.waitForTransaction(transactionHash);
+  //   const logData = receipt.logs.map((log) => {
+  //     const data = ethers.keccak256(logData);
+  //     console.log(data);
+  //     return JSON.parse(data);
+  //   });
+  // }
+
+  // getReceipt();
+
+  // Assume you have a transaction hash
+  const transactionHash = '0xf72a3fe23b81c106c2027df7b7b81908f4dd4b65f1c1065916d75dd16faddaf8';
+
+  async function getReceipt() {
+    const provider = new ethers.BrowserProvider(window.ethereum, 'any');
+
+    const receipt = await provider.waitForTransaction(transactionHash);
+    const logData = receipt.logs.map((log) => log.data);
+
+    // Exclude the last 2 elements of logData
+    const logDataWithoutLastTwo = logData.slice(0, -2);
+
+    logDataWithoutLastTwo.forEach((data) => {
+      // Remove the '0x' prefix
+      const hexData = data.slice(2);
+      // Convert the hexadecimal data to a Buffer
+      const buffer = Buffer.from(hexData, 'hex');
+      // Convert the Buffer to a string
+      let str = buffer.toString('utf8');
+      // Remove non-printable ASCII characters
+      str = str.replace(/[^\x20-\x7E]/g, '');
+      // Parse the string as JSON
+      const json = JSON.parse(str);
+      // Fetch the 'name' and 'image' properties
+      const name = json.name;
+      const image = json.image;
+      console.log(`Name: ${name}, Image: ${image}`);
+    });
+  }
+
+  getReceipt();
 
   function findContract(contract) {
     if (contract.includes(SPORT_CONTRACT_LOOKUP.football)) {
@@ -105,182 +151,182 @@ const TokenDrawPage = (props) => {
 
   const { accountId } = useWalletSelector();
 
-  const query_transaction_testnet = useCallback(async () => {
-    const queryFromNear = await provider.sendJsonRpc<responseExperimentalTxStatus>(
-      'EXPERIMENTAL_tx_status',
-      [query.transactionHash, accountId]
-    );
-    //@ts-ignore:next-line
-    //get the last transaction to check if token was transferred successfully
-    const txResult = queryFromNear.receipts_outcome[queryFromNear.receipts_outcome.length - 1];
-    console.log(queryFromNear);
-    //@ts-ignore:next-line
-    const success = JSON.parse(decode(queryFromNear.status.SuccessValue));
-    console.log(success);
-    //get the last transaction that holds the token_id needed
-    const txObject = queryFromNear.receipts[queryFromNear.receipts.length - 3];
-    //@ts-ignore:next-line
-    let contract = txObject.receiver_id;
-    console.log(contract);
-    if (contract.includes('pack.pack_minter')) {
-      contract = 'pack.nfl.playible.testnet';
-    }
-    if (success) {
-      const args = JSON.parse(decode(txObject.receipt.Action.actions[0].FunctionCall.args));
-      //for additional checking later for what file to use
-      const isPromoContract = contract.toString().includes('promotional');
+  // const query_transaction_testnet = useCallback(async () => {
+  //   const queryFromNear = await provider.sendJsonRpc<responseExperimentalTxStatus>(
+  //     'EXPERIMENTAL_tx_status',
+  //     [query.transactionHash, accountId]
+  //   );
+  //   //@ts-ignore:next-line
+  //   //get the last transaction to check if token was transferred successfully
+  //   const txResult = queryFromNear.receipts_outcome[queryFromNear.receipts_outcome.length - 1];
+  //   console.log(queryFromNear);
+  //   //@ts-ignore:next-line
+  //   const success = JSON.parse(decode(queryFromNear.status.SuccessValue));
+  //   console.log(success);
+  //   //get the last transaction that holds the token_id needed
+  //   const txObject = queryFromNear.receipts[queryFromNear.receipts.length - 3];
+  //   //@ts-ignore:next-line
+  //   let contract = txObject.receiver_id;
+  //   console.log(contract);
+  //   if (contract.includes('pack.pack_minter')) {
+  //     contract = 'pack.nfl.playible.testnet';
+  //   }
+  //   if (success) {
+  //     const args = JSON.parse(decode(txObject.receipt.Action.actions[0].FunctionCall.args));
+  //     //for additional checking later for what file to use
+  //     const isPromoContract = contract.toString().includes('promotional');
 
-      if (isPromoContract) {
-        await query_nft_tokens_by_id(args.token_id, contract).then((token) => {
-          //@ts-ignore:next-line
-          const pack = JSON.parse(Buffer.from(token.result));
-          const attribute = JSON.parse(pack.metadata.extra);
-          let isPromo = false;
-          console.log(attribute);
+  //     if (isPromoContract) {
+  //       await query_nft_tokens_by_id(args.token_id, contract).then((token) => {
+  //         //@ts-ignore:next-line
+  //         const pack = JSON.parse(Buffer.from(token.result));
+  //         const attribute = JSON.parse(pack.metadata.extra);
+  //         let isPromo = false;
+  //         console.log(attribute);
 
-          switch (attribute.attributes[0].value) {
-            case '1': //promotional, one-time use token
-              isPromo = true;
-              break;
-            case '2': //soulbound token
-              isPromo = false;
-              break;
-          }
-          setVideoFile(isPromo ? findContract(contract).promo : findContract(contract).soulbound);
-        });
-      } else {
-        setVideoFile(findContract(contract).base);
-      }
+  //         switch (attribute.attributes[0].value) {
+  //           case '1': //promotional, one-time use token
+  //             isPromo = true;
+  //             break;
+  //           case '2': //soulbound token
+  //             isPromo = false;
+  //             break;
+  //         }
+  //         setVideoFile(isPromo ? findContract(contract).promo : findContract(contract).soulbound);
+  //       });
+  //     } else {
+  //       setVideoFile(findContract(contract).base);
+  //     }
 
-      //await query_nft_tokens_for_owner(args.receiver_id, )
-      setRemountComponent(Math.random());
-    }
+  //     //await query_nft_tokens_for_owner(args.receiver_id, )
+  //     setRemountComponent(Math.random());
+  //   }
 
-    // See https://docs.near.org/api/rpc/transactions
-    if (contract.includes(SPORT_CONTRACT_LOOKUP.cricket)) {
-      setAthletes(
-        await Promise.all(
-          // filter out all receipts, and find those that array of 8 actions (since 8 nft_mints)
-          queryFromNear.receipts
-            .filter((item) => {
-              return item.receipt.Action.actions.length == length;
-            })[0]
-            // decode the arguments of nft_mint, and determine the json
-            .receipt.Action.actions.map((item) => {
-              return JSON.parse(decode(item.FunctionCall.args));
-            })
-            // get metadata
-            .map(convertNftToAthlete)
-            .map((item) => getCricketAthleteInfoById(item, null, null))
-        )
-      );
-    } else {
-      setAthletes(
-        await Promise.all(
-          // filter out all receipts, and find those that array of 8 actions (since 8 nft_mints)
-          queryFromNear.receipts
-            .filter((item) => {
-              return item.receipt.Action.actions.length == length;
-            })[0]
-            // decode the arguments of nft_mint, and determine the json
-            .receipt.Action.actions.map((item) => {
-              return JSON.parse(decode(item.FunctionCall.args));
-            })
-            // get metadata
-            .map(convertNftToAthlete)
-            .map((item) => getAthleteInfoById(item, null, null))
-        )
-      );
-    }
-    setLoading(false);
-  }, [length]);
+  //   // See https://docs.near.org/api/rpc/transactions
+  //   if (contract.includes(SPORT_CONTRACT_LOOKUP.cricket)) {
+  //     setAthletes(
+  //       await Promise.all(
+  //         // filter out all receipts, and find those that array of 8 actions (since 8 nft_mints)
+  //         queryFromNear.receipts
+  //           .filter((item) => {
+  //             return item.receipt.Action.actions.length == length;
+  //           })[0]
+  //           // decode the arguments of nft_mint, and determine the json
+  //           .receipt.Action.actions.map((item) => {
+  //             return JSON.parse(decode(item.FunctionCall.args));
+  //           })
+  //           // get metadata
+  //           .map(convertNftToAthlete)
+  //           .map((item) => getCricketAthleteInfoById(item, null, null))
+  //       )
+  //     );
+  //   } else {
+  //     setAthletes(
+  //       await Promise.all(
+  //         // filter out all receipts, and find those that array of 8 actions (since 8 nft_mints)
+  //         queryFromNear.receipts
+  //           .filter((item) => {
+  //             return item.receipt.Action.actions.length == length;
+  //           })[0]
+  //           // decode the arguments of nft_mint, and determine the json
+  //           .receipt.Action.actions.map((item) => {
+  //             return JSON.parse(decode(item.FunctionCall.args));
+  //           })
+  //           // get metadata
+  //           .map(convertNftToAthlete)
+  //           .map((item) => getAthleteInfoById(item, null, null))
+  //       )
+  //     );
+  //   }
+  //   setLoading(false);
+  // }, [length]);
 
-  const query_transaction_mainnet = useCallback(async () => {
-    const queryFromNear = await provider.sendJsonRpc<responseExperimentalTxStatus>(
-      'EXPERIMENTAL_tx_status',
-      [query.transactionHash, accountId]
-    );
-    //@ts-ignore:next-line
-    //get the last transaction to check if token was transferred successfully
-    console.log(queryFromNear);
-    //@ts-ignore:next-line
-    const success = JSON.parse(decode(queryFromNear.status.SuccessValue));
-    console.log(success);
-    //get the last transaction that holds the token_id needed
-    const txObject = queryFromNear.receipts[queryFromNear.receipts.length - 3];
-    //@ts-ignore:next-line
-    let contract = txObject.receiver_id;
-    if (contract.includes('pack.pack_minter')) {
-      contract = 'pack.nfl.playible.near';
-    }
-    if (success) {
-      const args = JSON.parse(decode(txObject.receipt.Action.actions[0].FunctionCall.args));
-      //for additional checking later for what file to use
-      const isPromoContract = contract.toString().includes('promotional');
+  // const query_transaction_mainnet = useCallback(async () => {
+  //   const queryFromNear = await provider.sendJsonRpc<responseExperimentalTxStatus>(
+  //     'EXPERIMENTAL_tx_status',
+  //     [query.transactionHash, accountId]
+  //   );
+  //   //@ts-ignore:next-line
+  //   //get the last transaction to check if token was transferred successfully
+  //   console.log(queryFromNear);
+  //   //@ts-ignore:next-line
+  //   const success = JSON.parse(decode(queryFromNear.status.SuccessValue));
+  //   console.log(success);
+  //   //get the last transaction that holds the token_id needed
+  //   const txObject = queryFromNear.receipts[queryFromNear.receipts.length - 3];
+  //   //@ts-ignore:next-line
+  //   let contract = txObject.receiver_id;
+  //   if (contract.includes('pack.pack_minter')) {
+  //     contract = 'pack.nfl.playible.near';
+  //   }
+  //   if (success) {
+  //     const args = JSON.parse(decode(txObject.receipt.Action.actions[0].FunctionCall.args));
+  //     //for additional checking later for what file to use
+  //     const isPromoContract = contract.toString().includes('promotional');
 
-      if (isPromoContract) {
-        await query_nft_tokens_by_id(args.token_id, contract).then((token) => {
-          //@ts-ignore:next-line
-          const pack = JSON.parse(Buffer.from(token.result));
-          const attribute = JSON.parse(pack.metadata.extra);
-          let isPromo = false;
-          console.log(attribute);
+  //     if (isPromoContract) {
+  //       await query_nft_tokens_by_id(args.token_id, contract).then((token) => {
+  //         //@ts-ignore:next-line
+  //         const pack = JSON.parse(Buffer.from(token.result));
+  //         const attribute = JSON.parse(pack.metadata.extra);
+  //         let isPromo = false;
+  //         console.log(attribute);
 
-          switch (attribute.attributes[0].value) {
-            case '1': //promotional, one-time use token
-              isPromo = true;
-              break;
-            case '2': //soulbound token
-              isPromo = false;
-              break;
-          }
-          setVideoFile(isPromo ? findContract(contract).promo : findContract(contract).soulbound);
-        });
-      } else {
-        setVideoFile(findContract(contract).base);
-      }
-      //await query_nft_tokens_for_owner(args.receiver_id, )
-      setRemountComponent(Math.random());
-    }
+  //         switch (attribute.attributes[0].value) {
+  //           case '1': //promotional, one-time use token
+  //             isPromo = true;
+  //             break;
+  //           case '2': //soulbound token
+  //             isPromo = false;
+  //             break;
+  //         }
+  //         setVideoFile(isPromo ? findContract(contract).promo : findContract(contract).soulbound);
+  //       });
+  //     } else {
+  //       setVideoFile(findContract(contract).base);
+  //     }
+  //     //await query_nft_tokens_for_owner(args.receiver_id, )f
+  //     setRemountComponent(Math.random());
+  //   }
 
-    // See https://docs.near.org/api/rpc/transactions
-    if (contract.includes(SPORT_CONTRACT_LOOKUP.cricket)) {
-      setAthletes(
-        await Promise.all(
-          // filter out all receipts, and find those that array of 8 actions (since 8 nft_mints)
-          queryFromNear.receipts
-            .filter((item) => {
-              return item.receipt.Action.actions.length == length;
-            })[0]
-            // decode the arguments of nft_mint, and determine the json
-            .receipt.Action.actions.map((item) => {
-              return JSON.parse(decode(item.FunctionCall.args));
-            })
-            // get metadata
-            .map(convertNftToAthlete)
-            .map((item) => getCricketAthleteInfoById(item, null, null))
-        )
-      );
-    } else {
-      setAthletes(
-        await Promise.all(
-          // filter out all receipts, and find those that array of 8 actions (since 8 nft_mints)
-          queryFromNear.receipts
-            .filter((item) => {
-              return item.receipt.Action.actions.length == length;
-            })[0]
-            // decode the arguments of nft_mint, and determine the json
-            .receipt.Action.actions.map((item) => {
-              return JSON.parse(decode(item.FunctionCall.args));
-            })
-            // get metadata
-            .map(convertNftToAthlete)
-            .map((item) => getAthleteInfoById(item, null, null))
-        )
-      );
-    }
-    setLoading(false);
-  }, [length]);
+  //   // See https://docs.near.org/api/rpc/transactions
+  //   if (contract.includes(SPORT_CONTRACT_LOOKUP.cricket)) {
+  //     setAthletes(
+  //       await Promise.all(
+  //         // filter out all receipts, and find those that array of 8 actions (since 8 nft_mints)
+  //         queryFromNear.receipts
+  //           .filter((item) => {
+  //             return item.receipt.Action.actions.length == length;
+  //           })[0]
+  //           // decode the arguments of nft_mint, and determine the json
+  //           .receipt.Action.actions.map((item) => {
+  //             return JSON.parse(decode(item.FunctionCall.args));
+  //           })
+  //           // get metadata
+  //           .map(convertNftToAthlete)
+  //           .map((item) => getCricketAthleteInfoById(item, null, null))
+  //       )
+  //     );
+  //   } else {
+  //     setAthletes(
+  //       await Promise.all(
+  //         // filter out all receipts, and find those that array of 8 actions (since 8 nft_mints)
+  //         queryFromNear.receipts
+  //           .filter((item) => {
+  //             return item.receipt.Action.actions.length == length;
+  //           })[0]
+  //           // decode the arguments of nft_mint, and determine the json
+  //           .receipt.Action.actions.map((item) => {
+  //             return JSON.parse(decode(item.FunctionCall.args));
+  //           })
+  //           // get metadata
+  //           .map(convertNftToAthlete)
+  //           .map((item) => getAthleteInfoById(item, null, null))
+  //       )
+  //     );
+  //   }
+  //   setLoading(false);
+  // }, [length]);
 
   const activeChecker = () => {
     if (athletes.length > 0) {
@@ -319,16 +365,16 @@ const TokenDrawPage = (props) => {
     }
   };
 
-  useEffect(() => {
-    switch (getConfig()) {
-      case 'mainnet':
-        query_transaction_mainnet().catch(console.error);
-        break;
-      case 'testnet':
-        query_transaction_testnet().catch(console.error);
-        break;
-    }
-  }, [query_transaction_mainnet, query_transaction_testnet]);
+  // useEffect(() => {
+  //   switch (getConfig()) {
+  //     case 'mainnet':
+  //       query_transaction_mainnet().catch(console.error);
+  //       break;
+  //     case 'testnet':
+  //       query_transaction_testnet().catch(console.error);
+  //       break;
+  //   }
+  // }, [query_transaction_mainnet, query_transaction_testnet]);
 
   const onVideoEnded = () => {
     setVideoPlaying(false);
@@ -443,47 +489,47 @@ const TokenDrawPage = (props) => {
 
 export default TokenDrawPage;
 
-export async function getServerSideProps(ctx) {
-  const { query } = ctx;
+// export async function getServerSideProps(ctx) {
+//   const { query } = ctx;
 
-  let result = false;
+//   let result = false;
 
-  if (!query.transactionHash) {
-    return {
-      redirect: {
-        destination: '/Portfolio',
-        permanent: false,
-      },
-    };
-  } else {
-    const provider = new providers.JsonRpcProvider({
-      url: getRPCProvider(),
-    });
-    const transaction = await provider.txStatus(query.transactionHash, 'unnused');
-    // true if successful
-    // false if unsuccessful
-    result = providers.getTransactionLastResult(transaction);
-    // const { accountId } = useWalletSelector();
-    // const txn = useCallback(async () => {
-    //   const fromNear = await provider.sendJsonRpc<responseExperimentalTxStatus>(
-    //     'EXPERIMENTAL_tx_status',
-    //     [query.transactionHash, accountId]
-    //   );
-    //   //@ts-ignore:next-line
-    //   const txResult = fromNear.receipts_outcome[fromNear.receipts_outcome.length - 1];
-    //   const success = JSON.parse(decode(txResult.outcome.status.SuccessValue));
-    //   if(success){
-    //     const txObject = fromNear.receipts[fromNear.receipts.length - 1];
-    //     const contractToQuery = txObject.receiver_id;
-    //     const args = JSON.parse(decode(txObject.receipt.Action.actions[0].FunctionCall.args));
+//   if (!query.transactionHash) {
+//     return {
+//       redirect: {
+//         destination: '/Portfolio',
+//         permanent: false,
+//       },
+//     };
+//   } else {
+//     const provider = new providers.JsonRpcProvider({
+//       url: getRPCProvider(),
+//     });
+//     const transaction = await provider.txStatus(query.transactionHash, 'unnused');
+//     // true if successful
+//     // false if unsuccessful
+//     result = providers.getTransactionLastResult(transaction);
+//     // const { accountId } = useWalletSelector();
+//     // const txn = useCallback(async () => {
+//     //   const fromNear = await provider.sendJsonRpc<responseExperimentalTxStatus>(
+//     //     'EXPERIMENTAL_tx_status',
+//     //     [query.transactionHash, accountId]
+//     //   );
+//     //   //@ts-ignore:next-line
+//     //   const txResult = fromNear.receipts_outcome[fromNear.receipts_outcome.length - 1];
+//     //   const success = JSON.parse(decode(txResult.outcome.status.SuccessValue));
+//     //   if(success){
+//     //     const txObject = fromNear.receipts[fromNear.receipts.length - 1];
+//     //     const contractToQuery = txObject.receiver_id;
+//     //     const args = JSON.parse(decode(txObject.receipt.Action.actions[0].FunctionCall.args));
 
-    //     const isPromoContract = contractToQuery.toString().includes('promotional');
-    //     const packInfo = await query_nft_tokens_for_owner()
-    //   }
-    // }, []);
-  }
+//     //     const isPromoContract = contractToQuery.toString().includes('promotional');
+//     //     const packInfo = await query_nft_tokens_for_owner()
+//     //   }
+//     // }, []);
+//   }
 
-  return {
-    props: { query, result },
-  };
-}
+//   return {
+//     props: { query, result },
+//   };
+// }
