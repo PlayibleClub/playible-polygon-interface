@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useCallback } from 'react';
+import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
 import { ethers } from 'ethers';
 
 declare global {
@@ -6,45 +6,60 @@ declare global {
     ethereum: any;
   }
 }
-// Define the context
+
 interface WalletSelectorContextValue {
   accountId: string | null;
   connectWallet: () => void;
   disconnectWallet: () => void;
+  isLoading: boolean;
 }
 
 const WalletSelectorContext = React.createContext<WalletSelectorContextValue | null>(null);
 
-// Context Provider component
 export const WalletSelectorContextProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
-  const [accountId, setAccountId] = useState<string | null>(null);
+  const [accountId, setAccountId] = useState<string | null>(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('accountId');
+    }
+    return null;
+  });
+  const [isLoading, setIsLoading] = useState(false);
 
-  // Connect wallet function
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('accountId', accountId || '');
+    }
+  }, [accountId]);
+
   const connectWallet = useCallback(async () => {
+    setIsLoading(true);
     try {
-      // Request access to user's MetaMask accounts
       await window.ethereum.request({ method: 'eth_requestAccounts' });
       const accounts = await window.ethereum.request({ method: 'eth_accounts' });
       setAccountId(accounts[0] || null);
     } catch (error) {
       console.error('Error connecting to MetaMask:', error);
+    } finally {
+      setIsLoading(false);
     }
   }, []);
 
-  // Disconnect wallet function
   const disconnectWallet = useCallback(() => {
     setAccountId(null);
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('accountId');
+    }
   }, []);
 
-  // Render children with context value
   return (
     <WalletSelectorContext.Provider
       value={{
         accountId,
         connectWallet,
         disconnectWallet,
+        isLoading,
       }}
     >
       {children}
@@ -52,7 +67,6 @@ export const WalletSelectorContextProvider: React.FC<{ children: React.ReactNode
   );
 };
 
-// Custom hook to consume the context
 export function useWalletSelector() {
   const context = React.useContext(WalletSelectorContext);
 
