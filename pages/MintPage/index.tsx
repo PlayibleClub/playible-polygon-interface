@@ -319,7 +319,7 @@ export default function Home(props) {
 
   useEffect(() => {
     fetchPackPrice();
-  }, [currentSport, usePOL141]);
+  }, [currentSport, usePOL141, accountBalance]);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -336,7 +336,7 @@ export default function Home(props) {
   useEffect(() => {
     fetchClaimStatus(accountId);
     fetchUserAccountBalance();
-  }, [currentSport, accountBalance]);
+  }, [currentSport, accountBalance, minterConfig]);
 
   useEffect(() => {
     if (router.asPath.indexOf('transactionHashes') > -1 && isPromoFromRedux === false) {
@@ -432,7 +432,7 @@ export default function Home(props) {
               <div className="ml-8">
                 <ModalPortfolioContainer title="MINT PACKS" textcolor="text-indigo-black" />
               </div>
-              {accountId ? (
+              {/* {accountId ? (
                 <div className="ml-12 mt-4 md:flex md:flex-row md:ml-8">
                   {isClaimedFootball ? (
                     ''
@@ -458,7 +458,7 @@ export default function Home(props) {
                     </button>
                   )}
                 </div>
-              )}
+              )} */}
 
               <div className="md:mr- md:mt-0 ml-6 mt-4">
                 <form>
