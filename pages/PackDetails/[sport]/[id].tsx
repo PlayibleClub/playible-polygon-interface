@@ -62,10 +62,6 @@ export default function PackDetails(props) {
             // Once the request is fulfilled, mint the batch
             const mintTransaction = await OpenPack.mintBatch();
             console.log('Batch minted successfully');
-            console.log(mintTransaction.hash, 'mint transaction hash');
-
-            // Use client-side routing to navigate to TokenDrawPage
-            router.push(`/TokenDrawPage/${mintTransaction.hash}`);
           }
         }, 5000); // Check every 5 seconds
       }
