@@ -1,11 +1,17 @@
 // src/utils/ethers.js
 import { ethers } from 'ethers';
-import { packNFT, promotionalPackNFT } from 'utils/polygonContracts/polygonInterface';
+import {
+  packNFTStorage,
+  promotionalPackNFT,
+  packNFTLogic,
+} from 'utils/polygonContracts/polygonInterface';
 import promotional_pack_nft from '../polygonContracts/contractABI/promotional_pack_nft.json';
-import pack_nft from '../polygonContracts/contractABI/pack_nft.json';
+import pack_nft_storage from '../polygonContracts/contractABI/pack_nft.json';
+import pack_nft_logic from '../polygonContracts/contractABI/pack_nft_logic.json';
 
 const promoPackContractAddress = '0xecdf1d718adf8930661a80b37bdbda83fdc538e3';
-const regularPackContractAddress = '0xbAfd91F2AB0d596f55DD74657381A9D9E9029777';
+const regularPackStorageContractAddress = '0x4E2A0c5fd245F33784F3d642DD881Cb3BCA5a8E4';
+const regularPackLogicContractAddress = '0x3C581DCBB567cFE86395820bA0a37715C1195dEC';
 
 export async function fetchPromoPackTokenMetadata(tokenId) {
   try {
@@ -134,13 +140,13 @@ export async function fetchRegularPackTokenMetadata(tokenId) {
       await window.ethereum.request({ method: 'eth_requestAccounts' });
 
       // Instantiate your ERC1155 contract
-      const packNFT = new ethers.Contract(
-        regularPackContractAddress,
-        pack_nft,
+      const packNFTLogic = new ethers.Contract(
+        regularPackLogicContractAddress,
+        pack_nft_logic,
         await provider.getSigner()
-      ) as unknown as packNFT;
+      ) as unknown as packNFTLogic;
 
-      const metadata = await packNFT.getTokenMetadataById(tokenId);
+      const metadata = await packNFTLogic.getTokenMetadataById(tokenId);
 
       return metadata;
     }
@@ -157,13 +163,17 @@ export async function fetchRegularPackTokensByOwner(account, fromIndex, limit) {
 
       await window.ethereum.request({ method: 'eth_requestAccounts' });
 
-      const packNFT = new ethers.Contract(
-        regularPackContractAddress,
-        pack_nft,
+      const packNFTLogic = new ethers.Contract(
+        regularPackLogicContractAddress,
+        pack_nft_logic,
         await provider.getSigner()
-      ) as unknown as packNFT;
+      ) as unknown as packNFTLogic;
 
-      const [count, tokenIds, metadata] = await packNFT.getTokensByOwner(account, fromIndex, limit);
+      const [count, tokenIds, metadata] = await packNFTLogic.getTokensByOwner(
+        account,
+        fromIndex,
+        limit
+      );
 
       return { count, tokenIds, metadata };
     }
@@ -179,13 +189,13 @@ export async function fetchRegularPackTokenSupplyByOwner(account) {
 
       await window.ethereum.request({ method: 'eth_requestAccounts' });
 
-      const packNFT = new ethers.Contract(
-        regularPackContractAddress,
-        pack_nft,
+      const packNFTLogic = new ethers.Contract(
+        regularPackLogicContractAddress,
+        pack_nft_logic,
         await provider.getSigner()
-      ) as unknown as packNFT;
+      ) as unknown as packNFTLogic;
 
-      const tokenSupply = await packNFT.getTokenSupplyByOwner(account);
+      const tokenSupply = await packNFTLogic.getTokenSupplyByOwner(account);
       return tokenSupply;
     }
   } catch (error) {
@@ -200,14 +210,14 @@ export async function mintRegularPacks(amount) {
 
       await window.ethereum.request({ method: 'eth_requestAccounts' });
 
-      const packNFT = new ethers.Contract(
-        regularPackContractAddress,
-        pack_nft,
+      const packNFTStorage = new ethers.Contract(
+        regularPackStorageContractAddress,
+        pack_nft_storage,
         await provider.getSigner()
-      ) as unknown as packNFT;
+      ) as unknown as packNFTStorage;
 
       // Call the claimSoulboundPack function
-      const transaction = await packNFT.mintPacks(amount);
+      const transaction = await packNFTStorage.mintPacks(amount);
       console.log('Regular Pack minted successfully');
 
       return transaction;
@@ -224,14 +234,14 @@ export async function fetchAccountBalance() {
 
       await window.ethereum.request({ method: 'eth_requestAccounts' });
 
-      const packNFT = new ethers.Contract(
-        regularPackContractAddress,
-        pack_nft,
+      const packNFTStorage = new ethers.Contract(
+        regularPackStorageContractAddress,
+        pack_nft_storage,
         await provider.getSigner()
-      ) as unknown as packNFT;
+      ) as unknown as packNFTStorage;
 
       // Call the claimSoulboundPack function
-      const balance = await packNFT.getUserTokenBalance();
+      const balance = await packNFTStorage.getUserTokenBalance();
       console.log('Account balance fetched successfully');
 
       return balance;
@@ -248,14 +258,14 @@ export async function fetchRegularPackPrice() {
 
       await window.ethereum.request({ method: 'eth_requestAccounts' });
 
-      const packNFT = new ethers.Contract(
-        regularPackContractAddress,
-        pack_nft,
+      const packNFTStorage = new ethers.Contract(
+        regularPackStorageContractAddress,
+        pack_nft_storage,
         await provider.getSigner()
-      ) as unknown as packNFT;
+      ) as unknown as packNFTStorage;
 
       // Call the claimSoulboundPack function
-      const price = await packNFT.getPackPrice();
+      const price = await packNFTStorage.getPackPrice();
       console.log('Pack price fetched successfully');
 
       return price;
