@@ -26,7 +26,7 @@ export default function PackDetails(props) {
   const tokenId = 200001;
   const [packDetails, setPackDetails] = useState([]);
   const [hasFetchedData, setHasFetchedData] = useState(false);
-  const openPackContractAddress = '0x797de2d10Ee96a91495F6B8CC8eD575a79957b08';
+  const openPackContractAddress = '0x5C8e832Db762032823b61e1A3d9af0FD4229aCac';
 
   async function requestAndMint() {
     try {
@@ -64,7 +64,7 @@ export default function PackDetails(props) {
             console.log('Batch minted successfully');
             console.log(mintTransaction.hash, 'mint transaction hash');
             // Use client-side routing to navigate to TokenDrawPage
-            router.push(`/TokenDrawPage/${mintTransaction.hash}`);
+            // router.push(`/TokenDrawPage/${mintTransaction.hash}`);
           }
         }, 5000); // Check every 5 seconds
       }
