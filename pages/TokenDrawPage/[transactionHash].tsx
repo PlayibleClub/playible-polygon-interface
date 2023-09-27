@@ -9,7 +9,7 @@ import TokenComponent from '../../components/TokenComponent';
 import Main from '../../components/Main';
 import { ethers } from 'ethers';
 import openPack from 'utils/polygonContracts/contractABI/openpack.json';
-
+import { useRouter } from 'next/router';
 import 'regenerator-runtime/runtime';
 import { BrowserView, MobileView, isBrowser, isMobile } from 'react-device-detect';
 import { transactions, utils, WalletConnection, providers } from 'near-api-js';
@@ -23,6 +23,7 @@ import {
   convertNftToAthlete,
   getCricketAthleteInfoById,
 } from 'utils/athlete/helper';
+import { GET_ATHLETE_BY_ID } from 'utils/queries';
 import {
   SPORT_NAME_LOOKUP,
   SPORT_CONTRACT_LOOKUP,
@@ -48,9 +49,9 @@ interface receipt {
 
 const TokenDrawPage = (props) => {
   const { query, result } = props;
-
+  const [tokenId, setTokenId] = useState(0);
   const dispatch = useDispatch();
-
+  const [getAthleteById] = useLazyQuery(GET_ATHLETE_BY_ID);
   const [videoPlaying, setVideoPlaying] = useState(true);
   const [sport, setSport] = useState('');
   const [loading, setLoading] = useState(true);
@@ -101,19 +102,24 @@ const TokenDrawPage = (props) => {
 
   // getReceipt();
 
-  // Assume you have a transaction hash
-  const transactionHash = '0xf72a3fe23b81c106c2027df7b7b81908f4dd4b65f1c1065916d75dd16faddaf8';
+  const router = useRouter();
+  const { transactionHash } = router.query;
+  const transactionHashAsString = Array.isArray(transactionHash)
+    ? transactionHash[0]
+    : (transactionHash as string);
 
   async function getReceipt() {
     const provider = new ethers.BrowserProvider(window.ethereum, 'any');
-
-    const receipt = await provider.waitForTransaction(transactionHash);
+    const receipt = await provider.waitForTransaction(transactionHashAsString);
+    const success = receipt.status;
+    console.log(success);
     const logData = receipt.logs.map((log) => log.data);
 
-    // Exclude the last 2 elements of logData
-    const logDataWithoutLastTwo = logData.slice(0, -2);
+    const logDataSlice = logData.slice(0, 8);
 
-    logDataWithoutLastTwo.forEach((data) => {
+    const athletesData = [];
+
+    logDataSlice.forEach((data) => {
       // Remove the '0x' prefix
       const hexData = data.slice(2);
       // Convert the hexadecimal data to a Buffer
@@ -122,17 +128,23 @@ const TokenDrawPage = (props) => {
       let str = buffer.toString('utf8');
       // Remove non-printable ASCII characters
       str = str.replace(/[^\x20-\x7E]/g, '');
-      // Parse the string as JSON
+
       const json = JSON.parse(str);
-      // Fetch the 'name' and 'image' properties
       const name = json.name;
       const image = json.image;
-      console.log(`Name: ${name}, Image: ${image}`);
+      const symbol = json.properties.symbol;
+      const position = json.properties.position;
+      const tokenId = json.properties.athleteId;
+      // setToken(tokenId);
+      athletesData.push({ name, image, symbol, position, isOpen: false, tokenId });
     });
+
+    setAthletes(athletesData);
   }
 
-  getReceipt();
-
+  useEffect(() => {
+    getReceipt();
+  }, []);
   function findContract(contract) {
     if (contract.includes(SPORT_CONTRACT_LOOKUP.football)) {
       setLength(8);
@@ -431,7 +443,6 @@ const TokenDrawPage = (props) => {
                         name={data.name}
                         isOpen={data.isOpen}
                         img={data.image}
-                        animation={data.animation}
                       />
                     </div>
                   </div>
