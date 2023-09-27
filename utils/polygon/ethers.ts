@@ -1,12 +1,17 @@
 // src/utils/ethers.js
 import { ethers } from 'ethers';
-import { packNFT, promotionalPackNFT } from 'utils/polygonContracts/polygonInterface';
+import { packNFT, promotionalPackNFT, AthleteLogic } from 'utils/polygonContracts/polygonInterface';
+import { convertPolygonNftToAthlete, getAthleteInfoByApiId } from 'utils/athlete/helper';
+
 import promotional_pack_nft from '../polygonContracts/contractABI/promotional_pack_nft.json';
 import pack_nft from '../polygonContracts/contractABI/pack_nft.json';
+import athlete_logic from '../polygonContracts/contractABI/athletelogic_abi.json';
 
 const promoPackContractAddress = '0xecdf1d718adf8930661a80b37bdbda83fdc538e3';
 const regularPackContractAddress = '0xbAfd91F2AB0d596f55DD74657381A9D9E9029777';
-
+const regularNFLAthleteStorageAddress = '0x5f577e912438A911C6205b17Abfd043AAfe2F6c3';
+//const regularNFLAthleteLogicAddress = '0x6b53db22961B40c89F82a6C47Fe8d138Efd4cdDc';
+const regularNFLAthleteLogicAddress = '0x3C8F88f0DF41585a38D62a953F0cB93904bDaAbB';
 export async function fetchPromoPackTokenMetadata(tokenId) {
   try {
     if (window.ethereum) {
@@ -231,10 +236,10 @@ export async function fetchAccountBalance() {
       ) as unknown as packNFT;
 
       // Call the claimSoulboundPack function
-      const balance = await packNFT.getUserTokenBalance();
-      console.log('Account balance fetched successfully');
+      const transaction = await packNFT.getUserTokenBalance();
+      console.log('User account balance fetched successfully');
 
-      return balance;
+      return transaction;
     }
   } catch (error) {
     console.error('Error fetching account balance:', error);
@@ -255,12 +260,119 @@ export async function fetchRegularPackPrice() {
       ) as unknown as packNFT;
 
       // Call the claimSoulboundPack function
-      const price = await packNFT.getPackPrice();
+      const transaction = await packNFT.getPackPrice();
       console.log('Pack price fetched successfully');
 
-      return price;
+      return transaction;
     }
   } catch (error) {
     console.error('Error fetching pack price:', error);
+  }
+}
+
+export async function fetchFilteredAthleteTokensForOwner(
+  athleteOffset,
+  athleteLimit,
+  position,
+  team,
+  name
+) {
+  try {
+    if (window.ethereum) {
+      const provider = new ethers.BrowserProvider(window.ethereum);
+
+      await window.ethereum.request({ method: 'eth_requestAccounts' });
+
+      const athleteLogic = new ethers.Contract(
+        regularNFLAthleteLogicAddress,
+        athlete_logic,
+        await provider.getSigner()
+      ) as unknown as AthleteLogic;
+
+      if (!/\S/.test(name)) {
+        name = 'allNames';
+      }
+      console.log(`Offset: ${athleteOffset}`);
+      console.log(`Limit: ${athleteLimit}`);
+      console.log(`Position: ${position}`);
+      console.log(`Team: ${team}`);
+      console.log(`Name: ${name}`);
+      const test = await athleteLogic.getFilteredTokensForOwnerPagination(
+        '0x0a33941cDf52D5fFe93F17E6433673636A6C104c',
+        position,
+        team,
+        name,
+        [athleteOffset, athleteLimit]
+      );
+      console.log(test);
+      const mapTest = Promise.all(
+        test
+          .filter((item) => Number(item[0]) !== 0 && item[2].length > 0)
+          .map(convertPolygonNftToAthlete)
+          .map((item) => getAthleteInfoByApiId(item, undefined, undefined))
+      );
+
+      //console.log(test[0][0]);
+      return mapTest;
+    }
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+export async function fetchFilteredAthleteTokenSupplyForOwner(position, team, name) {
+  try {
+    if (window.ethereum) {
+      const provider = new ethers.BrowserProvider(window.ethereum);
+
+      await window.ethereum.request({ method: 'eth_requestAccounts' });
+
+      console.log(`Position: ${position}`);
+      console.log(`Team: ${team}`);
+      console.log(`Name: ${name}`);
+      const athleteLogic = new ethers.Contract(
+        regularNFLAthleteLogicAddress,
+        athlete_logic,
+        await provider.getSigner()
+      ) as unknown as AthleteLogic;
+
+      const supply = await athleteLogic.getFilteredTokenSupplyForOwner(
+        '0x0a33941cDf52D5fFe93F17E6433673636A6C104c',
+        position,
+        team,
+        name
+      );
+      console.log(`Supply: ${supply}`);
+      return Number(supply);
+    }
+  } catch (error) {
+    console.log(error);
+  }
+}
+export async function fetchAthleteTokenMetadataAndURIById(tokenId: number, startTime, endTime) {
+  try {
+    if (window.ethereum) {
+      const provider = new ethers.BrowserProvider(window.ethereum);
+
+      await window.ethereum.request({ method: 'eth_requestAccounts' });
+
+      const athleteLogic = new ethers.Contract(
+        regularNFLAthleteLogicAddress,
+        athlete_logic,
+        await provider.getSigner()
+      ) as unknown as AthleteLogic;
+
+      const test = await athleteLogic.getExtraMetadataAndUri(tokenId);
+
+      const token = await getAthleteInfoByApiId(
+        await convertPolygonNftToAthlete(test),
+        startTime,
+        endTime
+      );
+
+      return token;
+    }
+  } catch (error) {
+    console.log(error);
   }
 }
