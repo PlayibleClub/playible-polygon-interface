@@ -12,7 +12,13 @@ interface promotionalPackNFT {
   // Add any other functions or properties here as needed
 }
 
-interface packNFT {
+interface packNFTStorage {
+  getUserTokenBalance(): Promise<number>;
+  getPackPrice(): Promise<number>;
+  mintPacks(amount: number): Promise<void>;
+}
+
+interface packNFTLogic {
   getTokenMetadataById(tokenId: number): Promise<string>;
   getTokensByOwner(
     account: string,
@@ -20,9 +26,6 @@ interface packNFT {
     limit: number
   ): Promise<[number, number[], string[]]>;
   getTokenSupplyByOwner(account: string): Promise<number>;
-  getUserTokenBalance(): Promise<number>;
-  getPackPrice(): Promise<number>;
-  mintPacks(amount: number): Promise<void>;
 }
 
-export type { promotionalPackNFT, packNFT };
+export type { promotionalPackNFT, packNFTStorage, packNFTLogic };

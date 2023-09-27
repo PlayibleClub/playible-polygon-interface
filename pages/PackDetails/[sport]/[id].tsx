@@ -39,7 +39,7 @@ export default function PackDetails(props) {
           ...prevPackDetails,
           {
             description: metadata.description || '',
-            extra: metadata.extra || { attributes: [] },
+            properties: metadata.properties || { properties: [] },
             image: metadata.image || '',
             name: metadata.name || '',
           },

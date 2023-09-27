@@ -269,26 +269,26 @@ export default function Home(props) {
     }
   }
 
-  async function fetchClaimStatus(accountId) {
-    const isClaimed = await fetchClaimSoulboundStatus(accountId);
-    setIsClaimedFootball(isClaimed);
-  }
+  // async function fetchClaimStatus(accountId) {
+  //   const isClaimed = await fetchClaimSoulboundStatus(accountId);
+  //   setIsClaimedFootball(isClaimed);
+  // }
 
-  const handleClaimButton = async () => {
-    try {
-      await claimSoulboundPack()
-        .then((txHash) => {
-          console.log('Transaction Hash:', txHash);
-          // Handle the transaction hash as needed (e.g., display it on the UI)
-        })
-        .catch((error) => {
-          console.error('Error:', error);
-          // Handle the error (e.g., display an error message on the UI)
-        });
-    } catch (error) {
-      console.error('Error claiming Soulbound Pack:', error);
-    }
-  };
+  // const handleClaimButton = async () => {
+  //   try {
+  //     await claimSoulboundPack()
+  //       .then((txHash) => {
+  //         console.log('Transaction Hash:', txHash);
+  //         // Handle the transaction hash as needed (e.g., display it on the UI)
+  //       })
+  //       .catch((error) => {
+  //         console.error('Error:', error);
+  //         // Handle the error (e.g., display an error message on the UI)
+  //       });
+  //   } catch (error) {
+  //     console.error('Error claiming Soulbound Pack:', error);
+  //   }
+  // };
 
   async function fetchPackPrice() {
     try {
@@ -334,7 +334,7 @@ export default function Home(props) {
   }, [intervalSale]);
 
   useEffect(() => {
-    fetchClaimStatus(accountId);
+    // fetchClaimStatus(accountId);
     fetchUserAccountBalance();
   }, [currentSport, accountBalance, minterConfig]);
 
