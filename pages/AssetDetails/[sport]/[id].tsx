@@ -9,6 +9,7 @@ import BackFunction from 'components/buttons/BackFunction';
 import StatsComponent from '../components/StatsComponent';
 import Link from 'next/link';
 import { query_nft_tokens_by_id } from 'utils/near/helper';
+import { fetchAthleteTokenMetadataAndURIById } from 'utils/polygon/ethers';
 import { getSportType } from 'data/constants/sportConstants';
 import { checkInjury } from 'utils/athlete/helper';
 import { GET_SPORT_CURRENT_SEASON } from 'utils/queries';
@@ -50,49 +51,66 @@ const AssetDetails = (props) => {
     return months[date.getMonth()] + '. ' + date.getDate();
   }
 
-  function get_nft_tokens_by_id(athleteIndex, contract) {
-    query_nft_tokens_by_id(athleteIndex, contract).then(async (data) => {
-      // @ts-ignore:next-line
-      const result = JSON.parse(Buffer.from(data.result).toString());
-      let result_two;
-      if (currentSport !== 'CRICKET') {
-        result_two = await getPortfolioAssetDetailsById(
-          await convertNftToAthlete(result),
-          null,
-          null
-        );
-        let games = result_two.stats_breakdown.slice();
-        console.log(result_two);
-        setAthlete(result_two);
-        setSortedGames(
-          games
-            .filter((x) => x.type === 'weekly' || x.type === 'daily')
-            .sort((a, b) => {
-              return moment.utc(a.gameDate).unix() - moment.utc(b.gameDate).unix();
-            })
-        );
-      } else {
-        result_two = await getCricketAthleteInfoById(await convertNftToAthlete(result), null, null);
-        let games = result_two.stats_breakdown.slice();
-        console.log(result_two);
-        setAthlete(result_two);
-        setSortedGames(
-          games
-            .filter((x) => x.type === 'daily')
-            .sort((a, b) => {
-              return moment.utc(a.match.starts_at).unix() - moment.utc(b.match.starts_at).unix();
-            })
-        );
-      }
-    });
-  }
-  useEffect(() => {
-    get_nft_tokens_by_id(
-      athleteIndex,
-      isSoulbound
-        ? getSportType(currentSport).promoContract
-        : getSportType(currentSport).regContract
+  async function getAthleteTokenById(athleteId) {
+    let result = await fetchAthleteTokenMetadataAndURIById(athleteId, null, null);
+    let games = result.stats_breakdown.slice();
+    console.log(result);
+    setAthlete(result);
+    setSortedGames(
+      games
+        .filter((x) => x.type === 'weekly' || x.type === 'daily')
+        .sort((a, b) => {
+          return moment.utc(a.gameDate).unix() - moment.utc(b.gameDate).unix();
+        })
     );
+  }
+  // function get_nft_tokens_by_id(athleteIndex, contract) {
+  //   query_nft_tokens_by_id(athleteIndex, contract).then(async (data) => {
+  //     // @ts-ignore:next-line
+  //     const result = JSON.parse(Buffer.from(data.result).toString());
+  //     let result_two;
+  //     if (currentSport !== 'CRICKET') {
+  //       result_two = await getPortfolioAssetDetailsById(
+  //         await convertNftToAthlete(result),
+  //         null,
+  //         null
+  //       );
+  //       let games = result_two.stats_breakdown.slice();
+  //       console.log(result_two);
+  //       setAthlete(result_two);
+  //       setSortedGames(
+  //         games
+  //           .filter((x) => x.type === 'weekly' || x.type === 'daily')
+  //           .sort((a, b) => {
+  //             return moment.utc(a.gameDate).unix() - moment.utc(b.gameDate).unix();
+  //           })
+  //       );
+  //     } else {
+  //       result_two = await getCricketAthleteInfoById(await convertNftToAthlete(result), null, null);
+  //       let games = result_two.stats_breakdown.slice();
+  //       console.log(result_two);
+  //       setAthlete(result_two);
+  //       setSortedGames(
+  //         games
+  //           .filter((x) => x.type === 'daily')
+  //           .sort((a, b) => {
+  //             return moment.utc(a.match.starts_at).unix() - moment.utc(b.match.starts_at).unix();
+  //           })
+  //       );
+  //     }
+  //   });
+  // }
+  // useEffect(() => {
+  //   get_nft_tokens_by_id(
+  //     athleteIndex,
+  //     isSoulbound
+  //       ? getSportType(currentSport).promoContract
+  //       : getSportType(currentSport).regContract
+  //   );
+  // }, []);
+
+  useEffect(() => {
+    getAthleteTokenById(athleteIndex);
   }, []);
 
   function getGamesPlayed() {
