@@ -41,7 +41,7 @@ import {
   fetchRegularPackPrice,
   fetchAccountBalance,
   mintRegularPacks,
-} from 'utils/polygon/ethers';
+} from 'public/polygon/ethers';
 import { formatUnits, FixedFormat, ethers } from 'ethers';
 import { current } from '@reduxjs/toolkit';
 const NANO_TO_SECONDS_DENOMINATOR = 1000000;
@@ -336,7 +336,7 @@ export default function Home(props) {
   useEffect(() => {
     // fetchClaimStatus(accountId);
     fetchUserAccountBalance();
-  }, [currentSport, accountBalance, minterConfig]);
+  }, [currentSport, minterConfig, accountId]);
 
   useEffect(() => {
     if (router.asPath.indexOf('transactionHashes') > -1 && isPromoFromRedux === false) {

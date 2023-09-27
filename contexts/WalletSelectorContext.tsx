@@ -20,7 +20,6 @@ export const WalletSelectorContextProvider: React.FC<{ children: React.ReactNode
   children,
 }) => {
   const [accountId, setAccountId] = useState<string | null>(null);
-
   // Connect wallet function
   const connectWallet = useCallback(async () => {
     try {
@@ -28,6 +27,7 @@ export const WalletSelectorContextProvider: React.FC<{ children: React.ReactNode
       await window.ethereum.request({ method: 'eth_requestAccounts' });
       const accounts = await window.ethereum.request({ method: 'eth_accounts' });
       setAccountId(accounts[0] || null);
+      console.log('Connected Successfully:', accountId);
     } catch (error) {
       console.error('Error connecting to MetaMask:', error);
     }
@@ -36,6 +36,7 @@ export const WalletSelectorContextProvider: React.FC<{ children: React.ReactNode
   // Disconnect wallet function
   const disconnectWallet = useCallback(() => {
     setAccountId(null);
+    console.log('Logged out Successfully:', accountId);
   }, []);
 
   // Render children with context value

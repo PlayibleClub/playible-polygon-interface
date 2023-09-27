@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
-import { fetchPromoPackTokenMetadata, fetchRegularPackTokenMetadata } from 'utils/polygon/ethers';
+import { fetchPromoPackTokenMetadata, fetchRegularPackTokenMetadata } from 'public/polygon/ethers';
 import Container from 'components/containers/Container';
 import 'regenerator-runtime/runtime';
 import BackFunction from 'components/buttons/BackFunction';
