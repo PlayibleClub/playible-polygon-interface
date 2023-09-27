@@ -13,8 +13,8 @@ interface promotionalPackNFT {
 }
 
 interface packNFTStorage {
-  getUserTokenBalance(): Promise<number>;
-  getPackPrice(): Promise<number>;
+  getUserTokenBalance(): Promise<any>;
+  getPackPrice(): Promise<any>;
   mintPacks(amount: number): Promise<void>;
 }
 

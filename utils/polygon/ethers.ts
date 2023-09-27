@@ -1,18 +1,13 @@
 // src/utils/ethers.js
 import { ethers } from 'ethers';
-import {
-  packNFTStorage,
-  promotionalPackNFT,
-  packNFTLogic,
-} from 'public/polygonContracts/polygonInterface';
-import promotional_pack_nft from '../polygonContracts/contractABI/promotional_pack_nft.json';
-import pack_nft_storage from '../polygonContracts/contractABI/pack_nft.json';
-import pack_nft_logic from '../polygonContracts/contractABI/pack_nft_logic.json';
+import { packNFTStorage, promotionalPackNFT, packNFTLogic } from 'utils/polygon/polygonInterface';
+import promotional_pack_nft from 'public/polygonContracts/contractABI/promotional_pack_nft.json';
+import pack_nft_storage from 'public/polygonContracts/contractABI/pack_nft.json';
+import pack_nft_logic from 'public/polygonContracts/contractABI/pack_nft_logic.json';
 
 const promoPackContractAddress = '0xecdf1d718adf8930661a80b37bdbda83fdc538e3';
-
-const regularPackStorageContractAddress = '0x4E2A0c5fd245F33784F3d642DD881Cb3BCA5a8E4';
-const regularPackLogicContractAddress = '0x3C581DCBB567cFE86395820bA0a37715C1195dEC';
+const regularPackStorageContractAddress = '0xe0673b65bF162E4DE8F697BB20b7BE134517b643';
+const regularPackLogicContractAddress = '0x132BCCac499A22ebfc3F85fa35517eC3b4ac6CEB';
 
 export async function fetchPromoPackTokenMetadata(tokenId) {
   try {
@@ -229,20 +224,23 @@ export async function mintRegularPacks(amount) {
 }
 
 export async function fetchAccountBalance() {
+  const abi = ['function getUserTokenBalance() view returns (uint256)'];
   try {
     if (window.ethereum) {
       const provider = new ethers.BrowserProvider(window.ethereum);
 
-      await window.ethereum.request({ method: 'eth_requestAccounts' });
+      window.ethereum.request({ method: 'eth_requestAccounts' });
 
       const packNFTStorage = new ethers.Contract(
         regularPackStorageContractAddress,
-        pack_nft_storage,
+        abi,
         await provider.getSigner()
       ) as unknown as packNFTStorage;
 
+      console.log(packNFTStorage);
+
       // Call the claimSoulboundPack function
-      const balance = await packNFTStorage.getUserTokenBalance();
+      const balance = packNFTStorage.getUserTokenBalance();
       console.log('Account balance fetched successfully');
 
       return balance;
@@ -251,7 +249,6 @@ export async function fetchAccountBalance() {
     console.error('Error fetching account balance:', error);
   }
 }
-
 export async function fetchRegularPackPrice() {
   try {
     if (window.ethereum) {
@@ -267,6 +264,7 @@ export async function fetchRegularPackPrice() {
 
       // Call the claimSoulboundPack function
       const price = await packNFTStorage.getPackPrice();
+      console.log('Price:', price);
       console.log('Pack price fetched successfully');
 
       return price;

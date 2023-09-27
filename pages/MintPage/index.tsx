@@ -41,14 +41,18 @@ import {
   fetchRegularPackPrice,
   fetchAccountBalance,
   mintRegularPacks,
-} from 'public/polygon/ethers';
-import { formatUnits, FixedFormat, ethers } from 'ethers';
+} from 'utils/polygon/ethers';
+import { formatUnits, FixedFormat } from 'ethers';
 import { current } from '@reduxjs/toolkit';
 const NANO_TO_SECONDS_DENOMINATOR = 1000000;
 const DECIMALS_USDC = 1000000000000000000;
 export default function Home(props) {
   const { accountId } = useWalletSelector();
+  const [isClient, setIsClient] = useState(false);
 
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
   // const { contract } = selector.store.getState();
   const dispatch = useDispatch();
   const [positionList, setPositionList] = useState(SPORT_TYPES[0].positionList);
@@ -311,7 +315,7 @@ export default function Home(props) {
       const accountBalance = await fetchAccountBalance();
 
       setAccountBalance(Number(accountBalance));
-      console.log('accountBalance', accountBalance);
+      console.log(accountBalance);
     } catch (error) {
       console.error('Error fetching account balance:', error);
     }
@@ -334,8 +338,9 @@ export default function Home(props) {
   }, [intervalSale]);
 
   useEffect(() => {
-    // fetchClaimStatus(accountId);
-    fetchUserAccountBalance();
+    {
+      isClient ? fetchUserAccountBalance() : console.log('Server Side');
+    }
   }, [currentSport, minterConfig, accountId]);
 
   useEffect(() => {
@@ -568,27 +573,6 @@ export default function Home(props) {
                       </div>
                     </div>
 
-                    {(counter().days > 0 ||
-                      counter().hours > 0 ||
-                      counter().minute > 0 ||
-                      counter().seconds > 0) && (
-                      <>
-                        <div className="text-xs mt-8">MINT STARTS IN</div>
-                        <div className="flex mt-3">
-                          <div className="p-3 rounded-lg bg-indigo-black text-indigo-white">
-                            {counter().hours}
-                          </div>
-                          <div className="p-3 ">:</div>
-                          <div className="p-3 rounded-lg  bg-indigo-black text-indigo-white">
-                            {counter().minute}
-                          </div>
-                          <div className="p-3 ">:</div>
-                          <div className="p-3  rounded-lg bg-indigo-black text-indigo-white">
-                            {counter().seconds}
-                          </div>
-                        </div>
-                      </>
-                    )}
                     <div className="flex gap-16">
                       <div className="border border-indigo-lightgray rounded-2xl text-center p-4 w-40 flex flex-col justify-center  mt-8">
                         <div className="text-2xl font-black font-monument ">
