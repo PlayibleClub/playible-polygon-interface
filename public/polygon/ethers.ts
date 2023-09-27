@@ -4,12 +4,13 @@ import {
   packNFTStorage,
   promotionalPackNFT,
   packNFTLogic,
-} from 'utils/polygonContracts/polygonInterface';
+} from 'public/polygonContracts/polygonInterface';
 import promotional_pack_nft from '../polygonContracts/contractABI/promotional_pack_nft.json';
 import pack_nft_storage from '../polygonContracts/contractABI/pack_nft.json';
 import pack_nft_logic from '../polygonContracts/contractABI/pack_nft_logic.json';
 
 const promoPackContractAddress = '0xecdf1d718adf8930661a80b37bdbda83fdc538e3';
+
 const regularPackStorageContractAddress = '0x4E2A0c5fd245F33784F3d642DD881Cb3BCA5a8E4';
 const regularPackLogicContractAddress = '0x3C581DCBB567cFE86395820bA0a37715C1195dEC';
 
@@ -261,7 +262,7 @@ export async function fetchRegularPackPrice() {
       const packNFTStorage = new ethers.Contract(
         regularPackStorageContractAddress,
         pack_nft_storage,
-        await provider.getSigner()
+        await provider
       ) as unknown as packNFTStorage;
 
       // Call the claimSoulboundPack function
@@ -271,6 +272,6 @@ export async function fetchRegularPackPrice() {
       return price;
     }
   } catch (error) {
-    console.error('Error fetching pack price:', error);
+    console.error('Error fetching regular pack price:', error);
   }
 }
