@@ -307,6 +307,7 @@ export async function fetchFilteredAthleteTokensForOwner(
       console.log(test);
       const mapTest = Promise.all(
         test
+          .filter((item) => Number(item[0]) !== 0 && item[2].length > 0)
           .map(convertPolygonNftToAthlete)
           .map((item) => getAthleteInfoByApiId(item, undefined, undefined))
       );
