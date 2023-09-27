@@ -26,12 +26,27 @@ interface packNFT {
 }
 
 interface AthleteLogic {
+  getFilteredTokenSupplyForOwner(
+    address: string,
+    name: string,
+    team: string,
+    position: string
+  ): Promise<number>;
   getFilteredTokensForOwner(
     address: string,
     name: string,
     team: string,
     position: string
-  ): Promise<string[]>; //might change if flat array is hard
+  ): Promise<any[]>; //might change if flat array is hard
+
+  getFilteredTokensForOwnerPagination(
+    address: string,
+    name: string,
+    team: string,
+    position: string,
+    indexAndLimit: number[]
+  );
+  getExtraMetadataAndUri(tokenId: number): Promise<any[]>;
 }
 
 export type { promotionalPackNFT, packNFT, AthleteLogic };
