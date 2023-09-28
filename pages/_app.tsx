@@ -19,7 +19,7 @@ function MyApp({ Component, pageProps }) {
     <ApolloProvider client={client}>
       {/* @ts-ignore:next-line*/}
       <WalletSelectorContextProvider>
-        <Provider store={store}>{isClient ? <Component {...pageProps} /> : 'Prerendered'}</Provider>
+        <Provider store={store}>{isClient ? <Component {...pageProps} /> : ''}</Provider>
       </WalletSelectorContextProvider>
     </ApolloProvider>
   );
