@@ -273,3 +273,28 @@ export async function fetchRegularPackPrice() {
     console.error('Error fetching regular pack price:', error);
   }
 }
+
+export async function checkTokenOwner(account, id) {
+  try {
+    if (window.ethereum) {
+      const provider = new ethers.BrowserProvider(window.ethereum);
+
+      await window.ethereum.request({ method: 'eth_requestAccounts' });
+
+      const packNFTLogic = new ethers.Contract(
+        regularPackLogicContractAddress,
+        pack_nft_logic,
+        await provider
+      ) as unknown as packNFTLogic;
+
+      // Call the claimSoulboundPack function
+      const isToken = await packNFTLogic.getTokenOwner(account, id);
+      console.log('Token:', isToken);
+      console.log('Token owner fetched successfully');
+
+      return isToken;
+    }
+  } catch (error) {
+    console.error('Error fetching regular pack price:', error);
+  }
+}
