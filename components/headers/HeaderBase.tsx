@@ -13,11 +13,42 @@ import useViewport from 'utils/address/helper';
 
 const HeaderBase = () => {
   const { entryCut } = useViewport();
-  const { accountId, connectWallet, disconnectWallet } = useWalletSelector();
+  const {
+    dispatch,
+    state: { status, isMetamaskInstalled, isSignedIn, wallet },
+  } = useWalletSelector();
+
+  const [loading, setLoading] = useState(false);
+
+  const showInstallMetamask = status !== 'pageNotLoaded' && !isMetamaskInstalled;
+  const showConnectButton = status !== 'pageNotLoaded' && isMetamaskInstalled;
+
+  const connectWallet = async () => {
+    if (!wallet) {
+      setLoading(true);
+      const accounts = await window.ethereum.request({
+        method: 'eth_requestAccounts',
+      });
+
+      setLoading(false);
+      dispatch({ type: 'connect', wallet: accounts[0] });
+      // @ts-ignore
+      window.ethereum.on('accountsChanged', function (accounts) {
+        // Time to reload your interface with accounts[0]!
+        dispatch({ type: 'connect', wallet: accounts[0] });
+      });
+    }
+  };
+
+  const disconnectWallet = async () => {
+    if (wallet) {
+      dispatch({ type: 'disconnect' });
+    }
+  };
 
   const renderWallet = () => {
     {
-      if (accountId) {
+      if (wallet) {
         return (
           <Button
             textColor="white-light font-bold"
@@ -26,7 +57,7 @@ const HeaderBase = () => {
             size="h-full py-1 px-1"
             onClick={disconnectWallet}
           >
-            {entryCut(accountId)}
+            {entryCut(wallet)}
           </Button>
         );
       } else {

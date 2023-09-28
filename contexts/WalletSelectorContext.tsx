@@ -1,65 +1,104 @@
-import React, { createContext, useContext, useState, useCallback } from 'react';
-import { ethers } from 'ethers';
+import { Wallet } from 'ethers';
+import React, { useEffect, type PropsWithChildren } from 'react';
 
 declare global {
   interface Window {
-    ethereum: any;
+    ethereum: InjectedProviders & {
+      on: (...args: any[]) => void;
+      removeListener?: (...args: any[]) => void;
+      request<T = any>(args: any): Promise<T>;
+    };
   }
 }
-// Define the context
-interface WalletSelectorContextValue {
-  accountId: string | null;
-  connectWallet: () => void;
-  disconnectWallet: () => void;
+type ConnectAction = { type: 'connect'; wallet: string };
+type DisconnectAction = { type: 'disconnect' };
+type PageLoadedAction = { type: 'pageLoaded'; isMetamaskInstalled: boolean };
+type LoadingAction = { type: 'loading' };
+type InjectedProviders = {
+  isMetaMask?: true;
+};
+
+type Action = ConnectAction | DisconnectAction | PageLoadedAction | LoadingAction;
+
+type Dispatch = (action: Action) => void;
+
+type Status = 'loading' | 'idle' | 'pageNotLoaded';
+
+type State = {
+  wallet: string | null;
+  isMetamaskInstalled: boolean;
+  isSignedIn: boolean;
+  status: Status;
+};
+
+const WalletSelectorContext = React.createContext<{ state: State; dispatch: Dispatch } | undefined>(
+  undefined
+);
+
+const initialState: State = {
+  wallet: null,
+  isMetamaskInstalled: false,
+  status: 'loading',
+  isSignedIn: false,
+} as const;
+
+const localStorageKey = 'metamaskState';
+function metamaskReducer(state: State, action: Action): State {
+  switch (action.type) {
+    case 'connect': {
+      const { wallet } = action;
+      const newState = { ...state, wallet, status: 'idle' as Status, isSignedIn: true };
+      localStorage.setItem(localStorageKey, JSON.stringify(newState)); // Save state to local storage
+      return newState;
+    }
+    case 'disconnect': {
+      const newState = { ...state, wallet: null, isSignedIn: false };
+      localStorage.setItem(localStorageKey, JSON.stringify(newState)); // Save state to local storage
+      return newState;
+    }
+    case 'pageLoaded': {
+      const { isMetamaskInstalled } = action;
+      const storedState = localStorage.getItem(localStorageKey);
+      if (storedState) {
+        const parsedState = JSON.parse(storedState);
+        return { ...parsedState, isMetamaskInstalled }; // Load state from local storage
+      }
+      return { ...state, isMetamaskInstalled };
+    }
+    case 'loading': {
+      return { ...state, status: 'loading' };
+    }
+    default: {
+      throw new Error('Unhandled action type');
+    }
+  }
 }
 
-const WalletSelectorContext = React.createContext<WalletSelectorContextValue | null>(null);
+function WalletSelectorContextProvider({ children }: PropsWithChildren) {
+  const [state, dispatch] = React.useReducer(metamaskReducer, initialState);
+  const value = { state, dispatch };
 
-// Context Provider component
-export const WalletSelectorContextProvider: React.FC<{ children: React.ReactNode }> = ({
-  children,
-}) => {
-  const [accountId, setAccountId] = useState<string | null>(null);
-  // Connect wallet function
-  const connectWallet = useCallback(async () => {
-    try {
-      // Request access to user's MetaMask accounts
-      await window.ethereum.request({ method: 'eth_requestAccounts' });
-      const accounts = await window.ethereum.request({ method: 'eth_accounts' });
-      setAccountId(accounts[0] || null);
-      console.log('Connected Successfully:', accountId);
-    } catch (error) {
-      console.error('Error connecting to MetaMask:', error);
+  useEffect(() => {
+    if (typeof window !== undefined) {
+      // start by checking if window.ethereum is present, indicating a wallet extension
+      const ethereumProviderInjected = typeof window.ethereum !== 'undefined';
+      // this could be other wallets so we can verify if we are dealing with metamask
+      // using the boolean constructor to be explicit and not let this be used as a falsy value (optional)
+      const isMetamaskInstalled = ethereumProviderInjected && Boolean(window.ethereum.isMetaMask);
+
+      dispatch({ type: 'pageLoaded', isMetamaskInstalled });
     }
   }, []);
 
-  // Disconnect wallet function
-  const disconnectWallet = useCallback(() => {
-    setAccountId(null);
-    console.log('Logged out Successfully:', accountId);
-  }, []);
+  return <WalletSelectorContext.Provider value={value}>{children}</WalletSelectorContext.Provider>;
+}
 
-  // Render children with context value
-  return (
-    <WalletSelectorContext.Provider
-      value={{
-        accountId,
-        connectWallet,
-        disconnectWallet,
-      }}
-    >
-      {children}
-    </WalletSelectorContext.Provider>
-  );
-};
-
-// Custom hook to consume the context
-export function useWalletSelector() {
+function useWalletSelector() {
   const context = React.useContext(WalletSelectorContext);
-
-  if (!context) {
-    throw new Error('useWalletSelector must be used within a WalletSelectorContextProvider');
+  if (context === undefined) {
+    throw new Error('useMetamask must be used within a MetamaskProvider');
   }
-
   return context;
 }
+
+export { WalletSelectorContextProvider, useWalletSelector };

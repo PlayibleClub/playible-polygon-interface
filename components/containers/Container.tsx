@@ -10,10 +10,11 @@ import Head from 'next/head';
 
 const Container = (props) => {
   const { activeName, children } = props;
-  const { accountId } = useWalletSelector();
+  const {
+    state: { isSignedIn, wallet },
+  } = useWalletSelector();
 
-  const isAdmin = isAdminChecker(accountId);
-
+  const isAdmin = isAdminChecker(wallet);
   return (
     <div className="font-montserrat h-min md:h-screen relative hide-scroll bg-indigo-white flex overflow-x-hidden overflow-y-hidden">
       <Head>
@@ -52,7 +53,7 @@ const Container = (props) => {
         <div className="flex bg-indigo-white">
           <DesktopNavbar
             isAdmin={isAdmin}
-            isLoggedIn={accountId ? true : false}
+            isLoggedIn={isSignedIn}
             color="indigo-navbargrad2"
             secondcolor="indigo-navbargrad1"
             activeName={activeName}
@@ -65,7 +66,7 @@ const Container = (props) => {
       </div>
 
       <div className="visible md:invisible h-fit overflow-x-auto z-40">
-        <Navbar isAdmin={isAdmin} isLoggedIn={accountId ? true : false} />
+        <Navbar isAdmin={isAdmin} isLoggedIn={isSignedIn} />
         <HeaderBase />
 
         {children}
