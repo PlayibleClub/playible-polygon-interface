@@ -26,6 +26,7 @@ interface packNFTLogic {
     limit: number
   ): Promise<[number, number[], string[]]>;
   getTokenSupplyByOwner(account: string): Promise<number>;
+  getTokenOwner(account: string, tokenId: number): Promise<number>;
 }
 
 export type { promotionalPackNFT, packNFTStorage, packNFTLogic };
