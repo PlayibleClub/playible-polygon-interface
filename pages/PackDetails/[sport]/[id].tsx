@@ -110,12 +110,16 @@ export default function PackDetails(props) {
               #{myPack.id}
             </div>
             <div className="text-sm">RELEASE 1</div>
-            {/* <button
-              className="bg-indigo-buttonblue text-indigo-white w-5/6 md:w-80 h-10 text-center font-bold text-sm mt-4"
-              onClick={() => execute_open_pack()}
-            >
-              OPEN PACK
-            </button> */}
+            {isOwner ? (
+              <button
+                className="bg-indigo-buttonblue text-indigo-white w-5/6 md:w-80 h-10 text-center font-bold text-sm mt-4"
+                onClick={() => 'Place Execute Open Pack Function Here'}
+              >
+                OPEN PACK
+              </button>
+            ) : (
+              ' '
+            )}
 
             {/* <Link
               href={`/TransferPack/${myPack.sport.toLowerCase()}/${encodeURIComponent(id)}/`}
