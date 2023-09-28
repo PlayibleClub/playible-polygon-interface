@@ -1,13 +1,23 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
-import { fetchPromoPackTokenMetadata, fetchRegularPackTokenMetadata } from 'utils/polygon/ethers';
+import {
+  fetchPromoPackTokenMetadata,
+  fetchRegularPackTokenMetadata,
+  checkTokenOwner,
+} from 'utils/polygon/ethers';
 import Container from 'components/containers/Container';
 import 'regenerator-runtime/runtime';
 import BackFunction from 'components/buttons/BackFunction';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useWalletSelector } from 'contexts/WalletSelectorContext';
 
 export default function PackDetails(props) {
+  const {
+    state: { wallet },
+  } = useWalletSelector();
+
+  const router = useRouter();
   const { query } = props;
   const id = query.id.toString();
   const packType = id % 100000;
@@ -24,6 +34,7 @@ export default function PackDetails(props) {
 
   const [packDetails, setPackDetails] = useState([]);
   const [hasFetchedData, setHasFetchedData] = useState(false);
+  const [isOwner, setIsOwner] = useState(null);
 
   async function fetchData() {
     try {
@@ -52,12 +63,31 @@ export default function PackDetails(props) {
     }
   }
 
+  async function isTokenOwner() {
+    try {
+      const owner = await checkTokenOwner(wallet, id);
+
+      console.log(Number(owner));
+      setIsOwner(Number(owner));
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
   useEffect(() => {
+    isTokenOwner();
     if (hasFetchedData === false) {
       fetchData();
     }
     console.log(packDetails);
   }, [hasFetchedData]);
+
+  useEffect(() => {
+    if (isOwner === 0) {
+      alert("Pack doesn't exist on this account. Returning to Packs Page");
+      router.push('/Packs');
+    }
+  }, [isOwner]);
 
   return (
     <Container activeName="PACKS">
