@@ -333,6 +333,7 @@ export async function fetchFilteredAthleteSupplyForOwner(accountId, position, te
       const result = await contract.methods
         .getFilteredTokenSupplyForOwner(accountId, position, team, name)
         .call({ gas: '30000000' });
+      console.log(result);
       return Number(result);
     }
   } catch (error) {}
