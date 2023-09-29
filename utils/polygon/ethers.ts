@@ -6,7 +6,7 @@ import pack_nft_storage from 'public/polygonContracts/contractABI/pack_nft.json'
 import pack_nft_logic from 'public/polygonContracts/contractABI/pack_nft_logic.json';
 
 const promoPackContractAddress = '0xecdf1d718adf8930661a80b37bdbda83fdc538e3';
-const regularPackStorageContractAddress = '0x4C0ec9e61D55E961f2088aA0d56C6aab3435799E';
+const regularPackStorageContractAddress = '0x672DBaFAE1F18642c0Ed845ab8bD5824a6F2D502';
 const regularPackLogicContractAddress = '0xc101792c937A61b39118083d470ad3bE4c5FC6D5';
 
 export async function fetchPromoPackTokenMetadata(tokenId) {
