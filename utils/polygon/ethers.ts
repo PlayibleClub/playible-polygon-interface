@@ -341,7 +341,7 @@ export async function fetchFilteredAthleteSupplyForOwner(position, team, name) {
       contract.setProvider(window.ethereum);
       const result = await contract.methods
         .getFilteredTokenSupplyForOwner(address, position, team, name)
-        .call();
+        .call({ gas: '30000000' });
       return Number(result);
     }
   } catch (error) {}
@@ -368,7 +368,7 @@ export async function fetchFilteredAthleteTokensForOwner(
           athleteOffset,
           athleteLimit,
         ])
-        .call()
+        .call({ gas: '30000000' })
         .then((result) => {
           return Promise.all(
             result
