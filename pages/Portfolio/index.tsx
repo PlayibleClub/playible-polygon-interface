@@ -145,7 +145,8 @@ const Portfolio = () => {
     );
   }
   async function getFilteredTokenSupplyForOwner() {
-    setTotalRegularSupply(await fetchFilteredAthleteTokenSupplyForOwner(position, team, name));
+    const result = await fetchFilteredAthleteTokenSupplyForOwner(position, team, name);
+    console.log(result);
   }
   // async function get_filter_soulbound_supply_for_owner() {
   //   setTotalPromoSupply(
@@ -288,9 +289,11 @@ const Portfolio = () => {
       getFilteredTokenSupplyForOwner();
       setTotalPromoSupply(0);
     }
-    setRegPageCount(Math.ceil(totalRegularSupply / athleteLimit));
+    //console.log(totalRegularSupply);
+    //setRegPageCount(Math.ceil(totalRegularSupply / athleteLimit));
     setPageCount(Math.ceil((totalRegularSupply + totalPromoSupply) / athleteLimit));
   }, [position, team, totalRegularSupply, selectedRegular, currentSport]);
+
   // useEffect(() => {
   //   setRemountAthlete(Math.random() + 1);
   // }, [athletes]);
