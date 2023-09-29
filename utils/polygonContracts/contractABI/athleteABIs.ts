@@ -102,6 +102,75 @@ export type AthleteStorageABI = [
     anonymous: false;
     inputs: [
       {
+        indexed: false;
+        internalType: 'address';
+        name: 'from';
+        type: 'address';
+      },
+      {
+        indexed: false;
+        internalType: 'address';
+        name: 'to';
+        type: 'address';
+      },
+      {
+        indexed: false;
+        internalType: 'uint256';
+        name: 'id';
+        type: 'uint256';
+      }
+    ];
+    name: 'TokenTransfer';
+    type: 'event';
+  },
+  {
+    anonymous: false;
+    inputs: [
+      {
+        indexed: false;
+        internalType: 'address';
+        name: 'from';
+        type: 'address';
+      },
+      {
+        indexed: false;
+        internalType: 'address';
+        name: 'to';
+        type: 'address';
+      },
+      {
+        indexed: false;
+        internalType: 'uint256[]';
+        name: 'ids';
+        type: 'uint256[]';
+      }
+    ];
+    name: 'TokenTransferBatch';
+    type: 'event';
+  },
+  {
+    anonymous: false;
+    inputs: [
+      {
+        indexed: false;
+        internalType: 'address';
+        name: 'receiverAddr';
+        type: 'address';
+      },
+      {
+        indexed: false;
+        internalType: 'uint256[]';
+        name: 'tokens';
+        type: 'uint256[]';
+      }
+    ];
+    name: 'TokensMinted';
+    type: 'event';
+  },
+  {
+    anonymous: false;
+    inputs: [
+      {
         indexed: true;
         internalType: 'address';
         name: 'operator';
@@ -938,6 +1007,11 @@ export type AthleteStorageABI = [
 
 export type AthleteLogicABI = [
   {
+    inputs: [];
+    stateMutability: 'nonpayable';
+    type: 'constructor';
+  },
+  {
     anonymous: false;
     inputs: [
       {
@@ -1092,6 +1166,282 @@ export type AthleteLogicABI = [
     ];
     name: 'URI';
     type: 'event';
+  },
+  {
+    inputs: [
+      {
+        internalType: 'address';
+        name: 'account';
+        type: 'address';
+      },
+      {
+        internalType: 'uint256';
+        name: 'id';
+        type: 'uint256';
+      }
+    ];
+    name: 'balanceOf';
+    outputs: [
+      {
+        internalType: 'uint256';
+        name: '';
+        type: 'uint256';
+      }
+    ];
+    stateMutability: 'view';
+    type: 'function';
+  },
+  {
+    inputs: [
+      {
+        internalType: 'address[]';
+        name: 'accounts';
+        type: 'address[]';
+      },
+      {
+        internalType: 'uint256[]';
+        name: 'ids';
+        type: 'uint256[]';
+      }
+    ];
+    name: 'balanceOfBatch';
+    outputs: [
+      {
+        internalType: 'uint256[]';
+        name: '';
+        type: 'uint256[]';
+      }
+    ];
+    stateMutability: 'view';
+    type: 'function';
+  },
+  {
+    inputs: [
+      {
+        internalType: 'string';
+        name: 'a';
+        type: 'string';
+      },
+      {
+        internalType: 'string';
+        name: 'b';
+        type: 'string';
+      }
+    ];
+    name: 'compareStrings';
+    outputs: [
+      {
+        internalType: 'bool';
+        name: '';
+        type: 'bool';
+      }
+    ];
+    stateMutability: 'pure';
+    type: 'function';
+  },
+  {
+    inputs: [
+      {
+        internalType: 'uint256';
+        name: 'tokenId';
+        type: 'uint256';
+      }
+    ];
+    name: 'getExtraMetadataAndUri';
+    outputs: [
+      {
+        components: [
+          {
+            internalType: 'uint256';
+            name: 'tokenId';
+            type: 'uint256';
+          },
+          {
+            internalType: 'uint256';
+            name: 'restrictedUntil';
+            type: 'uint256';
+          },
+          {
+            internalType: 'string';
+            name: 'tokenURI';
+            type: 'string';
+          }
+        ];
+        internalType: 'struct AthleteLogic.TokenReturn';
+        name: '';
+        type: 'tuple';
+      }
+    ];
+    stateMutability: 'view';
+    type: 'function';
+  },
+  {
+    inputs: [
+      {
+        internalType: 'address';
+        name: 'ownerAddr';
+        type: 'address';
+      },
+      {
+        internalType: 'string[]';
+        name: 'positions';
+        type: 'string[]';
+      },
+      {
+        internalType: 'string';
+        name: 'team';
+        type: 'string';
+      },
+      {
+        internalType: 'string';
+        name: 'name';
+        type: 'string';
+      }
+    ];
+    name: 'getFilteredTokenSupplyForOwner';
+    outputs: [
+      {
+        internalType: 'uint256';
+        name: '';
+        type: 'uint256';
+      }
+    ];
+    stateMutability: 'view';
+    type: 'function';
+  },
+  {
+    inputs: [
+      {
+        internalType: 'address';
+        name: 'ownerAddr';
+        type: 'address';
+      },
+      {
+        internalType: 'string[]';
+        name: 'positions';
+        type: 'string[]';
+      },
+      {
+        internalType: 'string';
+        name: 'team';
+        type: 'string';
+      },
+      {
+        internalType: 'string';
+        name: 'name';
+        type: 'string';
+      },
+      {
+        internalType: 'uint256[]';
+        name: 'indexAndLimit';
+        type: 'uint256[]';
+      },
+      {
+        internalType: 'uint256';
+        name: 'supply';
+        type: 'uint256';
+      }
+    ];
+    name: 'getFilteredTokensForOwnerPagination';
+    outputs: [
+      {
+        components: [
+          {
+            internalType: 'uint256';
+            name: 'tokenId';
+            type: 'uint256';
+          },
+          {
+            internalType: 'uint256';
+            name: 'restrictedUntil';
+            type: 'uint256';
+          },
+          {
+            internalType: 'string';
+            name: 'tokenURI';
+            type: 'string';
+          }
+        ];
+        internalType: 'struct AthleteLogic.TokenReturn[]';
+        name: '';
+        type: 'tuple[]';
+      }
+    ];
+    stateMutability: 'view';
+    type: 'function';
+  },
+  {
+    inputs: [
+      {
+        internalType: 'uint256[]';
+        name: 'tokenIds';
+        type: 'uint256[]';
+      }
+    ];
+    name: 'getTokenDataBatch';
+    outputs: [
+      {
+        components: [
+          {
+            internalType: 'uint256';
+            name: 'tokenId';
+            type: 'uint256';
+          },
+          {
+            internalType: 'uint256';
+            name: 'restrictedUntil';
+            type: 'uint256';
+          },
+          {
+            internalType: 'string';
+            name: 'tokenURI';
+            type: 'string';
+          }
+        ];
+        internalType: 'struct AthleteLogic.TokenReturn[]';
+        name: '';
+        type: 'tuple[]';
+      }
+    ];
+    stateMutability: 'view';
+    type: 'function';
+  },
+  {
+    inputs: [
+      {
+        internalType: 'address';
+        name: 'account';
+        type: 'address';
+      },
+      {
+        internalType: 'address';
+        name: 'operator';
+        type: 'address';
+      }
+    ];
+    name: 'isApprovedForAll';
+    outputs: [
+      {
+        internalType: 'bool';
+        name: '';
+        type: 'bool';
+      }
+    ];
+    stateMutability: 'view';
+    type: 'function';
+  },
+  {
+    inputs: [];
+    name: 'owner';
+    outputs: [
+      {
+        internalType: 'address';
+        name: '';
+        type: 'address';
+      }
+    ];
+    stateMutability: 'view';
+    type: 'function';
   },
   {
     inputs: [];
@@ -1275,6 +1625,25 @@ export type AthleteLogicABI = [
   {
     inputs: [
       {
+        internalType: 'bytes4';
+        name: 'interfaceId';
+        type: 'bytes4';
+      }
+    ];
+    name: 'supportsInterface';
+    outputs: [
+      {
+        internalType: 'bool';
+        name: '';
+        type: 'bool';
+      }
+    ];
+    stateMutability: 'view';
+    type: 'function';
+  },
+  {
+    inputs: [
+      {
         internalType: 'address';
         name: 'newOwner';
         type: 'address';
@@ -1362,265 +1731,6 @@ export type AthleteLogicABI = [
     name: 'updateTokensRestriction';
     outputs: [];
     stateMutability: 'nonpayable';
-    type: 'function';
-  },
-  {
-    inputs: [];
-    stateMutability: 'nonpayable';
-    type: 'constructor';
-  },
-  {
-    inputs: [
-      {
-        internalType: 'address';
-        name: 'account';
-        type: 'address';
-      },
-      {
-        internalType: 'uint256';
-        name: 'id';
-        type: 'uint256';
-      }
-    ];
-    name: 'balanceOf';
-    outputs: [
-      {
-        internalType: 'uint256';
-        name: '';
-        type: 'uint256';
-      }
-    ];
-    stateMutability: 'view';
-    type: 'function';
-  },
-  {
-    inputs: [
-      {
-        internalType: 'address[]';
-        name: 'accounts';
-        type: 'address[]';
-      },
-      {
-        internalType: 'uint256[]';
-        name: 'ids';
-        type: 'uint256[]';
-      }
-    ];
-    name: 'balanceOfBatch';
-    outputs: [
-      {
-        internalType: 'uint256[]';
-        name: '';
-        type: 'uint256[]';
-      }
-    ];
-    stateMutability: 'view';
-    type: 'function';
-  },
-  {
-    inputs: [
-      {
-        internalType: 'string';
-        name: 'a';
-        type: 'string';
-      },
-      {
-        internalType: 'string';
-        name: 'b';
-        type: 'string';
-      }
-    ];
-    name: 'compareStrings';
-    outputs: [
-      {
-        internalType: 'bool';
-        name: '';
-        type: 'bool';
-      }
-    ];
-    stateMutability: 'pure';
-    type: 'function';
-  },
-  {
-    inputs: [
-      {
-        internalType: 'uint256';
-        name: 'tokenId';
-        type: 'uint256';
-      }
-    ];
-    name: 'getExtraMetadataAndUri';
-    outputs: [
-      {
-        components: [
-          {
-            internalType: 'uint256';
-            name: 'tokenId';
-            type: 'uint256';
-          },
-          {
-            internalType: 'uint256';
-            name: 'restrictedUntil';
-            type: 'uint256';
-          },
-          {
-            internalType: 'string';
-            name: 'tokenURI';
-            type: 'string';
-          }
-        ];
-        internalType: 'struct AthleteLogic.TokenReturn';
-        name: '';
-        type: 'tuple';
-      }
-    ];
-    stateMutability: 'view';
-    type: 'function';
-  },
-  {
-    inputs: [
-      {
-        internalType: 'address';
-        name: 'ownerAddr';
-        type: 'address';
-      },
-      {
-        internalType: 'string[]';
-        name: 'positions';
-        type: 'string[]';
-      },
-      {
-        internalType: 'string';
-        name: 'team';
-        type: 'string';
-      },
-      {
-        internalType: 'string';
-        name: 'name';
-        type: 'string';
-      },
-      {
-        internalType: 'uint256[]';
-        name: 'indexAndLimit';
-        type: 'uint256[]';
-      }
-    ];
-    name: 'getFilteredTokensForOwnerPagination';
-    outputs: [
-      {
-        components: [
-          {
-            internalType: 'uint256';
-            name: 'tokenId';
-            type: 'uint256';
-          },
-          {
-            internalType: 'uint256';
-            name: 'restrictedUntil';
-            type: 'uint256';
-          },
-          {
-            internalType: 'string';
-            name: 'tokenURI';
-            type: 'string';
-          }
-        ];
-        internalType: 'struct AthleteLogic.TokenReturn[]';
-        name: '';
-        type: 'tuple[]';
-      }
-    ];
-    stateMutability: 'view';
-    type: 'function';
-  },
-  {
-    inputs: [
-      {
-        internalType: 'address';
-        name: 'ownerAddr';
-        type: 'address';
-      },
-      {
-        internalType: 'string[]';
-        name: 'positions';
-        type: 'string[]';
-      },
-      {
-        internalType: 'string';
-        name: 'team';
-        type: 'string';
-      },
-      {
-        internalType: 'string';
-        name: 'name';
-        type: 'string';
-      }
-    ];
-    name: 'getFilteredTokenSupplyForOwner';
-    outputs: [
-      {
-        internalType: 'uint256';
-        name: '';
-        type: 'uint256';
-      }
-    ];
-    stateMutability: 'view';
-    type: 'function';
-  },
-  {
-    inputs: [
-      {
-        internalType: 'address';
-        name: 'account';
-        type: 'address';
-      },
-      {
-        internalType: 'address';
-        name: 'operator';
-        type: 'address';
-      }
-    ];
-    name: 'isApprovedForAll';
-    outputs: [
-      {
-        internalType: 'bool';
-        name: '';
-        type: 'bool';
-      }
-    ];
-    stateMutability: 'view';
-    type: 'function';
-  },
-  {
-    inputs: [];
-    name: 'owner';
-    outputs: [
-      {
-        internalType: 'address';
-        name: '';
-        type: 'address';
-      }
-    ];
-    stateMutability: 'view';
-    type: 'function';
-  },
-  {
-    inputs: [
-      {
-        internalType: 'bytes4';
-        name: 'interfaceId';
-        type: 'bytes4';
-      }
-    ];
-    name: 'supportsInterface';
-    outputs: [
-      {
-        internalType: 'bool';
-        name: '';
-        type: 'bool';
-      }
-    ];
-    stateMutability: 'view';
     type: 'function';
   },
   {
