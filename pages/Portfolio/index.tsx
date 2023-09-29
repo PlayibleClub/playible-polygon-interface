@@ -141,6 +141,7 @@ const Portfolio = () => {
     //fetchFilteredAthleteTokensForOwner();
     setAthletes(
       await fetchFilteredAthleteTokensForOwner(
+        wallet,
         athleteOffset,
         athleteLimit,
         position,
@@ -151,7 +152,7 @@ const Portfolio = () => {
     );
   }
   async function getFilteredTokenSupplyForOwner() {
-    setTotalRegularSupply(await fetchFilteredAthleteSupplyForOwner(position, team, name));
+    setTotalRegularSupply(await fetchFilteredAthleteSupplyForOwner(wallet, position, team, name));
   }
   // async function get_filter_soulbound_supply_for_owner() {
   //   setTotalPromoSupply(

@@ -16,12 +16,14 @@ import athlete_logic from '../polygon/ABI/athletelogic_abi.json';
 import athlete_storage from '../polygon/ABI/athletestorage_abi.json';
 import { AthleteStorageABI, AthleteLogicABI } from '../polygon/ABI/athleteABIs';
 import { isWindows } from 'react-device-detect';
+
 const promoPackContractAddress = '0xecdf1d718adf8930661a80b37bdbda83fdc538e3';
 const regularPackStorageContractAddress = '0x672DBaFAE1F18642c0Ed845ab8bD5824a6F2D502';
 const regularPackLogicContractAddress = '0xc101792c937A61b39118083d470ad3bE4c5FC6D5';
 const regularNFLAthleteStorageAddress = '0x32ec30629f306261a8c38658d0dc4b2e1c493585';
 //const regularNFLAthleteLogicAddress = '0x6b53db22961B40c89F82a6C47Fe8d138Efd4cdDc';
 const regularNFLAthleteLogicAddress = '0x7454F97E507fBF1F65cf145ac3922d7c0cf9eB4C ';
+
 export async function fetchPromoPackTokenMetadata(tokenId) {
   try {
     if (window.ethereum) {
@@ -312,7 +314,7 @@ export async function checkTokenOwner(account, id) {
   }
 }
 
-export async function fetchFilteredAthleteSupplyForOwner(position, team, name) {
+export async function fetchFilteredAthleteSupplyForOwner(accountId, position, team, name) {
   try {
     if (window.ethereum) {
       if (!/\S/.test(name)) {
@@ -325,17 +327,17 @@ export async function fetchFilteredAthleteSupplyForOwner(position, team, name) {
       //const provider = new Web3(window.ethereum);
       const abi = athlete_logic as unknown as AthleteLogicABI;
       await window.ethereum.request({ method: 'eth_requestAccounts' });
-      const address = '0x0a33941cDf52D5fFe93F17E6433673636A6C104c';
       const contract = new Contract(abi, regularNFLAthleteLogicAddress);
       contract.setProvider(window.ethereum);
       const result = await contract.methods
-        .getFilteredTokenSupplyForOwner(address, position, team, name)
+        .getFilteredTokenSupplyForOwner(accountId, position, team, name)
         .call({ gas: '30000000' });
       return Number(result);
     }
   } catch (error) {}
 }
 export async function fetchFilteredAthleteTokensForOwner(
+  accountId,
   athleteOffset,
   athleteLimit,
   position,
@@ -350,12 +352,11 @@ export async function fetchFilteredAthleteTokensForOwner(
       }
       const abi = athlete_logic as unknown as AthleteLogicABI;
       await window.ethereum.request({ method: 'eth_requestAccounts' });
-      const address = '0x0a33941cDf52D5fFe93F17E6433673636A6C104c';
       const contract = new Contract(abi, regularNFLAthleteLogicAddress);
       contract.setProvider(window.ethereum);
       const result = await contract.methods
         .getFilteredTokensForOwnerPagination(
-          address,
+          accountId,
           position,
           team,
           name,
