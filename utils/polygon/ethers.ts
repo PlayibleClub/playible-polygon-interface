@@ -359,6 +359,9 @@ export async function fetchFilteredAthleteTokensForOwner(
       if (!/\S/.test(name)) {
         name = 'allNames';
       }
+      if (supply < athleteLimit) {
+        athleteLimit = supply;
+      }
       const abi = athlete_logic as unknown as AthleteLogicABI;
       console.log(`Supply check: ${supply}`);
       await window.ethereum.request({ method: 'eth_requestAccounts' });
