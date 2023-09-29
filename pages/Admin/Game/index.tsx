@@ -34,7 +34,9 @@ TimeAgo.addDefaultLocale(en);
 
 export default function Index(props) {
   const [createNewGame, { data, error }] = useMutation(CREATE_GAME);
-  const { accountId } = useWalletSelector();
+  const {
+    state: { wallet },
+  } = useWalletSelector();
   const connectedWallet = {};
   const router = useRouter();
   const [loading, setLoading] = useState(false);

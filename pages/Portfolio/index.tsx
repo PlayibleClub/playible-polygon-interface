@@ -33,7 +33,6 @@ const Portfolio = () => {
   // const [packLimit, setPackLimit] = useState(10);
   // const [packOffset, setPackOffset] = useState(0);
   // const [packPageCount, setPackPageCount] = useState(0);
-  const [wallet, setWallet] = useState(null);
 
   const dispatch = useDispatch();
   const [sortedList, setSortedList] = useState([]);
@@ -73,7 +72,7 @@ const Portfolio = () => {
   const [remountComponent, setRemountComponent] = useState(0);
   const [remountDropdown, setRemountDropdown] = useState(0);
   const [remountAthlete, setRemountAthlete] = useState(0);
-  const { accountId } = useWalletSelector();
+  const { state: wallet } = useWalletSelector();
   const provider = new providers.JsonRpcProvider({
     url: getRPCProvider(),
   });
@@ -138,7 +137,7 @@ const Portfolio = () => {
   async function get_filter_soulbound_supply_for_owner() {
     setTotalPromoSupply(
       await query_filter_supply_for_owner(
-        accountId,
+        wallet,
         position,
         team,
         name,
@@ -150,7 +149,7 @@ const Portfolio = () => {
   async function get_filter_supply_for_owner() {
     setTotalRegularSupply(
       await query_filter_supply_for_owner(
-        accountId,
+        wallet,
         position,
         team,
         name,
@@ -167,7 +166,7 @@ const Portfolio = () => {
 
   async function get_mixed_tokens_for_pagination() {
     await query_mixed_tokens_pagination(
-      accountId,
+      wallet,
       isPromoPage,
       athleteOffset,
       promoOffset,
@@ -185,7 +184,7 @@ const Portfolio = () => {
   async function get_filter_tokens_for_owner(contract) {
     setAthletes(
       await query_filter_tokens_for_owner(
-        accountId,
+        wallet,
         athleteOffset,
         athleteLimit,
         position,

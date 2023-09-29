@@ -6,7 +6,7 @@ import { DEFAULT_MAX_FEES, MINT_STORAGE_COST } from 'data/constants/gasFees';
 import BigNumber from 'bignumber.js';
 
 export default function Promotional(props) {
-  const { accountId } = useWalletSelector();
+  const { state: wallet } = useWalletSelector();
   const [whitelistInfoNFL, setWhitelistInfoNFL] = useState(null);
   const [whitelistInfoNBA, setWhitelistInfoNBA] = useState(null);
   const [whitelistInfoMLB, setWhitelistInfoMLB] = useState(null);

@@ -24,7 +24,7 @@ export default function PackDetails(props) {
   const [details, setDetails] = useState({
     receiverAccount: '',
   });
-  const { accountId } = useWalletSelector();
+  const { state: wallet } = useWalletSelector();
   const router = useRouter();
   const id = query.id.toString();
   const myPack = {
@@ -53,7 +53,7 @@ export default function PackDetails(props) {
     await query_nft_tokens_by_id(myPack.id, contract).then((data) => {
       //@ts-ignore:next-lines
       const result = JSON.parse(Buffer.from(data.result).toString());
-      if (result.owner_id !== accountId) {
+      if (result.owner_id !== wallet) {
         router.push('/Packs');
       }
       setPackDetails([result]);
