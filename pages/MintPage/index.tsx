@@ -45,7 +45,7 @@ import {
 import { formatUnits, FixedFormat } from 'ethers';
 import { current } from '@reduxjs/toolkit';
 const NANO_TO_SECONDS_DENOMINATOR = 1000000;
-const DECIMALS_USDC = 1000000000000000000;
+const DECIMALS_USDC = 1000000;
 export default function Home(props) {
   const {
     dispatch,
@@ -190,9 +190,9 @@ export default function Home(props) {
   function format_price() {
     let price = Math.floor(
       Number(
-        usePOL141.decimals === 1000000000000000000
-          ? minterConfig.minting_price_decimals_18
-          : minterConfig.minting_price_decimals_6
+        usePOL141.decimals === 1000000
+          ? minterConfig.minting_price_decimals_6
+          : minterConfig.minting_price_decimals_18
       ) / usePOL141.decimals
     );
     return price;
@@ -306,7 +306,7 @@ export default function Home(props) {
 
       setMinterConfig({
         ...minterConfig,
-        minting_price_decimals_18: priceString,
+        minting_price_decimals_6: priceString,
       });
     } catch (error) {
       console.error('Error fetching regular pack price:', error);
