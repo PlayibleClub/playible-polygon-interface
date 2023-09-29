@@ -355,6 +355,7 @@ export async function fetchFilteredAthleteTokensForOwner(
         name = 'allNames';
       }
       const abi = athlete_logic as unknown as AthleteLogicABI;
+      console.log(`Supply check: ${supply}`);
       await window.ethereum.request({ method: 'eth_requestAccounts' });
       const contract = new Contract(abi, regularNFLAthleteLogicAddress);
       contract.setProvider(window.ethereum);
@@ -376,6 +377,7 @@ export async function fetchFilteredAthleteTokensForOwner(
               .map((item) => getAthleteInfoByApiId(item, undefined, undefined))
           );
         });
+      console.log(result);
       return result;
     }
   } catch (error) {
