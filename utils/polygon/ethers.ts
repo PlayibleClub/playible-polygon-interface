@@ -320,18 +320,23 @@ export async function fetchFilteredAthleteSupplyForOwner(accountId, position, te
       if (!/\S/.test(name)) {
         name = 'allNames';
       }
-      console.log('function called');
-      console.log(`Position: ${position}`);
-      console.log(`Team ${team}`);
-      console.log(`Name ${name}`);
-      console.log(`Address: ${accountId}`);
+      // console.log('function called');
+      // console.log(`Position: ${position}`);
+      // console.log(`Team ${team}`);
+      // console.log(`Name ${name}`);
+      // console.log(`Address: ${accountId}`);
       //const provider = new Web3(window.ethereum);
       const abi = athlete_logic as unknown as AthleteLogicABI;
       await window.ethereum.request({ method: 'eth_requestAccounts' });
       const contract = new Contract(abi, regularNFLAthleteLogicAddress);
       contract.setProvider(window.ethereum);
       const result = await contract.methods
-        .getFilteredTokenSupplyForOwner(accountId, position, team, name)
+        .getFilteredTokenSupplyForOwner(
+          '0x89F51006918A33244062eD1c5415253800640edA',
+          position,
+          team,
+          name
+        )
         .call({ gas: '30000000' });
       console.log(result);
       return Number(result);
@@ -361,7 +366,7 @@ export async function fetchFilteredAthleteTokensForOwner(
       contract.setProvider(window.ethereum);
       const result = await contract.methods
         .getFilteredTokensForOwnerPagination(
-          accountId,
+          '0x89F51006918A33244062eD1c5415253800640edA',
           position,
           team,
           name,
