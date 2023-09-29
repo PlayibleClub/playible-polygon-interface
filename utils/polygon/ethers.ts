@@ -324,6 +324,7 @@ export async function fetchFilteredAthleteSupplyForOwner(accountId, position, te
       console.log(`Position: ${position}`);
       console.log(`Team ${team}`);
       console.log(`Name ${name}`);
+      console.log(`Address: ${accountId}`);
       //const provider = new Web3(window.ethereum);
       const abi = athlete_logic as unknown as AthleteLogicABI;
       await window.ethereum.request({ method: 'eth_requestAccounts' });
