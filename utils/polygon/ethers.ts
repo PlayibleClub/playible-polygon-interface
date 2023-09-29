@@ -12,9 +12,9 @@ import { Contract } from 'web3-eth-contract';
 import promotional_pack_nft from 'public/polygonContracts/contractABI/promotional_pack_nft.json';
 import pack_nft_storage from 'public/polygonContracts/contractABI/pack_nft.json';
 import pack_nft_logic from 'public/polygonContracts/contractABI/pack_nft_logic.json';
-import athlete_logic from '../polygonContracts/contractABI/athletelogic_abi.json';
-import athlete_storage from '../polygonContracts/contractABI/athletestorage_abi.json';
-import { AthleteStorageABI, AthleteLogicABI } from '../polygonContracts/contractABI/athleteABIs';
+import athlete_logic from '../polygon/ABI/athletelogic_abi.json';
+import athlete_storage from '../polygon/ABI/athletestorage_abi.json';
+import { AthleteStorageABI, AthleteLogicABI } from '../polygon/ABI/athleteABIs';
 import { isWindows } from 'react-device-detect';
 const promoPackContractAddress = '0xecdf1d718adf8930661a80b37bdbda83fdc538e3';
 const regularPackStorageContractAddress = '0x672DBaFAE1F18642c0Ed845ab8bD5824a6F2D502';
@@ -280,7 +280,7 @@ export async function fetchRegularPackPrice() {
       console.log('Price:', price);
       console.log('Pack price fetched successfully');
 
-      return transaction;
+      return price;
     }
   } catch (error) {
     console.error('Error fetching pack price:', error);

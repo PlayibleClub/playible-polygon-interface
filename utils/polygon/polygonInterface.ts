@@ -29,4 +29,29 @@ interface packNFTLogic {
   getTokenOwner(account: string, tokenId: number): Promise<number>;
 }
 
-export type { promotionalPackNFT, packNFTStorage, packNFTLogic };
+interface AthleteLogic {
+  getFilteredTokenSupplyForOwner(
+    address: string,
+    position: string[],
+    team: string,
+    name: string
+  ): Promise<any>;
+  getFilteredTokensForOwner(
+    address: string,
+    name: string,
+    team: string,
+    position: string
+  ): Promise<any[]>; //might change if flat array is hard
+
+  getFilteredTokensForOwnerPagination(
+    address: string,
+    name: string,
+    team: string,
+    position: string,
+    indexAndLimit: number[]
+  );
+  getExtraMetadataAndUri(tokenId: number): Promise<any[]>;
+
+  getTokensForOwner(address: string): Promise<any[]>;
+}
+export type { promotionalPackNFT, packNFTStorage, packNFTLogic, AthleteLogic };
