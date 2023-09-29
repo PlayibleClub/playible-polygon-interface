@@ -14,7 +14,7 @@ const promoPackContractAddress = '0xecdf1d718adf8930661a80b37bdbda83fdc538e3';
 const regularPackContractAddress = '0xbAfd91F2AB0d596f55DD74657381A9D9E9029777';
 const regularNFLAthleteStorageAddress = '0x32ec30629f306261a8c38658d0dc4b2e1c493585';
 //const regularNFLAthleteLogicAddress = '0x6b53db22961B40c89F82a6C47Fe8d138Efd4cdDc';
-const regularNFLAthleteLogicAddress = '0x3C8F88f0DF41585a38D62a953F0cB93904bDaAbB';
+const regularNFLAthleteLogicAddress = '0x7454F97E507fBF1F65cf145ac3922d7c0cf9eB4C ';
 export async function fetchPromoPackTokenMetadata(tokenId) {
   try {
     if (window.ethereum) {
@@ -424,21 +424,14 @@ export async function fetchFilteredAthleteTokenSupplyForOwner(position, team, na
 export async function fetchAthleteTokenMetadataAndURIById(tokenId: number, startTime, endTime) {
   try {
     if (window.ethereum) {
-      const provider = new ethers.BrowserProvider(window.ethereum);
-
       await window.ethereum.request({ method: 'eth_requestAccounts' });
+      const abi = athlete_logic as unknown as AthleteLogicABI;
+      const contract = new Contract(abi, regularNFLAthleteLogicAddress);
+      contract.setProvider(window.ethereum);
+      const result = await contract.methods.getExtraMetadataAndUri(tokenId).call();
 
-      const abi = athlete_logic;
-      const athleteLogic = new ethers.Contract(
-        regularNFLAthleteLogicAddress,
-        abi,
-        await provider.getSigner()
-      ) as unknown as AthleteLogic;
-
-      const test = await athleteLogic.getExtraMetadataAndUri(tokenId);
-      //console.log(test);
       const token = await getAthleteInfoByApiId(
-        await convertPolygonNftToAthlete(test),
+        await convertPolygonNftToAthlete(result),
         startTime,
         endTime
       );
