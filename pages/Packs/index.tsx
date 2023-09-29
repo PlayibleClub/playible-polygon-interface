@@ -3,8 +3,8 @@ import { ethers } from 'ethers';
 import {
   claimSoulboundPack,
   fetchClaimSoulboundStatus,
-  fetchTokensByOwner,
-  fetchTokenSupplyByOwner,
+  // fetchTokensByOwner,
+  // fetchTokenSupplyByOwner,
 } from 'utils/polygon/ethers';
 import PortfolioContainer from '../../components/containers/PortfolioContainer';
 import Container from '../../components/containers/Container';
@@ -169,47 +169,47 @@ export default function Packs() {
     dispatch(setSportTypeRedux(currentSport));
   };
   const userAccount = '0x8F60285800f298F24244ECfe969F2c8A3D2Cb2BC';
-  async function fetchTokens() {
-    try {
-      const tokens = await fetchTokensByOwner(userAccount, packOffset, packLimit);
+  // async function fetchTokens() {
+  //   try {
+  //     const tokens = await fetchTokensByOwner(userAccount, packOffset, packLimit);
 
-      //change metadata to contents instead of just retrieving the IPFS Link
-      const updatedTokens = await Promise.all(
-        tokens.metadata
-          .filter((metadataObject) => metadataObject) // Filter out empty metadataObjects
-          .map(async (metadataObject) => {
-            const metadata = JSON.parse(metadataObject).metadata;
-            const response = await fetch(metadata);
-            return response.json(); // Directly parse the response as JSON
-          })
-      );
+  //     //change metadata to contents instead of just retrieving the IPFS Link
+  //     const updatedTokens = await Promise.all(
+  //       tokens.metadata
+  //         .filter((metadataObject) => metadataObject) // Filter out empty metadataObjects
+  //         .map(async (metadataObject) => {
+  //           const metadata = JSON.parse(metadataObject).metadata;
+  //           const response = await fetch(metadata);
+  //           return response.json(); // Directly parse the response as JSON
+  //         })
+  //     );
 
-      const tokenIdsArray = Object.values(tokens.tokenIds);
-      //restructures array for better mapping
-      const structuredTokens = tokenIdsArray
-        .filter((_, index) => updatedTokens[index] !== undefined)
-        .map((tokenId, index) => {
-          return {
-            token_id: Number(tokenId),
-            metadata: updatedTokens[index], // Assuming updatedTokens is an array of objects
-          };
-        });
+  //     const tokenIdsArray = Object.values(tokens.tokenIds);
+  //     //restructures array for better mapping
+  //     const structuredTokens = tokenIdsArray
+  //       .filter((_, index) => updatedTokens[index] !== undefined)
+  //       .map((tokenId, index) => {
+  //         return {
+  //           token_id: Number(tokenId),
+  //           metadata: updatedTokens[index], // Assuming updatedTokens is an array of objects
+  //         };
+  //       });
 
-      setFootballSbPacks(structuredTokens);
-    } catch (error) {
-      console.error('Error parsing JSON:', error);
-    }
-  }
+  //     setFootballSbPacks(structuredTokens);
+  //   } catch (error) {
+  //     console.error('Error parsing JSON:', error);
+  //   }
+  // }
 
-  async function fetchTokenSupply() {
-    try {
-      const resultFootballSb = await fetchTokenSupplyByOwner(userAccount);
-      setTotalSupply(Number(resultFootballSb));
-      console.log('totalSupply:', totalSupply);
-    } catch (error) {
-      console.error(error);
-    }
-  }
+  // async function fetchTokenSupply() {
+  //   try {
+  //     const resultFootballSb = await fetchTokenSupplyByOwner(userAccount);
+  //     setTotalSupply(Number(resultFootballSb));
+  //     console.log('totalSupply:', totalSupply);
+  //   } catch (error) {
+  //     console.error(error);
+  //   }
+  // }
 
   async function fetchClaimStatus(accountId) {
     const isClaimed = await fetchClaimSoulboundStatus(accountId);
@@ -233,7 +233,7 @@ export default function Packs() {
   };
 
   useEffect(() => {
-    fetchTokenSupply();
+    //fetchTokenSupply();
     getPackLimit();
     setPageCount(
       categoryList[0].isActive
@@ -242,7 +242,7 @@ export default function Packs() {
     );
     const endOffset = packOffset + packLimit;
     console.log(`Loading packs from ${packOffset} to ${endOffset}`);
-    fetchTokens();
+    //fetchTokens();
     console.log('isClaimedStatus', isClaimed);
   }, [totalPacks, packLimit, packOffset, currentSport, totalSupply, categoryList, sportList]);
 

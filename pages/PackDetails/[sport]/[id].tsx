@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
-import { fetchTokenMetadata } from 'utils/polygon/ethers';
+//import { fetchTokenMetadata } from 'utils/polygon/ethers';
 import Container from 'components/containers/Container';
 import 'regenerator-runtime/runtime';
 import BackFunction from 'components/buttons/BackFunction';
@@ -25,36 +25,36 @@ export default function PackDetails(props) {
   const [packDetails, setPackDetails] = useState([]);
   const [hasFetchedData, setHasFetchedData] = useState(false);
 
-  async function fetchData() {
-    try {
-      const metadataResponse = await fetchTokenMetadata(tokenId);
-      const metadataObject = JSON.parse(metadataResponse);
+  // async function fetchData() {
+  //   try {
+  //     const metadataResponse = await fetchTokenMetadata(tokenId);
+  //     const metadataObject = JSON.parse(metadataResponse);
 
-      const metadataUrl = metadataObject.metadata;
-      if (metadataUrl) {
-        const response = await fetch(metadataUrl);
-        const metadata = await response.json();
+  //     const metadataUrl = metadataObject.metadata;
+  //     if (metadataUrl) {
+  //       const response = await fetch(metadataUrl);
+  //       const metadata = await response.json();
 
-        setPackDetails((prevPackDetails) => [
-          ...prevPackDetails,
-          {
-            description: metadata.description || '',
-            extra: metadata.extra || { attributes: [] },
-            image: metadata.image || '',
-            name: metadata.name || '',
-          },
-        ]);
-        console.log(packDetails);
-        setHasFetchedData(true); // Mark that data has been fetched
-      }
-    } catch (error) {
-      console.error('Error fetching metadata:', error);
-    }
-  }
+  //       setPackDetails((prevPackDetails) => [
+  //         ...prevPackDetails,
+  //         {
+  //           description: metadata.description || '',
+  //           extra: metadata.extra || { attributes: [] },
+  //           image: metadata.image || '',
+  //           name: metadata.name || '',
+  //         },
+  //       ]);
+  //       console.log(packDetails);
+  //       setHasFetchedData(true); // Mark that data has been fetched
+  //     }
+  //   } catch (error) {
+  //     console.error('Error fetching metadata:', error);
+  //   }
+  // }
 
   useEffect(() => {
     if (hasFetchedData === false) {
-      fetchData();
+      //fetchData();
     }
     console.log(packDetails);
   }, [tokenId, hasFetchedData]);
