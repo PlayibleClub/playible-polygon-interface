@@ -336,7 +336,9 @@ export async function fetchFilteredAthleteSupplyForOwner(accountId, position, te
       console.log(result);
       return Number(result);
     }
-  } catch (error) {}
+  } catch (error) {
+    console.log(error);
+  }
 }
 export async function fetchFilteredAthleteTokensForOwner(
   accountId,
