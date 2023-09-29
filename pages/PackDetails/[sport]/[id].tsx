@@ -60,6 +60,8 @@ export default function PackDetails(props) {
       }
     } catch (error) {
       console.error('Error fetching metadata:', error);
+      alert('Error Fetching metadata: Pack metadata does not exist');
+      router.push('/Packs');
     }
   }
 
@@ -84,7 +86,7 @@ export default function PackDetails(props) {
 
   useEffect(() => {
     if (isOwner === 0) {
-      alert("Pack doesn't exist on this account. Returning to Packs Page");
+      alert("Pack token doesn't exist on this account. Returning to Packs Page");
       router.push('/Packs');
     }
   }, [isOwner]);
