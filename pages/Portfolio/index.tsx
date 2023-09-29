@@ -76,7 +76,9 @@ const Portfolio = () => {
   const [remountComponent, setRemountComponent] = useState(0);
   const [remountDropdown, setRemountDropdown] = useState(0);
   const [remountAthlete, setRemountAthlete] = useState(0);
-  const { state: wallet } = useWalletSelector();
+  const {
+    state: { wallet },
+  } = useWalletSelector();
   const provider = new providers.JsonRpcProvider({
     url: getRPCProvider(),
   });
