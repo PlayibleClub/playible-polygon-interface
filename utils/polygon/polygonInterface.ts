@@ -13,8 +13,8 @@ interface promotionalPackNFT {
 }
 
 interface packNFTStorage {
-  getUserTokenBalance(): Promise<number>;
-  getPackPrice(): Promise<number>;
+  getUserTokenBalance(): Promise<any>;
+  getPackPrice(): Promise<any>;
   mintPacks(amount: number): Promise<void>;
 }
 
@@ -26,6 +26,7 @@ interface packNFTLogic {
     limit: number
   ): Promise<[number, number[], string[]]>;
   getTokenSupplyByOwner(account: string): Promise<number>;
+  getTokenOwner(account: string, tokenId: number): Promise<number>;
 }
 
 export type { promotionalPackNFT, packNFTStorage, packNFTLogic };

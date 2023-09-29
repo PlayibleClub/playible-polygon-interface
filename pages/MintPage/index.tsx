@@ -41,16 +41,21 @@ import {
   fetchRegularPackPrice,
   fetchAccountBalance,
   mintRegularPacks,
-} from 'public/polygon/ethers';
-import { formatUnits, FixedFormat, ethers } from 'ethers';
+} from 'utils/polygon/ethers';
+import { formatUnits, FixedFormat } from 'ethers';
 import { current } from '@reduxjs/toolkit';
 const NANO_TO_SECONDS_DENOMINATOR = 1000000;
-const DECIMALS_USDC = 1000000000000000000;
+const DECIMALS_USDC = 1000000;
 export default function Home(props) {
-  const { accountId } = useWalletSelector();
-
+  const {
+    dispatch,
+    state: { status, isMetamaskInstalled, isSignedIn, wallet },
+  } = useWalletSelector();
   // const { contract } = selector.store.getState();
-  const dispatch = useDispatch();
+
+  const showInstallMetamask = status !== 'pageNotLoaded' && !isMetamaskInstalled;
+
+  const reduxDispatch = useDispatch();
   const [positionList, setPositionList] = useState(SPORT_TYPES[0].positionList);
   const sportObj = SPORT_TYPES.filter(
     (x) => x.sport !== SPORT_NAME_LOOKUP.cricket && x.sport !== SPORT_NAME_LOOKUP.basketball
@@ -101,6 +106,8 @@ export default function Home(props) {
   const [discountMinute, setDiscountMinute] = useState(0);
   const [discountSecond, setDiscountSecond] = useState(0);
   const [editModal, setEditModal] = useState(false);
+  const [installMetamaskModal, setInstallMetamaskModal] = useState(false);
+  const [loading, setLoading] = useState(false);
   const nflRegImage = '/images/packimages/nflStarterPack.png';
   const nbaRegImage = '/images/packimages/nbaStarterPack.png';
   const mlbRegImage = '/images/packimages/mlbStarterPack.png';
@@ -183,9 +190,9 @@ export default function Home(props) {
   function format_price() {
     let price = Math.floor(
       Number(
-        usePOL141.decimals === 1000000000000000000
-          ? minterConfig.minting_price_decimals_18
-          : minterConfig.minting_price_decimals_6
+        usePOL141.decimals === 1000000
+          ? minterConfig.minting_price_decimals_6
+          : minterConfig.minting_price_decimals_18
       ) / usePOL141.decimals
     );
     return price;
@@ -263,7 +270,7 @@ export default function Home(props) {
           console.error('Error:', error);
           // Handle the error (e.g., display an error message on the UI)
         });
-      dispatch(setSportTypeRedux(currentSport));
+      reduxDispatch(setSportTypeRedux(currentSport));
     } catch (error) {
       console.error('Error minting regular pack:', error);
     }
@@ -299,7 +306,7 @@ export default function Home(props) {
 
       setMinterConfig({
         ...minterConfig,
-        minting_price_decimals_18: priceString,
+        minting_price_decimals_6: priceString,
       });
     } catch (error) {
       console.error('Error fetching regular pack price:', error);
@@ -311,7 +318,7 @@ export default function Home(props) {
       const accountBalance = await fetchAccountBalance();
 
       setAccountBalance(Number(accountBalance));
-      console.log('accountBalance', accountBalance);
+      console.log(accountBalance);
     } catch (error) {
       console.error('Error fetching account balance:', error);
     }
@@ -334,9 +341,16 @@ export default function Home(props) {
   }, [intervalSale]);
 
   useEffect(() => {
-    // fetchClaimStatus(accountId);
     fetchUserAccountBalance();
-  }, [currentSport, minterConfig, accountId]);
+  }, [currentSport, minterConfig, wallet]);
+
+  useEffect(() => {
+    if (!isMetamaskInstalled) {
+      setInstallMetamaskModal(true);
+    } else {
+      setInstallMetamaskModal(false);
+    }
+  }, [status, isMetamaskInstalled]);
 
   useEffect(() => {
     if (router.asPath.indexOf('transactionHashes') > -1 && isPromoFromRedux === false) {
@@ -367,9 +381,6 @@ export default function Home(props) {
   function formatTime(time) {
     return time < 10 ? '0' + time : time;
   }
-  // const logIn = () => {
-  //   modal.show();
-  // };
 
   useEffect(() => {
     setDay(0);
@@ -568,27 +579,6 @@ export default function Home(props) {
                       </div>
                     </div>
 
-                    {(counter().days > 0 ||
-                      counter().hours > 0 ||
-                      counter().minute > 0 ||
-                      counter().seconds > 0) && (
-                      <>
-                        <div className="text-xs mt-8">MINT STARTS IN</div>
-                        <div className="flex mt-3">
-                          <div className="p-3 rounded-lg bg-indigo-black text-indigo-white">
-                            {counter().hours}
-                          </div>
-                          <div className="p-3 ">:</div>
-                          <div className="p-3 rounded-lg  bg-indigo-black text-indigo-white">
-                            {counter().minute}
-                          </div>
-                          <div className="p-3 ">:</div>
-                          <div className="p-3  rounded-lg bg-indigo-black text-indigo-white">
-                            {counter().seconds}
-                          </div>
-                        </div>
-                      </>
-                    )}
                     <div className="flex gap-16">
                       <div className="border border-indigo-lightgray rounded-2xl text-center p-4 w-40 flex flex-col justify-center  mt-8">
                         <div className="text-2xl font-black font-monument ">
@@ -620,7 +610,7 @@ export default function Home(props) {
                     {/*  <p>Gas price {utils.format.formatNearAmount(BigInt(selectedMintAmount * MINT_STORAGE_COST).toString()).toString()}N</p>*/}
                     {/*</div>*/}
                     {Math.floor(minterConfig.public_sale_start / NANO_TO_SECONDS_DENOMINATOR) <=
-                      Date.now() && accountId ? (
+                      Date.now() && isSignedIn ? (
                       {
                         /*parseInt(String(storageDepositAccountBalance)) >= selectedMintAmount * MINT_STORAGE_COST*/
                       } ? (
@@ -696,18 +686,18 @@ export default function Home(props) {
                           N
                         </button>
                       )
-                    ) : accountId ? (
+                    ) : isSignedIn ? (
                       //Change "MINT BASKETBALL STARTER PACK SOON" based on new sport that will be added
                       <div className="w-9/12 flex text-center justify-center items-center bg-indigo-buttonblue font-montserrat text-indigo-white p-4 text-xs mt-8 ">
                         MINT {currentSport} STARTER PACK SOON
                       </div>
                     ) : (
-                      <button
+                      <div
                         // onClick={logIn}
-                        className="w-9/12 flex text-center justify-center items-center bg-indigo-buttonblue font-montserrat text-indigo-white p-4 text-xs mt-8 "
+                        className="w-9/12 flex text-center justify-center items-center bg-indigo-lightgray font-montserrat text-indigo-white p-4 text-xs mt-8 "
                       >
                         WALLET CONNECTION REQUIRED
-                      </button>
+                      </div>
                     )}
                     <p className="text-xs text-indigo-red font-bold">{balanceErrorMsg}</p>
                     {/*TODO: end */}
@@ -818,6 +808,17 @@ export default function Home(props) {
                       }}
                     >
                       CONFIRM
+                    </button>
+                  </Link>
+                </div>
+              </Modal>
+              <Modal title={'METAMASK NOT INSTALLED'} visible={installMetamaskModal}>
+                Install Metamask in your browser to proceed.
+                <img src="/images/MetamaskLogo.png" />
+                <div className="flex flex-wrap flex-col mt-10 mb-5 bg-opacity-70 z-50 w-full">
+                  <Link href={'https://metamask.io/download/'}>
+                    <button className="bg-indigo-buttonblue text-indigo-white w-full h-14 text-center tracking-widest text-md font-monument">
+                      INSTALL METAMASK
                     </button>
                   </Link>
                 </div>

@@ -38,7 +38,7 @@ const Games = (props) => {
   const dispatch = useDispatch();
   const [playerLineups, setPlayerLineups] = useState([]);
   const provider = new providers.JsonRpcProvider({ url: getRPCProvider() });
-  const { accountId } = useWalletSelector();
+  const { state: wallet } = useWalletSelector();
   const [playerTeams, setPlayerTeams] = useState([]);
   const [playerTeamSorted, setPlayerTeamSorted] = useState([]);
   const [gameInfo, setGameInfo] = useState([]);
@@ -188,7 +188,7 @@ const Games = (props) => {
   useEffect(() => {
     if (gameData !== undefined && gameData !== null) {
       // console.log('Joined team counter: ' + gameData.joined_team_counter);
-      get_player_teams(accountId, gameId);
+      get_player_teams(wallet, gameId);
       get_all_players_lineup_with_index();
       //get_all_players_lineup_rposition(gameData.joined_team_counter);
     }
@@ -201,7 +201,7 @@ const Games = (props) => {
 
   useEffect(() => {
     if (playerLineups !== undefined) {
-      sortPlayerTeamScores(accountId);
+      sortPlayerTeamScores(wallet);
     }
   }, [playerLineups]);
 
@@ -241,12 +241,12 @@ const Games = (props) => {
                           <ViewTeamsContainer
                             teamNames={data.teamName}
                             gameId={gameId}
-                            accountId={accountId}
-                            accountScore={getAccountScore(accountId, data.teamName)}
-                            accountPlacement={getAccountPlacement(accountId, data.teamName)}
+                            accountId={wallet}
+                            accountScore={getAccountScore(wallet, data.teamName)}
+                            accountPlacement={getAccountPlacement(wallet, data.teamName)}
                             fromGames={true}
                             onClickFn={() => {
-                              viewPopup(accountId, data.teamName);
+                              viewPopup(wallet, data.teamName);
                               setIsExtendedLeaderboard(1);
                             }}
                           />

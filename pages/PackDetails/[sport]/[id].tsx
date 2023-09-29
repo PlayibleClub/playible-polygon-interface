@@ -1,13 +1,23 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
-import { fetchPromoPackTokenMetadata, fetchRegularPackTokenMetadata } from 'public/polygon/ethers';
+import {
+  fetchPromoPackTokenMetadata,
+  fetchRegularPackTokenMetadata,
+  checkTokenOwner,
+} from 'utils/polygon/ethers';
 import Container from 'components/containers/Container';
 import 'regenerator-runtime/runtime';
 import BackFunction from 'components/buttons/BackFunction';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useWalletSelector } from 'contexts/WalletSelectorContext';
 
 export default function PackDetails(props) {
+  const {
+    state: { wallet },
+  } = useWalletSelector();
+
+  const router = useRouter();
   const { query } = props;
   const id = query.id.toString();
   const packType = id % 100000;
@@ -24,6 +34,7 @@ export default function PackDetails(props) {
 
   const [packDetails, setPackDetails] = useState([]);
   const [hasFetchedData, setHasFetchedData] = useState(false);
+  const [isOwner, setIsOwner] = useState(null);
 
   async function fetchData() {
     try {
@@ -49,15 +60,36 @@ export default function PackDetails(props) {
       }
     } catch (error) {
       console.error('Error fetching metadata:', error);
+      alert('Error Fetching metadata: Pack metadata does not exist');
+      router.push('/Packs');
+    }
+  }
+
+  async function isTokenOwner() {
+    try {
+      const owner = await checkTokenOwner(wallet, id);
+
+      console.log(Number(owner));
+      setIsOwner(Number(owner));
+    } catch (error) {
+      console.error(error);
     }
   }
 
   useEffect(() => {
+    isTokenOwner();
     if (hasFetchedData === false) {
       fetchData();
     }
     console.log(packDetails);
   }, [hasFetchedData]);
+
+  useEffect(() => {
+    if (isOwner === 0) {
+      alert("Pack token doesn't exist on this account. Returning to Packs Page");
+      router.push('/Packs');
+    }
+  }, [isOwner]);
 
   return (
     <Container activeName="PACKS">
@@ -80,12 +112,16 @@ export default function PackDetails(props) {
               #{myPack.id}
             </div>
             <div className="text-sm">RELEASE 1</div>
-            {/* <button
-              className="bg-indigo-buttonblue text-indigo-white w-5/6 md:w-80 h-10 text-center font-bold text-sm mt-4"
-              onClick={() => execute_open_pack()}
-            >
-              OPEN PACK
-            </button> */}
+            {isOwner ? (
+              <button
+                className="bg-indigo-buttonblue text-indigo-white w-5/6 md:w-80 h-10 text-center font-bold text-sm mt-4"
+                onClick={() => 'Place Execute Open Pack Function Here'}
+              >
+                OPEN PACK
+              </button>
+            ) : (
+              ' '
+            )}
 
             {/* <Link
               href={`/TransferPack/${myPack.sport.toLowerCase()}/${encodeURIComponent(id)}/`}

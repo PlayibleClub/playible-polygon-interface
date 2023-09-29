@@ -8,7 +8,7 @@ import {
   fetchRegularPackTokenMetadata,
   fetchRegularPackTokenSupplyByOwner,
   fetchRegularPackTokensByOwner,
-} from 'public/polygon/ethers';
+} from 'utils/polygon/ethers';
 import PortfolioContainer from '../../components/containers/PortfolioContainer';
 import Container from '../../components/containers/Container';
 import Main from '../../components/Main';
@@ -26,9 +26,12 @@ import { SPORT_TYPES, getSportType, SPORT_NAME_LOOKUP } from 'data/constants/spo
 import { useWalletSelector } from 'contexts/WalletSelectorContext';
 export default function Packs() {
   const router = useRouter();
-  const dispatch = useDispatch();
+  const reduxDispatch = useDispatch();
 
-  const { accountId } = useWalletSelector();
+  const {
+    dispatch,
+    state: { status, isMetamaskInstalled, isSignedIn, wallet },
+  } = useWalletSelector();
 
   const [packs, setPacks] = useState([]);
   const [soulboundPacks, setSoulboundPacks] = useState([]);
@@ -167,12 +170,12 @@ export default function Packs() {
 
   const handleButtonClick = (e) => {
     e.preventDefault();
-    dispatch(setSportTypeRedux(currentSport));
+    reduxDispatch(setSportTypeRedux(currentSport));
   };
 
   async function fetchTokens() {
     try {
-      const tokens = await fetchRegularPackTokensByOwner(accountId, packOffset, packLimit);
+      const tokens = await fetchRegularPackTokensByOwner(wallet, packOffset, packLimit);
 
       //change metadata to contents instead of just retrieving the IPFS Link
       const updatedTokens = await Promise.all(
@@ -235,7 +238,7 @@ export default function Packs() {
 
   async function fetchTokenSupply() {
     try {
-      const resultFootball = await fetchRegularPackTokenSupplyByOwner(accountId);
+      const resultFootball = await fetchRegularPackTokenSupplyByOwner(wallet);
 
       setTotalSupply(Number(resultFootball));
     } catch (error) {
@@ -272,7 +275,7 @@ export default function Packs() {
   };
 
   useEffect(() => {
-    if (accountId !== null) {
+    if (isSignedIn && wallet) {
       fetchTokenSupply();
       getPackLimit();
       setPageCount(
