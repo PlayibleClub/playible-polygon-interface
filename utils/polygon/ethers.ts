@@ -375,6 +375,7 @@ export async function fetchFilteredAthleteTokensForOwner(
         )
         .call({ gas: '30000000' })
         .then((result) => {
+          console.log('hello');
           return Promise.all(
             result
               .filter((item) => Number(item[0] !== 0 && item[2].length > 0))
