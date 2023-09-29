@@ -18,9 +18,7 @@ import {
 } from 'utils/near/helper';
 import {
   fetchFilteredAthleteTokensForOwner,
-  fetchFilteredAthleteTokenSupplyForOwner,
-  testWeb3FilteredAthleteSupplyForOwner,
-  testWeb3FilteredAthleteTokensForOwner,
+  fetchFilteredAthleteSupplyForOwner,
 } from 'utils/polygon/ethers';
 import { SPORT_NAME_LOOKUP, getSportType } from 'data/constants/sportConstants';
 import ReactPaginate from 'react-paginate';
@@ -143,11 +141,18 @@ const Portfolio = () => {
   async function getFilterTokensForOwner() {
     //fetchFilteredAthleteTokensForOwner();
     setAthletes(
-      await testWeb3FilteredAthleteTokensForOwner(athleteOffset, athleteLimit, position, team, name)
+      await fetchFilteredAthleteTokensForOwner(
+        athleteOffset,
+        athleteLimit,
+        position,
+        team,
+        name,
+        totalRegularSupply
+      )
     );
   }
   async function getFilteredTokenSupplyForOwner() {
-    setTotalRegularSupply(await testWeb3FilteredAthleteSupplyForOwner(position, team, name));
+    setTotalRegularSupply(await fetchFilteredAthleteSupplyForOwner(position, team, name));
   }
   // async function get_filter_soulbound_supply_for_owner() {
   //   setTotalPromoSupply(
@@ -271,7 +276,9 @@ const Portfolio = () => {
   }, [selectedRegular, selectedPromo, currentSport]);
 
   useEffect(() => {
-    getFilterTokensForOwner();
+    if (totalRegularSupply > 0) {
+      getFilterTokensForOwner();
+    }
   }, [totalRegularSupply, athleteOffset, team, position, currentPage]);
   useEffect(() => {
     console.log(athletes);

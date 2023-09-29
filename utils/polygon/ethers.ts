@@ -351,7 +351,8 @@ export async function fetchFilteredAthleteTokensForOwner(
   athleteLimit,
   position,
   team,
-  name
+  name,
+  supply
 ) {
   try {
     if (window.ethereum) {
@@ -364,10 +365,14 @@ export async function fetchFilteredAthleteTokensForOwner(
       const contract = new Contract(abi, regularNFLAthleteLogicAddress);
       contract.setProvider(window.ethereum);
       const result = await contract.methods
-        .getFilteredTokensForOwnerPagination(address, position, team, name, [
-          athleteOffset,
-          athleteLimit,
-        ])
+        .getFilteredTokensForOwnerPagination(
+          address,
+          position,
+          team,
+          name,
+          [athleteOffset, athleteLimit],
+          supply
+        )
         .call({ gas: '30000000' })
         .then((result) => {
           return Promise.all(
