@@ -1,6 +1,8 @@
 // src/utils/ethers.js
-import { ethers } from 'ethers';
-import { packNFTStorage, promotionalPackNFT, packNFTLogic } from 'utils/polygon/polygonInterface';
+import { Contract } from 'web3-eth-contract';
+// import { packNFTStorage, promotionalPackNFT, packNFTLogic } from 'utils/polygon/polygonInterface';
+import { packStorageABI } from 'public/polygonContracts/contractABI/pack_nft';
+import { packLogicABI } from 'public/polygonContracts/contractABI/pack_nft_logic';
 import promotional_pack_nft from 'public/polygonContracts/contractABI/promotional_pack_nft.json';
 import pack_nft_storage from 'public/polygonContracts/contractABI/pack_nft.json';
 import pack_nft_logic from 'public/polygonContracts/contractABI/pack_nft_logic.json';
@@ -9,141 +11,138 @@ const promoPackContractAddress = '0xecdf1d718adf8930661a80b37bdbda83fdc538e3';
 const regularPackStorageContractAddress = '0x672DBaFAE1F18642c0Ed845ab8bD5824a6F2D502';
 const regularPackLogicContractAddress = '0xc101792c937A61b39118083d470ad3bE4c5FC6D5';
 
-export async function fetchPromoPackTokenMetadata(tokenId) {
-  try {
-    if (window.ethereum) {
-      const provider = new ethers.BrowserProvider(window.ethereum);
+const packStorageContractABI = pack_nft_storage as unknown as packStorageABI;
+const packLogicContractABI = pack_nft_logic as unknown as packLogicABI;
 
-      await window.ethereum.request({ method: 'eth_requestAccounts' });
+// export async function fetchPromoPackTokenMetadata(tokenId) {
+//   try {
+//     if (window.ethereum) {
+//       const provider = new ethers.BrowserProvider(window.ethereum);
 
-      // Instantiate your ERC1155 contract
-      const PromotionalPackNFT = new ethers.Contract(
-        promoPackContractAddress,
-        promotional_pack_nft,
-        await provider.getSigner()
-      ) as unknown as promotionalPackNFT;
+//       await window.ethereum.request({ method: 'eth_requestAccounts' });
 
-      // Call the getTokenMetadataById function
-      const metadata = await PromotionalPackNFT.getTokenMetadataById(tokenId);
+//       // Instantiate your ERC1155 contract
+//       const PromotionalPackNFT = new ethers.Contract(
+//         promoPackContractAddress,
+//         promotional_pack_nft,
+//         await provider.getSigner()
+//       ) as unknown as promotionalPackNFT;
 
-      return metadata;
-    }
-  } catch (error) {
-    console.error('Error fetching token metadata:', error);
-    return null;
-  }
-}
+//       // Call the getTokenMetadataById function
+//       const metadata = await PromotionalPackNFT.getTokenMetadataById(tokenId);
 
-export async function fetchPromoPackTokensByOwner(account, fromIndex, limit) {
-  try {
-    if (window.ethereum) {
-      const provider = new ethers.BrowserProvider(window.ethereum);
+//       return metadata;
+//     }
+//   } catch (error) {
+//     console.error('Error fetching token metadata:', error);
+//     return null;
+//   }
+// }
 
-      await window.ethereum.request({ method: 'eth_requestAccounts' });
+// export async function fetchPromoPackTokensByOwner(account, fromIndex, limit) {
+//   try {
+//     if (window.ethereum) {
+//       const provider = new ethers.BrowserProvider(window.ethereum);
 
-      const PromotionalPackNFT = new ethers.Contract(
-        promoPackContractAddress,
-        promotional_pack_nft,
-        await provider.getSigner()
-      ) as unknown as promotionalPackNFT;
+//       await window.ethereum.request({ method: 'eth_requestAccounts' });
 
-      const [count, tokenIds, metadata] = await PromotionalPackNFT.getTokensByOwner(
-        account,
-        fromIndex,
-        limit
-      );
+//       const PromotionalPackNFT = new ethers.Contract(
+//         promoPackContractAddress,
+//         promotional_pack_nft,
+//         await provider.getSigner()
+//       ) as unknown as promotionalPackNFT;
 
-      return { count, tokenIds, metadata };
-    }
-  } catch (error) {
-    console.error('Error fetching tokens by owner:', error);
-  }
-}
+//       const [count, tokenIds, metadata] = await PromotionalPackNFT.getTokensByOwner(
+//         account,
+//         fromIndex,
+//         limit
+//       );
 
-export async function fetchPromoPackTokenSupplyByOwner(account) {
-  try {
-    if (window.ethereum) {
-      const provider = new ethers.BrowserProvider(window.ethereum);
+//       return { count, tokenIds, metadata };
+//     }
+//   } catch (error) {
+//     console.error('Error fetching tokens by owner:', error);
+//   }
+// }
 
-      await window.ethereum.request({ method: 'eth_requestAccounts' });
+// export async function fetchPromoPackTokenSupplyByOwner(account) {
+//   try {
+//     if (window.ethereum) {
+//       const provider = new ethers.BrowserProvider(window.ethereum);
 
-      const PromotionalPackNFT = new ethers.Contract(
-        promoPackContractAddress,
-        promotional_pack_nft,
-        await provider.getSigner()
-      ) as unknown as promotionalPackNFT;
+//       await window.ethereum.request({ method: 'eth_requestAccounts' });
 
-      const tokenSupply = await PromotionalPackNFT.getTokenSupplyByOwner(account);
-      return tokenSupply;
-    }
-  } catch (error) {
-    console.error('Error fetching token supply by owner:', error);
-  }
-}
+//       const PromotionalPackNFT = new ethers.Contract(
+//         promoPackContractAddress,
+//         promotional_pack_nft,
+//         await provider.getSigner()
+//       ) as unknown as promotionalPackNFT;
 
-export async function fetchClaimSoulboundStatus(account) {
-  try {
-    if (window.ethereum) {
-      const provider = new ethers.BrowserProvider(window.ethereum);
+//       const tokenSupply = await PromotionalPackNFT.getTokenSupplyByOwner(account);
+//       return tokenSupply;
+//     }
+//   } catch (error) {
+//     console.error('Error fetching token supply by owner:', error);
+//   }
+// }
 
-      await window.ethereum.request({ method: 'eth_requestAccounts' });
+// export async function fetchClaimSoulboundStatus(account) {
+//   try {
+//     if (window.ethereum) {
+//       const provider = new ethers.BrowserProvider(window.ethereum);
 
-      const PromotionalPackNFT = new ethers.Contract(
-        promoPackContractAddress,
-        promotional_pack_nft,
-        await provider.getSigner()
-      ) as unknown as promotionalPackNFT;
-      // Call the checkClaimStatus function
-      const isClaimed = await PromotionalPackNFT.checkClaimStatus(account);
+//       await window.ethereum.request({ method: 'eth_requestAccounts' });
 
-      return isClaimed;
-    }
-  } catch (error) {
-    console.error('Error checking claim status:', error);
-    return null;
-  }
-}
+//       const PromotionalPackNFT = new ethers.Contract(
+//         promoPackContractAddress,
+//         promotional_pack_nft,
+//         await provider.getSigner()
+//       ) as unknown as promotionalPackNFT;
+//       // Call the checkClaimStatus function
+//       const isClaimed = await PromotionalPackNFT.checkClaimStatus(account);
 
-export async function claimSoulboundPack() {
-  try {
-    if (window.ethereum) {
-      const provider = new ethers.BrowserProvider(window.ethereum);
+//       return isClaimed;
+//     }
+//   } catch (error) {
+//     console.error('Error checking claim status:', error);
+//     return null;
+//   }
+// }
 
-      await window.ethereum.request({ method: 'eth_requestAccounts' });
+// export async function claimSoulboundPack() {
+//   try {
+//     if (window.ethereum) {
+//       const provider = new ethers.BrowserProvider(window.ethereum);
 
-      const PromotionalPackNFT = new ethers.Contract(
-        promoPackContractAddress,
-        promotional_pack_nft,
-        await provider.getSigner()
-      ) as unknown as promotionalPackNFT;
+//       await window.ethereum.request({ method: 'eth_requestAccounts' });
 
-      // Call the claimSoulboundPack function
-      const transaction = await PromotionalPackNFT.claimSoulboundPack();
-      console.log('Soulbound Pack claimed successfully');
+//       const PromotionalPackNFT = new ethers.Contract(
+//         promoPackContractAddress,
+//         promotional_pack_nft,
+//         await provider.getSigner()
+//       ) as unknown as promotionalPackNFT;
 
-      return transaction;
-    }
-  } catch (error) {
-    console.error('Error claiming Soulbound Pack:', error);
-  }
-}
+//       // Call the claimSoulboundPack function
+//       const transaction = await PromotionalPackNFT.claimSoulboundPack();
+//       console.log('Soulbound Pack claimed successfully');
+
+//       return transaction;
+//     }
+//   } catch (error) {
+//     console.error('Error claiming Soulbound Pack:', error);
+//   }
+// }
 
 export async function fetchRegularPackTokenMetadata(tokenId) {
   try {
     if (window.ethereum) {
-      const provider = new ethers.BrowserProvider(window.ethereum);
-
+      console.log('Fetch regular pack tokens for owner function called');
       await window.ethereum.request({ method: 'eth_requestAccounts' });
+      const contract = new Contract(packLogicContractABI, regularPackLogicContractAddress);
+      contract.setProvider(window.ethereum);
 
-      // Instantiate your ERC1155 contract
-      const packNFTLogic = new ethers.Contract(
-        regularPackLogicContractAddress,
-        pack_nft_logic,
-        await provider.getSigner()
-      ) as unknown as packNFTLogic;
-
-      const metadata = await packNFTLogic.getTokenMetadataById(tokenId);
-
+      const metadata = await contract.methods.getTokenMetadataById(tokenId).call();
+      console.log('Pack Token metadata fetched successfully');
       return metadata;
     }
   } catch (error) {
@@ -155,23 +154,16 @@ export async function fetchRegularPackTokenMetadata(tokenId) {
 export async function fetchRegularPackTokensByOwner(account, fromIndex, limit) {
   try {
     if (window.ethereum) {
-      const provider = new ethers.BrowserProvider(window.ethereum);
-
+      console.log('Fetch regular pack tokens for owner function called');
       await window.ethereum.request({ method: 'eth_requestAccounts' });
+      const contract = new Contract(packLogicContractABI, regularPackLogicContractAddress);
+      contract.setProvider(window.ethereum);
 
-      const packNFTLogic = new ethers.Contract(
-        regularPackLogicContractAddress,
-        pack_nft_logic,
-        await provider.getSigner()
-      ) as unknown as packNFTLogic;
+      const response = await contract.methods
+        .getTokensByOwner(account, fromIndex, limit)
+        .call({ from: account });
 
-      const [count, tokenIds, metadata] = await packNFTLogic.getTokensByOwner(
-        account,
-        fromIndex,
-        limit
-      );
-
-      return { count, tokenIds, metadata };
+      return response;
     }
   } catch (error) {
     console.error('Error fetching regular tokens by owner:', error);
@@ -181,17 +173,15 @@ export async function fetchRegularPackTokensByOwner(account, fromIndex, limit) {
 export async function fetchRegularPackTokenSupplyByOwner(account) {
   try {
     if (window.ethereum) {
-      const provider = new ethers.BrowserProvider(window.ethereum);
-
+      console.log('Fetch regular pack token supply function called');
       await window.ethereum.request({ method: 'eth_requestAccounts' });
+      //@ts-ignore
+      const contract = new Contract(packLogicContractABI, regularPackLogicContractAddress);
+      contract.setProvider(window.ethereum);
 
-      const packNFTLogic = new ethers.Contract(
-        regularPackLogicContractAddress,
-        pack_nft_logic,
-        await provider.getSigner()
-      ) as unknown as packNFTLogic;
-
-      const tokenSupply = await packNFTLogic.getTokenSupplyByOwner(account);
+      const tokenSupply = await contract.methods
+        .getTokenSupplyByOwner(account)
+        .call({ from: account });
       return tokenSupply;
     }
   } catch (error) {
@@ -199,21 +189,19 @@ export async function fetchRegularPackTokenSupplyByOwner(account) {
   }
 }
 
-export async function mintRegularPacks(amount) {
+export async function mintRegularPacks(amount, accountId) {
   try {
     if (window.ethereum) {
-      const provider = new ethers.BrowserProvider(window.ethereum);
-
+      console.log('Mint packs function called');
       await window.ethereum.request({ method: 'eth_requestAccounts' });
+      //@ts-ignore
+      const contract = new Contract(packStorageContractABI, regularPackStorageContractAddress);
+      contract.setProvider(window.ethereum);
 
-      const packNFTStorage = new ethers.Contract(
-        regularPackStorageContractAddress,
-        pack_nft_storage,
-        await provider.getSigner()
-      ) as unknown as packNFTStorage;
-
-      // Call the claimSoulboundPack function
-      const transaction = await packNFTStorage.mintPacks(amount);
+      // Call mint regular packs function
+      const transaction = await contract.methods
+        .mintPacks(amount)
+        .send({ from: accountId, gas: '200000', gasPrice: '20000000000' });
       console.log('Regular Pack minted successfully');
 
       return transaction;
@@ -223,24 +211,16 @@ export async function mintRegularPacks(amount) {
   }
 }
 
-export async function fetchAccountBalance() {
-  const abi = ['function getUserTokenBalance() view returns (uint256)'];
+export async function fetchAccountBalance(accountId) {
   try {
     if (window.ethereum) {
-      const provider = new ethers.BrowserProvider(window.ethereum);
+      console.log('Fetch account balance called');
+      await window.ethereum.request({ method: 'eth_requestAccounts' });
+      const contract = new Contract(packStorageContractABI, regularPackStorageContractAddress);
+      contract.setProvider(window.ethereum);
 
-      window.ethereum.request({ method: 'eth_requestAccounts' });
-
-      const packNFTStorage = new ethers.Contract(
-        regularPackStorageContractAddress,
-        abi,
-        await provider.getSigner()
-      ) as unknown as packNFTStorage;
-
-      console.log(packNFTStorage);
-
-      // Call the claimSoulboundPack function
-      const balance = packNFTStorage.getUserTokenBalance();
+      // Call the get account balance function
+      const balance = await contract.methods.getUserTokenBalance().call({ from: accountId });
       console.log('Account balance fetched successfully');
 
       return balance;
@@ -252,49 +232,38 @@ export async function fetchAccountBalance() {
 export async function fetchRegularPackPrice() {
   try {
     if (window.ethereum) {
-      const provider = new ethers.BrowserProvider(window.ethereum);
-
+      console.log('Fetch regular pack price called');
       await window.ethereum.request({ method: 'eth_requestAccounts' });
+      const contract = new Contract(packStorageContractABI, regularPackStorageContractAddress);
+      contract.setProvider(window.ethereum);
 
-      const packNFTStorage = new ethers.Contract(
-        regularPackStorageContractAddress,
-        pack_nft_storage,
-        await provider
-      ) as unknown as packNFTStorage;
+      // Call the get regular pack price function
+      const price = await contract.methods.getPackPrice().call();
 
-      // Call the claimSoulboundPack function
-      const price = await packNFTStorage.getPackPrice();
-      console.log('Price:', price);
-      console.log('Pack price fetched successfully');
-
+      console.log('Pack price fetch successfully:', price);
       return price;
     }
   } catch (error) {
-    console.error('Error fetching regular pack price:', error);
+    console.error('Error fetching account balance:', error);
   }
 }
 
 export async function checkTokenOwner(account, id) {
   try {
     if (window.ethereum) {
-      const provider = new ethers.BrowserProvider(window.ethereum);
-
+      console.log('Fetch check token owner called');
       await window.ethereum.request({ method: 'eth_requestAccounts' });
+      const contract = new Contract(packLogicContractABI, regularPackLogicContractAddress);
+      contract.setProvider(window.ethereum);
 
-      const packNFTLogic = new ethers.Contract(
-        regularPackLogicContractAddress,
-        pack_nft_logic,
-        await provider
-      ) as unknown as packNFTLogic;
-
-      // Call the claimSoulboundPack function
-      const isToken = await packNFTLogic.getTokenOwner(account, id);
+      // Call the getTokenOwner function
+      const isToken = await contract.methods.getTokenOwner(account, id).call({ from: account });
       console.log('Token:', isToken);
       console.log('Token owner fetched successfully');
 
       return isToken;
     }
   } catch (error) {
-    console.error('Error fetching regular pack price:', error);
+    console.error('Error fetching check token owner:', error);
   }
 }
