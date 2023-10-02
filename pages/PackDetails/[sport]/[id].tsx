@@ -26,7 +26,7 @@ export default function PackDetails(props) {
   const tokenId = 200001;
   const [packDetails, setPackDetails] = useState([]);
   const [hasFetchedData, setHasFetchedData] = useState(false);
-  const openPackContractAddress = '0x5C8e832Db762032823b61e1A3d9af0FD4229aCac';
+  const openPackContractAddress = '0xd9dEAB4B51b8477f7ccD274413E66F6142877C49';
 
   async function requestAndMint() {
     try {
@@ -40,27 +40,32 @@ export default function PackDetails(props) {
           await provider.getSigner()
         );
 
-        // Request random words
+        // Request random words and get the requestId
         const requestTransaction = await OpenPack.requestRandomWords();
-        console.log('Random words requested successfully');
+        const requestId = requestTransaction.hash;
+        console.log('Random words requested successfully, requestId:', requestId);
 
         // Wait for the transaction to be mined
-        await provider.waitForTransaction(requestTransaction.hash);
+        await provider.waitForTransaction(requestId);
 
-        // Fetch the lastRequestId
-        const lastRequestId = await OpenPack.lastRequestId();
-        console.log('Last Request ID:', lastRequestId); // Log the lastRequestId
+        // Get the user's address
+        const signer = await provider.getSigner();
+        const userAddress = await signer.getAddress();
+
+        // Use the user's address to fetch the requestId
+        const fetchedRequestId = await OpenPack.getRequestIdByUser(userAddress);
+        console.log('Fetched requestId:', fetchedRequestId);
 
         // Poll for request status until it's fulfilled
         let loopCount = 0; // Initialize loop counter
         const intervalId = setInterval(async () => {
           loopCount++; // Increment loop counter
           console.log('Checking request status...', loopCount); // Log each loop iteration
-          let requestStatus = await OpenPack.getRequestStatus(lastRequestId);
+          let requestStatus = await OpenPack.getRequestStatus(fetchedRequestId);
           if (requestStatus.fulfilled) {
             clearInterval(intervalId);
             // Once the request is fulfilled, mint the batch
-            const mintTransaction = await OpenPack.mintBatch();
+            const mintTransaction = await OpenPack.mintBatchTest(fetchedRequestId);
             console.log('Batch minted successfully');
             console.log(mintTransaction.hash, 'mint transaction hash');
             // Use client-side routing to navigate to TokenDrawPage
