@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { ethers } from 'ethers';
 import {
-  claimSoulboundPack,
-  fetchClaimSoulboundStatus,
-  fetchPromoPackTokensByOwner,
-  fetchPromoPackTokenSupplyByOwner,
+  // claimSoulboundPack,
+  // fetchClaimSoulboundStatus,
+  // fetchPromoPackTokensByOwner,
+  // fetchPromoPackTokenSupplyByOwner,
   fetchRegularPackTokenMetadata,
   fetchRegularPackTokenSupplyByOwner,
   fetchRegularPackTokensByOwner,
@@ -177,9 +177,12 @@ export default function Packs() {
     try {
       const tokens = await fetchRegularPackTokensByOwner(wallet, packOffset, packLimit);
 
+      const tokenIds = tokens[1]; // Assuming tokenIds is the second element
+      const metadata = tokens[2]; // Assuming metadata is the third element
+
       //change metadata to contents instead of just retrieving the IPFS Link
       const updatedTokens = await Promise.all(
-        tokens.metadata
+        metadata
           .filter((metadataObject) => metadataObject) // Filter out empty metadataObjects
           .map(async (metadataObject) => {
             const metadata = JSON.parse(metadataObject).metadata;
@@ -188,7 +191,7 @@ export default function Packs() {
           })
       );
 
-      const tokenIdsArray = Object.values(tokens.tokenIds);
+      const tokenIdsArray = Object.values(tokenIds);
       //restructures array for better mapping
       const structuredTokens = tokenIdsArray
         .filter((_, index) => updatedTokens[index] !== undefined)
@@ -203,35 +206,6 @@ export default function Packs() {
     } catch (error) {
       console.error('Error parsing JSON:', error);
     }
-    // try {
-    //   const tokens = await fetchPromoPackTokensByOwner(userAccount, packOffset, packLimit);
-
-    //   //change metadata to contents instead of just retrieving the IPFS Link
-    //   const updatedTokens = await Promise.all(
-    //     tokens.metadata
-    //       .filter((metadataObject) => metadataObject) // Filter out empty metadataObjects
-    //       .map(async (metadataObject) => {
-    //         const metadata = JSON.parse(metadataObject).metadata;
-    //         const response = await fetch(metadata);
-    //         return response.json(); // Directly parse the response as JSON
-    //       })
-    //   );
-
-    //   const tokenIdsArray = Object.values(tokens.tokenIds);
-    //   //restructures array for better mapping
-    //   const structuredTokens = tokenIdsArray
-    //     .filter((_, index) => updatedTokens[index] !== undefined)
-    //     .map((tokenId, index) => {
-    //       return {
-    //         token_id: Number(tokenId),
-    //         metadata: updatedTokens[index], // Assuming updatedTokens is an array of objects
-    //       };
-    //     });
-
-    //   setFootballSbPacks(structuredTokens);
-    // } catch (error) {
-    //   console.error('Error parsing JSON:', error);
-    // }
   }
 
   async function fetchRegularTokens() {}
@@ -240,6 +214,7 @@ export default function Packs() {
     try {
       const resultFootball = await fetchRegularPackTokenSupplyByOwner(wallet);
 
+      console.log(resultFootball);
       setTotalSupply(Number(resultFootball));
     } catch (error) {
       console.error(error);
@@ -260,15 +235,15 @@ export default function Packs() {
 
   const handleClaimButton = async () => {
     try {
-      await claimSoulboundPack()
-        .then((txHash) => {
-          console.log('Transaction Hash:', txHash);
-          // Handle the transaction hash as needed (e.g., display it on the UI)
-        })
-        .catch((error) => {
-          console.error('Error:', error);
-          // Handle the error (e.g., display an error message on the UI)
-        });
+      // await claimSoulboundPack()
+      //   .then((txHash) => {
+      //     console.log('Transaction Hash:', txHash);
+      //     // Handle the transaction hash as needed (e.g., display it on the UI)
+      //   })
+      //   .catch((error) => {
+      //     console.error('Error:', error);
+      //     // Handle the error (e.g., display an error message on the UI)
+      //   });
     } catch (error) {
       console.error('Error claiming Soulbound Pack:', error);
     }
