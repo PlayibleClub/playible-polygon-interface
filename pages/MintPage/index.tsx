@@ -36,8 +36,8 @@ import moment from 'moment';
 import Button from 'components/buttons/Button';
 import { number } from 'prop-types';
 import {
-  claimSoulboundPack,
-  fetchClaimSoulboundStatus,
+  // claimSoulboundPack,
+  // fetchClaimSoulboundStatus,
   fetchRegularPackPrice,
   fetchAccountBalance,
   mintRegularPacks,
@@ -225,43 +225,38 @@ export default function Home(props) {
 
   async function executeMintRegularPacks() {
     let mint_cost =
-      (Number(minterConfig.minting_price_decimals_18) * selectedMintAmount) / DECIMALS_USDC;
+      (Number(minterConfig.minting_price_decimals_6) * selectedMintAmount) / DECIMALS_USDC;
 
     console.log(mint_cost);
-    try {
-      if (accountBalance < mint_cost && currentSport === 'FOOTBALL') {
-        setBalanceErrorMsg(
-          'Error you need ' +
-            selectedMintAmount * 100 +
-            ' ' +
-            usePOL141.title +
-            ', You have ' +
-            accountBalance.toFixed(2) +
-            ' ' +
-            usePOL141.title
-        );
-        return;
-      } else if (accountBalance < mint_cost && currentSport === 'BASEBALL') {
-        setBalanceErrorMsg(
-          'Error you need ' +
-            selectedMintAmount * 100 +
-            ' ' +
-            usePOL141.title +
-            ', You have ' +
-            accountBalance.toFixed(2) +
-            ' ' +
-            usePOL141.title
-        );
-        return;
-      }
-      setBalanceErrorMsg('');
-    } catch (e) {
-      console.log(e);
+    if (accountBalance < mint_cost && currentSport === 'FOOTBALL') {
+      setBalanceErrorMsg(
+        'Error you need ' +
+          mint_cost +
+          ' ' +
+          usePOL141.title +
+          ', You have ' +
+          accountBalance.toFixed(2) +
+          ' ' +
+          usePOL141.title
+      );
+      return;
+    } else if (accountBalance < mint_cost && currentSport === 'BASEBALL') {
+      setBalanceErrorMsg(
+        'Error you need ' +
+          selectedMintAmount * Number(minterConfig.minting_price_decimals_6) +
+          ' ' +
+          usePOL141.title +
+          ', You have ' +
+          accountBalance.toFixed(2) +
+          ' ' +
+          usePOL141.title
+      );
       return;
     }
+    setBalanceErrorMsg('');
 
     try {
-      await mintRegularPacks(selectedMintAmount)
+      await mintRegularPacks(selectedMintAmount, wallet)
         .then((txHash) => {
           console.log('Transaction Hash:', txHash);
           // Handle the transaction hash as needed (e.g., display it on the UI)
@@ -302,7 +297,7 @@ export default function Home(props) {
       const regularPackPrice = await fetchRegularPackPrice(); // Assuming this function returns a BigNumber
 
       // Convert the price to a string with 18 decimal places
-      const priceString = formatUnits(regularPackPrice, 0);
+      const priceString = formatUnits(Number(regularPackPrice), 0);
 
       setMinterConfig({
         ...minterConfig,
@@ -315,7 +310,7 @@ export default function Home(props) {
 
   async function fetchUserAccountBalance() {
     try {
-      const accountBalance = await fetchAccountBalance();
+      const accountBalance = await fetchAccountBalance(wallet);
 
       setAccountBalance(Number(accountBalance));
       console.log(accountBalance);
