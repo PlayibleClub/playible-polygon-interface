@@ -19,7 +19,8 @@ import { AthleteStorageABI, AthleteLogicABI } from '../polygon/ABI/athleteABIs';
 import { isWindows } from 'react-device-detect';
 
 const promoPackContractAddress = '0xecdf1d718adf8930661a80b37bdbda83fdc538e3';
-const regularPackStorageContractAddress = '0x672DBaFAE1F18642c0Ed845ab8bD5824a6F2D502';
+// const regularPackStorageContractAddress = '0x672DBaFAE1F18642c0Ed845ab8bD5824a6F2D502';
+const regularPackStorageContractAddress = '0x00AdA1B38dFF832A8b85935B8B8BC9234024084A';
 const regularPackLogicContractAddress = '0xc101792c937A61b39118083d470ad3bE4c5FC6D5';
 const regularNFLAthleteStorageAddress = '0x32ec30629f306261a8c38658d0dc4b2e1c493585';
 //const regularNFLAthleteLogicAddress = '0x6b53db22961B40c89F82a6C47Fe8d138Efd4cdDc';
@@ -208,17 +209,44 @@ export async function mintRegularPacks(amount, accountId) {
     if (window.ethereum) {
       console.log('Mint packs function called');
       await window.ethereum.request({ method: 'eth_requestAccounts' });
-      //@ts-ignore
-      const contract = new Contract(packStorageContractABI, regularPackStorageContractAddress);
-      contract.setProvider(window.ethereum);
 
+      const web3 = new Web3(window.ethereum);
+
+      const contract = new web3.eth.Contract(
+        packStorageContractABI,
+        regularPackStorageContractAddress
+      );
+
+      // Estimate gas for mintPacks function
+      console.log('Amount:', amount);
+      const gasEstimate = await contract.methods.mintPacks(amount).estimateGas({ from: accountId });
+      console.log('Estimated Gas:', gasEstimate);
+
+      const gasPrice = await web3.eth.getGasPrice();
+      const tx = {
+        from: accountId,
+        to: regularPackStorageContractAddress,
+        //@ts-ignore
+        gas: parseInt(gasEstimate),
+        gasPrice: gasPrice,
+        data: contract.methods.mintPacks(amount).encodeABI(),
+      };
       // Call mint regular packs function
-      const transaction = await contract.methods
-        .mintPacks(amount)
-        .send({ from: accountId, gas: '200000', gasPrice: '20000000000' });
-      console.log('Regular Pack minted successfully');
+      web3.eth
+        .sendTransaction(tx)
+        .on('transactionHash', function (hash) {
+          console.log('Transaction Hash:', hash);
+        })
+        //@ts-ignore
+        .on('confirmation', function (confirmationNumber, receipt) {
+          console.log('Confirmation Number:', confirmationNumber);
+          console.log('Receipt:', receipt);
+        })
+        .on('error', function (error) {
+          console.error('Error:', error);
+        });
 
-      return transaction;
+      console.log('Regular Pack minted successfully');
     }
   } catch (error) {
     console.error('Error minting regular pack:', error);
