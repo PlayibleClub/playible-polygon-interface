@@ -79,7 +79,7 @@ export default function PackDetails(props) {
   useEffect(() => {
     isTokenOwner();
     if (hasFetchedData === false) {
-      //fetchData();
+      fetchData();
     }
     console.log(packDetails);
   }, [hasFetchedData]);
