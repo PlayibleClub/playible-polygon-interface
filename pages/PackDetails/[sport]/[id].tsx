@@ -11,7 +11,9 @@ import BackFunction from 'components/buttons/BackFunction';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useWalletSelector } from 'contexts/WalletSelectorContext';
-
+import openPackAbi from 'utils/polygon/ABI/openPackAbi.json';
+import packNftAbi from 'utils/polygon/ABI/pack_nft.json';
+import Web3 from 'web3';
 export default function PackDetails(props) {
   const {
     state: { wallet },
@@ -31,10 +33,221 @@ export default function PackDetails(props) {
     id: id,
     sport: query.sport.toString().toUpperCase(),
   };
-
+  const openPackContractAddress = '0xd9dEAB4B51b8477f7ccD274413E66F6142877C49';
+  const regularPackStorageContractAddress = '0xc101792c937A61b39118083d470ad3bE4c5FC6D5';
   const [packDetails, setPackDetails] = useState([]);
   const [hasFetchedData, setHasFetchedData] = useState(false);
   const [isOwner, setIsOwner] = useState(null);
+
+  // async function requestAndMint() {
+  //   try {
+  //     if (window.ethereum) {
+  //       const provider = new ethers.BrowserProvider(window.ethereum);
+  //       await window.ethereum.request({ method: 'eth_requestAccounts' });
+
+  //       const OpenPack = new ethers.Contract(
+  //         openPackContractAddress,
+  //         openPackAbi,
+  //         await provider.getSigner()
+  //       );
+
+  //       const PackNft = new ethers.Contract(
+  //         regularPackStorageContractAddress,
+  //         packNftAbi,
+  //         await provider.getSigner()
+  //       );
+  //       // Request random words and get the requestId
+  //       const requestTransaction = await OpenPack.requestRandomWords();
+  //       const requestId = requestTransaction.hash;
+  //       console.log('Random words requested successfully, requestId:', requestId);
+
+  //       // Wait for the transaction to be mined
+  //       await provider.waitForTransaction(requestId);
+
+  //       // Get the user's address
+  //       const signer = await provider.getSigner();
+  //       const userAddress = await signer.getAddress();
+  //       console.log(userAddress, id);
+
+  //       // Use the user's address to fetch the requestId
+  //       const fetchedRequestId = await OpenPack.getRequestIdByUser(userAddress);
+  //       console.log('Fetched requestId:', fetchedRequestId);
+
+  //       // Poll for request status until it's fulfilled
+  //       let loopCount = 0; // Initialize loop counter
+  //       const intervalId = setInterval(async () => {
+  //         loopCount++; // Increment loop counter
+  //         console.log('Checking request status...', loopCount); // Log each loop iteration
+  //         let requestStatus = await OpenPack.getRequestStatus(fetchedRequestId);
+  //         if (requestStatus.fulfilled) {
+  //           clearInterval(intervalId);
+  //           // Once the request is fulfilled, mint the batch
+  //           const mintTransaction = await OpenPack.mintBatch(fetchedRequestId);
+  //           console.log('Batch minted successfully');
+  //           console.log(mintTransaction.hash, 'mint transaction hash');
+
+  //           const burnTransaction = await PackNft.burn(userAddress, id);
+  //           console.log('Token burned successfully');
+  //           console.log(burnTransaction.hash, 'burn transaction hash');
+
+  //           // Use client-side routing to navigate to TokenDrawPage
+  //           router.push(`/TokenDrawPage/${mintTransaction.hash}`);
+  //         }
+  //       }, 5000); // Check every 5 seconds
+  //     }
+  //   } catch (error) {
+  //     console.error('Error in request and mint process:', error);
+  //   }
+  // }
+
+  // async function requestAndMint() {
+  //   try {
+  //     if (window.ethereum) {
+  //       await window.ethereum.request({ method: 'eth_requestAccounts' });
+  //       const web3 = new Web3(window.ethereum);
+
+  //       const OpenPack = new web3.eth.Contract(openPackAbi, openPackContractAddress);
+
+  //       const PackNft = new web3.eth.Contract(packNftAbi, regularPackStorageContractAddress);
+
+  //       const accounts = await web3.eth.getAccounts();
+  //       const userAddress = accounts[0];
+
+  //       const gasLimit = await web3.eth.getGasPrice();
+
+  //       const tx = {
+  //         from: userAddress,
+  //         to: regularPackStorageContractAddress,
+  //         //@ts-ignore
+  //         gas: parseInt(gasEstimate),
+  //         gasPrice: gasLimit,
+  //         data: OpenPack.methods.gerRandomWords().encodeABI(),
+  //       };
+
+  //       const requestId = tx.transactionHash;
+  //       console.log('Random words requested successfully, requestId:', requestId);
+
+  //       // @ts-ignore
+  //       const fetchedRequestId = await OpenPack.methods.getRequestIdByUser(userAddress).call();
+  //       console.log('Fetched requestId:', fetchedRequestId);
+
+  //       let loopCount = 0;
+  //       const intervalId = setInterval(async () => {
+  //         loopCount++;
+  //         console.log('Checking request status...', loopCount);
+  //         // @ts-ignore
+
+  //         let requestStatus = await OpenPack.methods.getRequestStatus(fetchedRequestId).call();
+  //         // @ts-ignore
+
+  //         if (requestStatus.fulfilled) {
+  //           clearInterval(intervalId);
+  //           const mintTransaction = await OpenPack.methods
+  //             // @ts-ignore
+  //             .mintBatch(fetchedRequestId)
+  //             .sendTransaction(tx);
+  //           console.log('Batch minted successfully');
+  //           console.log(mintTransaction.transactionHash, 'mint transaction hash');
+
+  //           const burnTransaction = await PackNft.methods
+  //             // @ts-ignore
+  //             .burn(userAddress, id)
+  //             .send({ from: userAddress, gas: gasLimit });
+  //           console.log('Token burned successfully');
+  //           console.log(burnTransaction.transactionHash, 'burn transaction hash');
+
+  //           router.push(`/TokenDrawPage/${mintTransaction.transactionHash}`);
+  //         }
+  //       }, 5000);
+  //     }
+  //   } catch (error) {
+  //     console.error('Error in request and mint process:', error);
+  //   }
+  // }
+  async function requestAndMint() {
+    try {
+      if (window.ethereum) {
+        await window.ethereum.request({ method: 'eth_requestAccounts' });
+
+        const web3 = new Web3(window.ethereum);
+
+        const contract = new web3.eth.Contract(openPackAbi, openPackContractAddress);
+        const accounts = await web3.eth.getAccounts();
+
+        // Estimate gas for mintPacks function
+        const gasEstimate = await contract.methods
+          .requestRandomWords()
+          .estimateGas({ from: accounts[0] });
+        console.log('Estimated Gas:', gasEstimate);
+
+        const gasPrice = await web3.eth.getGasPrice();
+        const tx = {
+          from: accounts[0],
+          to: openPackContractAddress,
+          //@ts-ignore
+          gas: parseInt(gasEstimate),
+          gasPrice: gasPrice,
+          data: contract.methods.requestRandomWords().encodeABI(),
+        };
+
+        // Call mint regular packs function
+        const receipt = await web3.eth.sendTransaction(tx).on('transactionHash', function (hash) {
+          console.log('Transaction Hash:', hash);
+        });
+
+        console.log('Request Successful');
+
+        // Get requestId by user
+        //@ts-ignore
+        const requestId = await contract.methods.getRequestIdByUser(accounts[0]).call();
+        console.log('Random words requested successful, requestId:', requestId);
+
+        let loopCount = 0;
+        const intervalId = setInterval(async () => {
+          loopCount++;
+          console.log('Checking request status...', loopCount);
+
+          //@ts-ignore
+          let fulfilled = await contract.methods.getRequestStatus(requestId).call();
+
+          //@ts-ignore
+          if (fulfilled.fulfilled) {
+            clearInterval(intervalId);
+            // Estimate gas for mintPacks function
+            const gasEstimate = await contract.methods
+              //@ts-ignore
+              .mintBatch(requestId)
+              .estimateGas({ from: accounts[0] });
+            console.log('Estimated Gas:', gasEstimate);
+
+            const gasPrice = await web3.eth.getGasPrice();
+            const mintTx = {
+              from: accounts[0],
+              to: openPackContractAddress,
+              //@ts-ignore
+              gas: parseInt(gasEstimate),
+              gasPrice: gasPrice,
+              //@ts-ignore
+              data: contract.methods.mintBatch(requestId).encodeABI(),
+            };
+
+            const mintReceipt = await web3.eth
+              .sendTransaction(mintTx)
+              .on('transactionHash', function (hash) {
+                console.log('Mint Transaction Hash:', hash);
+              })
+              .on('receipt', function (receipt) {
+                console.log('Minting Successful');
+
+                router.push(`/TokenDrawPage/${receipt.transactionHash}`);
+              });
+          }
+        }, 5000); // Check every 5 seconds
+      }
+    } catch (error) {
+      console.error('Error Request and Mint:', error);
+    }
+  }
 
   async function fetchData() {
     try {
@@ -65,31 +278,31 @@ export default function PackDetails(props) {
     }
   }
 
-  async function isTokenOwner() {
-    try {
-      const owner = await checkTokenOwner(wallet, id);
+  // async function isTokenOwner() {
+  //   try {
+  //     const owner = await checkTokenOwner(wallet, id);
 
-      console.log(Number(owner));
-      setIsOwner(Number(owner));
-    } catch (error) {
-      console.error(error);
-    }
-  }
+  //     console.log(Number(owner));
+  //     setIsOwner(Number(owner));
+  //   } catch (error) {
+  //     console.error(error);
+  //   }
+  // }
 
-  useEffect(() => {
-    isTokenOwner();
-    if (hasFetchedData === false) {
-      //fetchData();
-    }
-    console.log(packDetails);
-  }, [hasFetchedData]);
+  // useEffect(() => {
+  //   isTokenOwner();
+  //   if (hasFetchedData === false) {
+  //     //fetchData();
+  //   }
+  //   console.log(packDetails);
+  // }, [hasFetchedData]);
 
-  useEffect(() => {
-    if (isOwner === 0) {
-      alert("Pack token doesn't exist on this account. Returning to Packs Page");
-      router.push('/Packs');
-    }
-  }, [isOwner]);
+  // useEffect(() => {
+  //   if (isOwner === 0) {
+  //     alert("Pack token doesn't exist on this account. Returning to Packs Page");
+  //     router.push('/Packs');
+  //   }
+  // }, [isOwner]);
 
   return (
     <Container activeName="PACKS">
@@ -112,16 +325,13 @@ export default function PackDetails(props) {
               #{myPack.id}
             </div>
             <div className="text-sm">RELEASE 1</div>
-            {isOwner ? (
-              <button
-                className="bg-indigo-buttonblue text-indigo-white w-5/6 md:w-80 h-10 text-center font-bold text-sm mt-4"
-                onClick={() => 'Place Execute Open Pack Function Here'}
-              >
-                OPEN PACK
-              </button>
-            ) : (
-              ' '
-            )}
+
+            <button
+              className="bg-indigo-buttonblue text-indigo-white w-5/6 md:w-80 h-10 text-center font-bold text-sm mt-4"
+              onClick={() => requestAndMint()}
+            >
+              OPEN PACK
+            </button>
 
             {/* <Link
               href={`/TransferPack/${myPack.sport.toLowerCase()}/${encodeURIComponent(id)}/`}
