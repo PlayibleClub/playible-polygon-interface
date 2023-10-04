@@ -11,7 +11,9 @@ import BackFunction from 'components/buttons/BackFunction';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useWalletSelector } from 'contexts/WalletSelectorContext';
-
+import openPackAbi from 'utils/polygon/ABI/openPackAbi.json';
+import packNftAbi from 'utils/polygon/ABI/pack_nft.json';
+import Web3 from 'web3';
 export default function PackDetails(props) {
   const {
     state: { wallet },
@@ -31,10 +33,96 @@ export default function PackDetails(props) {
     id: id,
     sport: query.sport.toString().toUpperCase(),
   };
-
+  const openPackContractAddress = '0xd9dEAB4B51b8477f7ccD274413E66F6142877C49';
+  const regularPackStorageContractAddress = '0x00AdA1B38dFF832A8b85935B8B8BC9234024084A';
   const [packDetails, setPackDetails] = useState([]);
   const [hasFetchedData, setHasFetchedData] = useState(false);
   const [isOwner, setIsOwner] = useState(null);
+
+  async function requestAndMint() {
+    try {
+      if (window.ethereum) {
+        await window.ethereum.request({ method: 'eth_requestAccounts' });
+
+        const web3 = new Web3(window.ethereum);
+
+        const contract = new web3.eth.Contract(openPackAbi, openPackContractAddress);
+        const accounts = await web3.eth.getAccounts();
+
+        // Estimate gas for mintPacks function
+        const gasEstimate = await contract.methods
+          .requestRandomWords()
+          .estimateGas({ from: accounts[0] });
+        console.log('Estimated Gas:', gasEstimate);
+
+        const gasPrice = await web3.eth.getGasPrice();
+        const tx = {
+          from: accounts[0],
+          to: openPackContractAddress,
+          //@ts-ignore
+          gas: parseInt(gasEstimate),
+          gasPrice: gasPrice,
+          data: contract.methods.requestRandomWords().encodeABI(),
+        };
+
+        // Call mint regular packs function
+        const receipt = await web3.eth.sendTransaction(tx).on('transactionHash', function (hash) {
+          console.log('Transaction Hash:', hash);
+        });
+
+        console.log('Request Successful');
+
+        // Get requestId by user
+        //@ts-ignore
+        const requestId = await contract.methods.getRequestIdByUser(accounts[0]).call();
+        console.log('Random words requested successful, requestId:', requestId);
+
+        let loopCount = 0;
+        const intervalId = setInterval(async () => {
+          loopCount++;
+          console.log('Checking request status...', loopCount);
+
+          //@ts-ignore
+          let fulfilled = await contract.methods.getRequestStatus(requestId).call();
+
+          //@ts-ignore
+          if (fulfilled.fulfilled) {
+            clearInterval(intervalId);
+            // Estimate gas for mintPacks function
+            const gasEstimate = await contract.methods
+              //@ts-ignore
+              .mintBatch(requestId)
+              .estimateGas({ from: accounts[0] });
+            console.log('Estimated Gas:', gasEstimate);
+
+            const gasPrice = await web3.eth.getGasPrice();
+            const mintTx = {
+              from: accounts[0],
+              to: openPackContractAddress,
+              //@ts-ignore
+              gas: parseInt(gasEstimate),
+              gasPrice: gasPrice,
+              //@ts-ignore
+              data: contract.methods.mintBatch(requestId).encodeABI(),
+            };
+
+            const mintReceipt = await web3.eth
+              .sendTransaction(mintTx)
+              .on('transactionHash', function (hash) {
+                console.log('Mint Transaction Hash:', hash);
+              })
+              .on('receipt', function (receipt) {
+                console.log('Minting Successful');
+
+                router.push(`/TokenDrawPage/${receipt.transactionHash}`);
+              });
+          }
+        }, 5000); // Check every 5 seconds
+      }
+    } catch (error) {
+      console.error('Error Request and Mint:', error);
+    }
+  }
 
   async function fetchData() {
     try {
@@ -115,7 +203,7 @@ export default function PackDetails(props) {
             {isOwner ? (
               <button
                 className="bg-indigo-buttonblue text-indigo-white w-5/6 md:w-80 h-10 text-center font-bold text-sm mt-4"
-                onClick={() => 'Place Execute Open Pack Function Here'}
+                onClick={() => requestAndMint()}
               >
                 OPEN PACK
               </button>
