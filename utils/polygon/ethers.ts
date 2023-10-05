@@ -194,9 +194,8 @@ export async function fetchRegularPackTokenSupplyByOwner(account) {
       const contract = new Contract(packLogicContractABI, regularPackLogicContractAddress);
       contract.setProvider(window.ethereum);
 
-      const tokenSupply = await contract.methods
-        .getTokenSupplyByOwner(account)
-        .call({ from: account });
+      //@ts-ignore
+      const tokenSupply = await contract.methods.getTokenSupplyByOwner(account).call({ from: account });
       return tokenSupply;
     }
   } catch (error) {
