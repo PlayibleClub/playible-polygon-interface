@@ -191,7 +191,7 @@ export async function fetchRegularPackTokenSupplyByOwner(account) {
       console.log('Fetch regular pack token supply function called');
       await window.ethereum.request({ method: 'eth_requestAccounts' });
       //@ts-ignore
-      const contract = new Contract(packLogicContractABI, regularPackLogicContractAddress);
+      const contract = new Contract(packLogicNFLContractABI, regularPackNFLLogicContractAddress);
       contract.setProvider(window.ethereum);
 
       //@ts-ignore
