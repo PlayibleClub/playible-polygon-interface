@@ -20,14 +20,14 @@ import { isWindows } from 'react-device-detect';
 
 const promoPackContractAddress = '0xecdf1d718adf8930661a80b37bdbda83fdc538e3';
 // const regularPackStorageContractAddress = '0x672DBaFAE1F18642c0Ed845ab8bD5824a6F2D502';
-const regularPackStorageContractAddress = '0x00AdA1B38dFF832A8b85935B8B8BC9234024084A';
-const regularPackLogicContractAddress = '0xc101792c937A61b39118083d470ad3bE4c5FC6D5';
+const regularPackNFLStorageContractAddress = '0x00AdA1B38dFF832A8b85935B8B8BC9234024084A';
+const regularPackNFLLogicContractAddress = '0xc101792c937A61b39118083d470ad3bE4c5FC6D5';
 const regularNFLAthleteStorageAddress = '0x32ec30629f306261a8c38658d0dc4b2e1c493585';
 //const regularNFLAthleteLogicAddress = '0x6b53db22961B40c89F82a6C47Fe8d138Efd4cdDc';
 const regularNFLAthleteLogicAddress = '0x7454F97E507fBF1F65cf145ac3922d7c0cf9eB4C ';
 
-const packStorageContractABI = pack_nft_storage as unknown as packStorageABI;
-const packLogicContractABI = pack_nft_logic as unknown as packLogicABI;
+const packStorageNFLContractABI = pack_nft_storage as unknown as packStorageABI;
+const packLogicNFLContractABI = pack_nft_logic as unknown as packLogicABI;
 
 // export async function fetchPromoPackTokenMetadata(tokenId) {
 //   try {
@@ -153,7 +153,7 @@ export async function fetchRegularPackTokenMetadata(tokenId) {
     if (window.ethereum) {
       console.log('Fetch regular pack tokens for owner function called');
       await window.ethereum.request({ method: 'eth_requestAccounts' });
-      const contract = new Contract(packLogicContractABI, regularPackLogicContractAddress);
+      const contract = new Contract(packLogicNFLContractABI, regularPackNFLLogicContractAddress);
       contract.setProvider(window.ethereum);
 
       const metadata = await contract.methods.getTokenMetadataById(tokenId).call();
@@ -171,7 +171,7 @@ export async function fetchRegularPackTokensByOwner(account, fromIndex, limit) {
     if (window.ethereum) {
       console.log('Fetch regular pack tokens for owner function called');
       await window.ethereum.request({ method: 'eth_requestAccounts' });
-      const contract = new Contract(packLogicContractABI, regularPackLogicContractAddress);
+      const contract = new Contract(packLogicNFLContractABI, regularPackNFLLogicContractAddress);
       contract.setProvider(window.ethereum);
 
       const response = await contract.methods
@@ -213,8 +213,8 @@ export async function mintRegularPacks(amount, accountId) {
       const web3 = new Web3(window.ethereum);
 
       const contract = new web3.eth.Contract(
-        packStorageContractABI,
-        regularPackStorageContractAddress
+        packStorageNFLContractABI,
+        regularPackNFLStorageContractAddress
       );
 
       // Estimate gas for mintPacks function
@@ -225,7 +225,7 @@ export async function mintRegularPacks(amount, accountId) {
       const gasPrice = await web3.eth.getGasPrice();
       const tx = {
         from: accountId,
-        to: regularPackStorageContractAddress,
+        to: regularPackNFLStorageContractAddress,
         //@ts-ignore
         gas: parseInt(gasEstimate),
         gasPrice: gasPrice,
@@ -241,12 +241,11 @@ export async function mintRegularPacks(amount, accountId) {
         .on('confirmation', function (confirmationNumber, receipt) {
           console.log('Confirmation Number:', confirmationNumber);
           console.log('Receipt:', receipt);
+          console.log('Regular Pack minted successfully');
         })
         .on('error', function (error) {
           console.error('Error:', error);
         });
-
-      console.log('Regular Pack minted successfully');
     }
   } catch (error) {
     console.error('Error minting regular pack:', error);
@@ -258,7 +257,10 @@ export async function fetchAccountBalance(accountId) {
     if (window.ethereum) {
       console.log('Fetch account balance called');
       await window.ethereum.request({ method: 'eth_requestAccounts' });
-      const contract = new Contract(packStorageContractABI, regularPackStorageContractAddress);
+      const contract = new Contract(
+        packStorageNFLContractABI,
+        regularPackNFLStorageContractAddress
+      );
       contract.setProvider(window.ethereum);
 
       // Call the get account balance function
@@ -276,7 +278,10 @@ export async function fetchRegularPackPrice() {
     if (window.ethereum) {
       console.log('Fetch regular pack price called');
       await window.ethereum.request({ method: 'eth_requestAccounts' });
-      const contract = new Contract(packStorageContractABI, regularPackStorageContractAddress);
+      const contract = new Contract(
+        packStorageNFLContractABI,
+        regularPackNFLStorageContractAddress
+      );
       contract.setProvider(window.ethereum);
 
       // Call the get regular pack price function
@@ -295,7 +300,7 @@ export async function checkTokenOwner(account, id) {
     if (window.ethereum) {
       console.log('Fetch check token owner called');
       await window.ethereum.request({ method: 'eth_requestAccounts' });
-      const contract = new Contract(packLogicContractABI, regularPackLogicContractAddress);
+      const contract = new Contract(packLogicNFLContractABI, regularPackNFLLogicContractAddress);
       contract.setProvider(window.ethereum);
 
       // Call the getTokenOwner function
