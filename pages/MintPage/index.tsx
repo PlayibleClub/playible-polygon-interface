@@ -4,13 +4,8 @@ import Main from '../../components/Main';
 import React, { useCallback, useEffect, useState } from 'react';
 import Image from 'next/image';
 import 'regenerator-runtime/runtime';
-import Head from 'next/head';
 import Select from 'react-select';
-import ProgressBar from '@ramonak/react-progress-bar';
-import Usdt from '../../public/images/SVG/usdt';
 import Usdc from '../../public/images/SVG/usdc';
-import USN from '../../public/images/SVG/usn';
-import NEAR from '../../public/images/SVG/near';
 import { useWalletSelector } from '../../contexts/WalletSelectorContext';
 import BigNumber from 'bignumber.js';
 import { getRPCProvider } from '../../utils/near';
@@ -24,6 +19,9 @@ import { execute_claim_soulbound_pack, query_claim_status } from 'utils/near/hel
 import Link from 'next/link';
 import { SPORT_TYPES, getSportType, SPORT_NAME_LOOKUP } from 'data/constants/sportConstants';
 import ModalPortfolioContainer from 'components/containers/ModalPortfolioContainer';
+import usdcABI from 'utils/polygon/ABI/usdcABI.json';
+import { ERC20ABI } from 'utils/polygon/ABI/usdcABI';
+import Web3 from 'web3';
 import {
   getIsPromoRedux,
   getSportTypeRedux,
@@ -33,8 +31,6 @@ import {
 import { persistor } from 'redux/athlete/store';
 import { getUTCDateFromLocal } from 'utils/date/helper';
 import moment from 'moment';
-import Button from 'components/buttons/Button';
-import { number } from 'prop-types';
 import {
   // claimSoulboundPack,
   // fetchClaimSoulboundStatus,
@@ -42,7 +38,7 @@ import {
   fetchAccountBalance,
   mintRegularPacks,
 } from 'utils/polygon/ethers';
-import { formatUnits, FixedFormat } from 'ethers';
+import { formatUnits } from 'ethers';
 import { current } from '@reduxjs/toolkit';
 const NANO_TO_SECONDS_DENOMINATOR = 1000000;
 const DECIMALS_USDC = 1000000;
@@ -86,6 +82,7 @@ export default function Home(props) {
   const [selectedMintAmount, setSelectedMintAmount] = useState(0);
   const [minted, setMinted] = useState(0);
   const [accountBalance, setAccountBalance] = useState(0);
+  const [accountERC20ApprovalAmount, setAccountERC20ApprovalAmount] = useState(0);
   const [mintedNba, setMintedNba] = useState(0);
   const [mintedMlb, setMintedMlb] = useState(0);
   const [mintedIpl, setMintedIpl] = useState(0);
@@ -108,6 +105,8 @@ export default function Home(props) {
   const [editModal, setEditModal] = useState(false);
   const [installMetamaskModal, setInstallMetamaskModal] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [remountComponent, setRemountComponent] = useState(0);
   const nflRegImage = '/images/packimages/nflStarterPack.png';
   const nbaRegImage = '/images/packimages/nbaStarterPack.png';
   const mlbRegImage = '/images/packimages/mlbStarterPack.png';
@@ -138,7 +137,11 @@ export default function Home(props) {
     }
     return (
       <Select
-        onChange={(event) => setSelectedMintAmount(event.value)}
+        onChange={(event) => {
+          setSelectedMintAmount(event.value);
+          setBalanceErrorMsg('');
+          setRemountComponent(Math.random());
+        }}
         options={optionMint}
         className="md:w-1/3 w-4/5 mr-9 mt-5"
       />
@@ -222,10 +225,101 @@ export default function Home(props) {
       days: format_days,
     };
   }
+  const regularPackStorageContractAddress = '0x00AdA1B38dFF832A8b85935B8B8BC9234024084A';
+  const usdcContractAddress = '0x0FA8781a83E46826621b3BC094Ea2A0212e71B23';
+  async function fetchUserERC20Allowance() {
+    try {
+      if (window.ethereum) {
+        await window.ethereum.request({ method: 'eth_requestAccounts' });
+        const web3 = new Web3(window.ethereum);
 
-  async function executeMintRegularPacks() {
+        const usdcERC20ContractABI = usdcABI as unknown as ERC20ABI;
+        const usdcContract = new web3.eth.Contract(usdcERC20ContractABI, usdcContractAddress, {
+          from: wallet,
+        });
+
+        const allowance = await usdcContract.methods
+          .allowance(wallet, regularPackStorageContractAddress)
+          .call();
+
+        setAccountERC20ApprovalAmount(Number(allowance));
+      }
+    } catch (error) {
+      console.error('Error fetching allowance:', error);
+    }
+  }
+
+  const approveERC20TokenSpending = useCallback(async () => {
+    try {
+      if (window.ethereum) {
+        await window.ethereum.request({ method: 'eth_requestAccounts' });
+        const web3 = new Web3(window.ethereum);
+
+        let amountToApprove = 1;
+
+        const usdcERC20ContractABI = usdcABI as unknown as ERC20ABI;
+        const usdcContract = new web3.eth.Contract(usdcERC20ContractABI, usdcContractAddress, {
+          from: wallet,
+        });
+
+        const usdcGasEstimate = await usdcContract.methods
+          .approve(regularPackStorageContractAddress, amountToApprove)
+          .estimateGas();
+
+        const gasPrice = await web3.eth.getGasPrice();
+        const tx = {
+          from: wallet,
+          to: usdcContractAddress,
+          //@ts-ignore
+          gas: parseInt(usdcGasEstimate),
+          gasPrice: gasPrice,
+          data: usdcContract.methods
+            .approve(regularPackStorageContractAddress, amountToApprove)
+            .encodeABI(),
+        };
+
+        web3.eth
+          .sendTransaction(tx)
+          .on('transactionHash', function (hash) {
+            console.log('Transaction Hash:', hash);
+          })
+          //@ts-ignore
+          .on('confirmation', function (confirmationNumber, receipt) {
+            console.log('Confirmation Number:', confirmationNumber);
+            console.log('Receipt:', receipt);
+          })
+          .on('error', function (error) {
+            console.error('Error:', error);
+          });
+      }
+    } catch (error) {
+      console.error('Error approving metamask address:', error);
+    }
+    setRemountComponent(Math.random());
+  }, []);
+
+  const executeMintRegularPacks = useCallback(async () => {
     let mint_cost =
       (Number(minterConfig.minting_price_decimals_6) * selectedMintAmount) / DECIMALS_USDC;
+    if (accountERC20ApprovalAmount / DECIMALS_USDC < mint_cost) {
+      setBalanceErrorMsg(
+        'Not enough approved ERC20 amount,' +
+          ' ' +
+          'you approved' +
+          ' ' +
+          accountERC20ApprovalAmount / DECIMALS_USDC +
+          ' ' +
+          usePOL141.title +
+          ' ' +
+          'you need' +
+          ' ' +
+          mint_cost +
+          ' ' +
+          usePOL141.title
+      );
+      setRemountComponent(Math.random());
+      return;
+    }
 
     console.log(mint_cost);
     if (accountBalance < mint_cost && currentSport === 'FOOTBALL') {
@@ -240,36 +334,18 @@ export default function Home(props) {
           usePOL141.title
       );
       return;
-    } else if (accountBalance < mint_cost && currentSport === 'BASEBALL') {
-      setBalanceErrorMsg(
-        'Error you need ' +
-          selectedMintAmount * Number(minterConfig.minting_price_decimals_6) +
-          ' ' +
-          usePOL141.title +
-          ', You have ' +
-          accountBalance.toFixed(2) +
-          ' ' +
-          usePOL141.title
-      );
-      return;
     }
     setBalanceErrorMsg('');
 
     try {
-      await mintRegularPacks(selectedMintAmount, wallet)
-        .then((txHash) => {
-          console.log('Transaction Hash:', txHash);
-          // Handle the transaction hash as needed (e.g., display it on the UI)
-        })
-        .catch((error) => {
-          console.error('Error:', error);
-          // Handle the error (e.g., display an error message on the UI)
-        });
+      const txHash = await mintRegularPacks(selectedMintAmount, wallet);
+      console.log('Transaction Hash:', txHash);
+      setRemountComponent(Math.random());
       reduxDispatch(setSportTypeRedux(currentSport));
     } catch (error) {
       console.error('Error minting regular pack:', error);
     }
-  }
+  }, [accountBalance, currentSport, minterConfig, selectedMintAmount, wallet]);
 
   // async function fetchClaimStatus(accountId) {
   //   const isClaimed = await fetchClaimSoulboundStatus(accountId);
@@ -321,7 +397,7 @@ export default function Home(props) {
 
   useEffect(() => {
     fetchPackPrice();
-  }, [currentSport, usePOL141, accountBalance]);
+  }, [currentSport, usePOL141, accountBalance, accountERC20ApprovalAmount]);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -336,8 +412,10 @@ export default function Home(props) {
   }, [intervalSale]);
 
   useEffect(() => {
+    fetchUserERC20Allowance();
     fetchUserAccountBalance();
-  }, [currentSport, minterConfig, wallet]);
+    console.log('Approved Amount:', accountERC20ApprovalAmount);
+  }, [currentSport, minterConfig, wallet, remountComponent]);
 
   useEffect(() => {
     if (!isMetamaskInstalled) {
@@ -373,6 +451,11 @@ export default function Home(props) {
     }
   }, []);
 
+  useEffect(() => {
+    if (remountComponent !== 0) {
+    }
+  }, [remountComponent]);
+
   function formatTime(time) {
     return time < 10 ? '0' + time : time;
   }
@@ -393,23 +476,6 @@ export default function Home(props) {
     }, 1000);
     return () => clearInterval(id);
   }, []);
-
-  // useEffect(() => {
-  //   setDay(0);
-  //   setHour(0);
-  //   setMinute(0);
-  //   setSecond(0);
-  //   const id = setInterval(() => {
-  //     const currentDate = getUTCDateFromLocal();
-  //     // const end = moment.utc(1674144000000);
-  //     const end = moment.utc(discountTimer);
-  //     setDiscountDay(formatTime(Math.floor(end.diff(currentDate, 'second') / 3600 / 24)));
-  //     setDiscountHour(formatTime(Math.floor((end.diff(currentDate, 'second') / 3600) % 24)));
-  //     setDiscountMinute(formatTime(Math.floor((end.diff(currentDate, 'second') / 60) % 60)));
-  //     setDiscountSecond(formatTime(Math.floor(end.diff(currentDate, 'second') % 60)));
-  //   }, 1000);
-  //   return () => clearInterval(id);
-  // }, []);
 
   return (
     <>
@@ -610,12 +676,21 @@ export default function Home(props) {
                         /*parseInt(String(storageDepositAccountBalance)) >= selectedMintAmount * MINT_STORAGE_COST*/
                       } ? (
                         <>
-                          <button
-                            className="w-9/12 flex text-center justify-center items-center bg-indigo-buttonblue font-montserrat text-indigo-white p-4 text-xs mt-8 "
-                            onClick={() => executeMintRegularPacks()}
-                          >
-                            Mint {Math.floor(selectedMintAmount * format_price())} USDT
-                          </button>
+                          {accountERC20ApprovalAmount !== null && (
+                            <button
+                              className="w-9/12 flex text-center justify-center items-center bg-indigo-buttonblue font-montserrat text-indigo-white p-4 text-xs mt-8"
+                              onClick={
+                                accountERC20ApprovalAmount <= 0
+                                  ? () => approveERC20TokenSpending()
+                                  : () => executeMintRegularPacks()
+                              }
+                              key={remountComponent}
+                            >
+                              {accountERC20ApprovalAmount <= 0
+                                ? 'APPROVE THIS SMART CONTRACT TO SPEND YOUR TOKENS'
+                                : `Mint ${Math.floor(selectedMintAmount * format_price())} USDT`}
+                            </button>
+                          )}
                           {currentSport === 'FOOTBALL' ? (
                             <div className="flex-col mt-10 hidden">
                               <div>
