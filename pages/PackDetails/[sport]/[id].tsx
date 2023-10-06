@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import {
-  fetchPromoPackTokenMetadata,
+  // fetchPromoPackTokenMetadata,
   fetchRegularPackTokenMetadata,
   checkTokenOwner,
 } from 'utils/polygon/ethers';
@@ -79,7 +79,7 @@ export default function PackDetails(props) {
   useEffect(() => {
     isTokenOwner();
     if (hasFetchedData === false) {
-      //fetchData();
+      fetchData();
     }
     console.log(packDetails);
   }, [hasFetchedData]);
