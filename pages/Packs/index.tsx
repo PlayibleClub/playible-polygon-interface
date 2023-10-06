@@ -107,6 +107,7 @@ export default function Packs() {
       case 'PROMOTIONAL':
         if ((sportList.length = 0)) {
           setSportList(prevSport);
+          setRemountComponent(Math.random());
         }
         setCurrentTotal(soulboundPacks.length);
         break;
@@ -206,11 +207,49 @@ export default function Packs() {
     } catch (error) {
       console.error('Error parsing JSON:', error);
     }
+    try {
+      const tokens = await fetchRegularPackTokensByOwner(wallet, packOffset, packLimit);
+
+      const tokenIds = tokens[1]; // Assuming tokenIds is the second element
+      const metadata = tokens[2]; // Assuming metadata is the third element
+
+      //change metadata to contents instead of just retrieving the IPFS Link
+      const updatedTokens = await Promise.all(
+        metadata
+          .filter((metadataObject) => metadataObject) // Filter out empty metadataObjects
+          .map(async (metadataObject) => {
+            const metadata = JSON.parse(metadataObject).metadata;
+            const response = await fetch(metadata);
+            return response.json(); // Directly parse the response as JSON
+          })
+      );
+
+      const tokenIdsArray = Object.values(tokenIds);
+      //restructures array for better mapping
+      const structuredTokens = tokenIdsArray
+        .filter((_, index) => updatedTokens[index] !== undefined)
+        .map((tokenId, index) => {
+          return {
+            token_id: Number(tokenId),
+            metadata: updatedTokens[index], // Assuming updatedTokens is an array of objects
+          };
+        });
+
+      setPacks(structuredTokens);
+    } catch (error) {
+      console.error('Error parsing JSON:', error);
+    }
   }
 
-  async function fetchRegularTokens() {}
-
   async function fetchTokenSupply() {
+    try {
+      const resultFootball = await fetchRegularPackTokenSupplyByOwner(wallet);
+
+      console.log(resultFootball);
+      setTotalPacks(Number(resultFootball));
+    } catch (error) {
+      console.error(error);
+    }
     try {
       const resultFootball = await fetchRegularPackTokenSupplyByOwner(wallet);
 
@@ -262,6 +301,7 @@ export default function Packs() {
       console.log(`Loading packs from ${packOffset} to ${endOffset}`);
       fetchTokens();
       console.log('isClaimedStatus', isClaimed);
+      console.log(totalSupply);
     } else {
       console.log('Account Id not found');
     }
