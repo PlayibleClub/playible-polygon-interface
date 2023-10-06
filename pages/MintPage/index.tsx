@@ -287,6 +287,7 @@ export default function Home(props) {
           .on('confirmation', function (confirmationNumber, receipt) {
             console.log('Confirmation Number:', confirmationNumber);
             console.log('Receipt:', receipt);
+            handleButtonChange();
           })
           .on('error', function (error) {
             console.error('Error:', error);
@@ -295,8 +296,7 @@ export default function Home(props) {
     } catch (error) {
       console.error('Error approving metamask address:', error);
     }
-    setRemountComponent(Math.random());
-  }, []);
+  }, [wallet, accountERC20ApprovalAmount]);
 
   const executeMintRegularPacks = useCallback(async () => {
     let mint_cost =
@@ -317,7 +317,6 @@ export default function Home(props) {
           ' ' +
           usePOL141.title
       );
-      setRemountComponent(Math.random());
       return;
     }
 
@@ -340,7 +339,6 @@ export default function Home(props) {
     try {
       const txHash = await mintRegularPacks(selectedMintAmount, wallet);
       console.log('Transaction Hash:', txHash);
-      setRemountComponent(Math.random());
       reduxDispatch(setSportTypeRedux(currentSport));
     } catch (error) {
       console.error('Error minting regular pack:', error);
@@ -450,6 +448,11 @@ export default function Home(props) {
       setEditModal(true);
     }
   }, []);
+
+  async function handleButtonChange() {
+    setSelectedMintAmount(0);
+    setRemountComponent(Math.random());
+  }
 
   useEffect(() => {
     if (remountComponent !== 0) {
@@ -680,13 +683,17 @@ export default function Home(props) {
                             <button
                               className="w-9/12 flex text-center justify-center items-center bg-indigo-buttonblue font-montserrat text-indigo-white p-4 text-xs mt-8"
                               onClick={
-                                accountERC20ApprovalAmount <= 0
+                                accountERC20ApprovalAmount <= 0 ||
+                                accountERC20ApprovalAmount <
+                                  Number(minterConfig.minting_price_decimals_6) * selectedMintAmount
                                   ? () => approveERC20TokenSpending()
                                   : () => executeMintRegularPacks()
                               }
                               key={remountComponent}
                             >
-                              {accountERC20ApprovalAmount <= 0
+                              {accountERC20ApprovalAmount <= 0 ||
+                              accountERC20ApprovalAmount <
+                                Number(minterConfig.minting_price_decimals_6) * selectedMintAmount
                                 ? 'APPROVE THIS SMART CONTRACT TO SPEND YOUR TOKENS'
                                 : `Mint ${Math.floor(selectedMintAmount * format_price())} USDT`}
                             </button>
