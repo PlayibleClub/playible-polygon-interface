@@ -24,7 +24,7 @@ export default function PackDetails(props) {
   const [details, setDetails] = useState({
     receiverAccount: '',
   });
-  const { selector, accountId } = useWalletSelector();
+  const { state: wallet } = useWalletSelector();
   const router = useRouter();
   const id = query.id.toString();
   const myPack = {
@@ -53,7 +53,7 @@ export default function PackDetails(props) {
     await query_nft_tokens_by_id(myPack.id, contract).then((data) => {
       //@ts-ignore:next-lines
       const result = JSON.parse(Buffer.from(data.result).toString());
-      if (result.owner_id !== accountId) {
+      if (result.owner_id !== wallet) {
         router.push('/Packs');
       }
       setPackDetails([result]);
@@ -61,44 +61,42 @@ export default function PackDetails(props) {
   }
 
   async function execute_transfer_pack(selector) {
-    const contract = getSportType(myPack.sport);
-    const transferArgs = Buffer.from(
-      JSON.stringify({
-        msg: 'Transfer' + ' ' + myPack.sport.toLowerCase() + ' ' + myPack.packName.toLowerCase(),
-        receiver_id: accountNameInfo?.toString(),
-        token_id: myPack.id,
-      })
-    );
-
-    const action_transfer_call = {
-      type: 'FunctionCall',
-      params: {
-        methodName: 'nft_transfer',
-        args: transferArgs,
-        gas: DEFAULT_MAX_FEES,
-        deposit: 1,
-      },
-    };
-
-    const wallet = await selector.wallet();
-    // @ts-ignore:next-line;
-    const tx = wallet.signAndSendTransactions({
-      transactions: [
-        {
-          receiverId:
-            myPack.packName === 'SOULBOUND PACK' || myPack.packName === 'PROMO PACK'
-              ? contract.packPromoContract
-              : contract.packContract,
-          //@ts-ignore:next-line
-          actions: [action_transfer_call],
-        },
-      ],
-    });
+    // const contract = getSportType(myPack.sport);
+    // const transferArgs = Buffer.from(
+    //   JSON.stringify({
+    //     msg: 'Transfer' + ' ' + myPack.sport.toLowerCase() + ' ' + myPack.packName.toLowerCase(),
+    //     receiver_id: accountNameInfo?.toString(),
+    //     token_id: myPack.id,
+    //   })
+    // );
+    // const action_transfer_call = {
+    //   type: 'FunctionCall',
+    //   params: {
+    //     methodName: 'nft_transfer',
+    //     args: transferArgs,
+    //     gas: DEFAULT_MAX_FEES,
+    //     deposit: 1,
+    //   },
+    // };
+    // const wallet = await selector.wallet();
+    // // @ts-ignore:next-line;
+    // const tx = wallet.signAndSendTransactions({
+    //   transactions: [
+    //     {
+    //       receiverId:
+    //         myPack.packName === 'SOULBOUND PACK' || myPack.packName === 'PROMO PACK'
+    //           ? contract.packPromoContract
+    //           : contract.packContract,
+    //       //@ts-ignore:next-line
+    //       actions: [action_transfer_call],
+    //     },
+    //   ],
+    // });
   }
 
   const handleButtonClick = (e) => {
     e.preventDefault();
-    execute_transfer_pack(selector);
+    // execute_transfer_pack(selector);
   };
 
   const onChangeReceiverAccount = (e) => {
@@ -127,7 +125,7 @@ export default function PackDetails(props) {
       errors.push('Account name cannot be empty.');
     }
     return errors;
-  }
+  };
 
   const validateName = () => {
     if (checkNameValidity().length > 0) {
@@ -148,10 +146,13 @@ export default function PackDetails(props) {
   return (
     <Container activeName="TRANSFER PACK">
       <div className="md:ml-6 mt-12">
-      <BackFunction prev={query.origin ? 
-        `/${query.origin}` : 
-        `/PackDetails/${myPack.sport.toLowerCase()}/${encodeURIComponent(id)}/`}>
-      </BackFunction>
+        <BackFunction
+          prev={
+            query.origin
+              ? `/${query.origin}`
+              : `/PackDetails/${myPack.sport.toLowerCase()}/${encodeURIComponent(id)}/`
+          }
+        ></BackFunction>
       </div>
       <div className="iphone5:mt-20 md:ml-6 md:mt-0">
         <PortfolioContainer textcolor="indigo-black" title="TRANSFER PACK" />

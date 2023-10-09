@@ -2,93 +2,69 @@ import React, { useState, useCallback, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import DesktopHeader from './DesktopHeader';
 import Button from '../buttons/Button';
-import { providers } from 'near-api-js';
-import type { Account, Message } from '../../interfaces';
-import type { AccountView } from 'near-api-js/lib/providers/provider';
-import { getRPCProvider } from 'utils/near';
-import { useWalletSelector } from '../../contexts/WalletSelectorContext';
+import useViewport from 'utils/address/helper';
+import { useWalletSelector } from 'contexts/WalletSelectorContext';
 
 const DesktopHeaderBase = () => {
-  const { selector, modal, accounts, accountId } = useWalletSelector();
-  const [account, setAccount] = useState<Account | null>(null);
-  const [messages, setMessages] = useState<Array<Message>>([]);
-  const [loading, setLoading] = useState<boolean>(false);
+  const { cutAddress } = useViewport();
+  const {
+    dispatch,
+    state: { wallet },
+  } = useWalletSelector();
 
-  const getAccount = useCallback(async () => {
-    if (!accountId) {
-      return null;
-    }
+  const [loading, setLoading] = useState(false);
 
-    const { network } = selector.options;
-    const provider = new providers.JsonRpcProvider({ url: getRPCProvider() });
+  const connectWallet = async () => {
+    if (!wallet) {
+      setLoading(true);
+      const accounts = await window.ethereum.request({
+        method: 'eth_requestAccounts',
+      });
 
-    return provider
-      .query<AccountView>({
-        request_type: 'view_account',
-        finality: 'final',
-        account_id: accountId,
-      })
-      .then((data) => ({
-        ...data,
-        account_id: accountId,
-      }));
-  }, [accountId, selector.options]);
-
-  const logIn = () => {
-    modal.show();
-  };
-
-  const logOut = async () => {
-    const wallet = await selector.wallet();
-
-    wallet.signOut().catch((err) => {
-      console.log('Failed to sign out');
-      console.error(err);
-    });
-  };
-
-  useEffect(() => {
-    if (!accountId) {
-      return setAccount(null);
-    }
-
-    setLoading(true);
-
-    getAccount().then((nextAccount) => {
-      setAccount(nextAccount);
       setLoading(false);
-    });
-  }, [accountId, getAccount]);
+      dispatch({ type: 'connect', wallet: accounts[0] });
+      // @ts-ignore
+      window.ethereum.on('accountsChanged', function (accounts) {
+        // Time to reload your interface with accounts[0]!
+        dispatch({ type: 'connect', wallet: accounts[0] });
+      });
+    }
+  };
+
+  const disconnectWallet = async () => {
+    if (wallet) {
+      dispatch({ type: 'disconnect' });
+    }
+  };
+
   const renderWallet = () => {
-    {
-      if (accountId) {
-        return (
-          <Button
-            textColor="white-light font-bold"
-            color="indigo-buttonblue"
-            rounded="rounded-md"
-            size="h-full py-1 px-1"
-            onClick={logOut}
-          >
-            {accountId}
-          </Button>
-        );
-      } else {
-        return (
-          <Button
-            rounded="rounded-sm "
-            textColor="white-light"
-            color="indigo-buttonblue"
-            onClick={logIn}
-            size="py-1 px-1 h-full"
-          >
-            <div className="flex flex-row text-sm h-12 items-center">
-              <div className="text-xs text-light">Connect Wallet</div>
-              <img className="ml-3 h-4 w-4" src="/images/wallet.png" alt="Img" />
-            </div>
-          </Button>
-        );
-      }
+    if (wallet) {
+      return (
+        <Button
+          textColor="white-light font-bold"
+          color="indigo-buttonblue"
+          rounded="rounded-md"
+          size="h-full py-1 px-1"
+          onClick={disconnectWallet}
+        >
+          {cutAddress(wallet)}
+        </Button>
+      );
+    } else {
+      return (
+        <Button
+          rounded="rounded-sm "
+          textColor="white-light"
+          color="indigo-buttonblue"
+          onClick={connectWallet}
+          size="py-1 px-1 h-full"
+        >
+          <div className="flex flex-row text-sm h-12 items-center">
+            <div className="text-xs text-light">Connect Wallet</div>
+            <img className="ml-3 h-4 w-4" src="/images/wallet.png" alt="Img" />
+          </div>
+        </Button>
+      );
     }
   };
 

@@ -6,7 +6,7 @@ import { DEFAULT_MAX_FEES, MINT_STORAGE_COST } from 'data/constants/gasFees';
 import BigNumber from 'bignumber.js';
 
 export default function Promotional(props) {
-  const { selector, modal, accounts, accountId } = useWalletSelector();
+  const { state: wallet } = useWalletSelector();
   const [whitelistInfoNFL, setWhitelistInfoNFL] = useState(null);
   const [whitelistInfoNBA, setWhitelistInfoNBA] = useState(null);
   const [whitelistInfoMLB, setWhitelistInfoMLB] = useState(null);
@@ -25,43 +25,40 @@ export default function Promotional(props) {
     receiverAccount: '',
   });
   async function execute_send_type_1_pack(selector) {
-    const transferArgs = Buffer.from(
-      JSON.stringify({
-        msg: 'Promotional pack',
-        receiver_id:
-          currentSport === SPORT_NAME_LOOKUP.football
-            ? whitelistInfoNFL?.toString()
-            : currentSport === SPORT_NAME_LOOKUP.baseball
-            ? whitelistInfoMLB?.toString()
-            : currentSport === SPORT_NAME_LOOKUP.basketball
-            ? whitelistInfoNBA?.toString()
-            : whitelistInfoCRICKET?.toString(),
-      })
-    );
-
-    const deposit = new BigNumber(MINT_STORAGE_COST).toFixed();
-
-    const action_transfer_call = {
-      type: 'FunctionCall',
-      params: {
-        methodName: 'send_type_1_pack',
-        args: transferArgs,
-        gas: DEFAULT_MAX_FEES,
-        deposit: deposit,
-      },
-    };
-
-    const wallet = await selector.wallet();
-    // @ts-ignore:next-line;
-    const tx = wallet.signAndSendTransactions({
-      transactions: [
-        {
-          receiverId: getSportType(currentSport).packPromoContract,
-          //@ts-ignore:next-line
-          actions: [action_transfer_call],
-        },
-      ],
-    });
+    // const transferArgs = Buffer.from(
+    //   JSON.stringify({
+    //     msg: 'Promotional pack',
+    //     receiver_id:
+    //       currentSport === SPORT_NAME_LOOKUP.football
+    //         ? whitelistInfoNFL?.toString()
+    //         : currentSport === SPORT_NAME_LOOKUP.baseball
+    //         ? whitelistInfoMLB?.toString()
+    //         : currentSport === SPORT_NAME_LOOKUP.basketball
+    //         ? whitelistInfoNBA?.toString()
+    //         : whitelistInfoCRICKET?.toString(),
+    //   })
+    // );
+    // const deposit = new BigNumber(MINT_STORAGE_COST).toFixed();
+    // const action_transfer_call = {
+    //   type: 'FunctionCall',
+    //   params: {
+    //     methodName: 'send_type_1_pack',
+    //     args: transferArgs,
+    //     gas: DEFAULT_MAX_FEES,
+    //     deposit: deposit,
+    //   },
+    // };
+    // const wallet = await selector.wallet();
+    // // @ts-ignore:next-line;
+    // const tx = wallet.signAndSendTransactions({
+    //   transactions: [
+    //     {
+    //       receiverId: getSportType(currentSport).packPromoContract,
+    //       //@ts-ignore:next-line
+    //       actions: [action_transfer_call],
+    //     },
+    //   ],
+    // });
   }
 
   const onChangeWhitelistNFL = (e) => {
@@ -142,7 +139,7 @@ export default function Promotional(props) {
 
   const handleButtonClick = (e) => {
     e.preventDefault();
-    execute_send_type_1_pack(selector);
+    // execute_send_type_1_pack(selector);
   };
 
   return (

@@ -56,7 +56,7 @@ const AthleteSelect = (props) => {
   const [team, setTeam] = useState(['allTeams']);
   const [name, setName] = useState(['allNames']);
   const [lineup, setLineup] = useState([]);
-  const { accountId } = useWalletSelector();
+  const { state: wallet } = useWalletSelector();
   const [pageCount, setPageCount] = useState(0);
   const [regPageCount, setRegPageCount] = useState(0);
   const [remountComponent, setRemountComponent] = useState(0);
@@ -68,7 +68,7 @@ const AthleteSelect = (props) => {
   async function get_filter_supply_for_owner() {
     setTotalRegularSupply(
       await query_filter_supply_for_owner(
-        accountId,
+        wallet,
         position,
         team,
         name,
@@ -80,7 +80,7 @@ const AthleteSelect = (props) => {
   async function get_filter_soulbound_supply_for_owner() {
     setTotalPromoSupply(
       await query_filter_supply_for_owner(
-        accountId,
+        wallet,
         position,
         team,
         name,
@@ -119,7 +119,7 @@ const AthleteSelect = (props) => {
   }
   async function get_filter_tokens_for_owner(contract) {
     await query_filter_tokens_for_owner(
-      accountId,
+      wallet,
       athleteOffset,
       athleteLimit,
       position,
@@ -160,7 +160,7 @@ const AthleteSelect = (props) => {
   }
   async function get_mixed_tokens_for_pagination() {
     await query_mixed_tokens_pagination(
-      accountId,
+      wallet,
       isPromoPage,
       athleteOffset,
       promoOffset,

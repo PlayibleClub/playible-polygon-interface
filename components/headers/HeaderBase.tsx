@@ -9,58 +9,55 @@ import Header from '../headers/Header';
 import { useWalletSelector } from '../../contexts/WalletSelectorContext';
 import { AccountView } from 'near-api-js/lib/providers/provider';
 import { getRPCProvider } from 'utils/near';
-import useViewport  from 'utils/address/helper';
+import useViewport from 'utils/address/helper';
 
 const HeaderBase = () => {
-  const { selector, modal, accounts, accountId } = useWalletSelector();
-  const [account, setAccount] = useState<Account | null>(null);
   const { entryCut } = useViewport();
+  const {
+    dispatch,
+    state: { status, isMetamaskInstalled, isSignedIn, wallet },
+  } = useWalletSelector();
 
-  const getAccount = useCallback(async () => {
-    if (!accountId) {
-      return null;
+  const [loading, setLoading] = useState(false);
+
+  const showInstallMetamask = status !== 'pageNotLoaded' && !isMetamaskInstalled;
+  const showConnectButton = status !== 'pageNotLoaded' && isMetamaskInstalled;
+
+  const connectWallet = async () => {
+    if (!wallet) {
+      setLoading(true);
+      const accounts = await window.ethereum.request({
+        method: 'eth_requestAccounts',
+      });
+
+      setLoading(false);
+      dispatch({ type: 'connect', wallet: accounts[0] });
+      // @ts-ignore
+      window.ethereum.on('accountsChanged', function (accounts) {
+        // Time to reload your interface with accounts[0]!
+        dispatch({ type: 'connect', wallet: accounts[0] });
+      });
     }
-
-    const { network } = selector.options;
-    const provider = new providers.JsonRpcProvider({ url: getRPCProvider() });
-
-    return provider
-      .query<AccountView>({
-        request_type: 'view_account',
-        finality: 'final',
-        account_id: accountId,
-      })
-      .then((data) => ({
-        ...data,
-        account_id: accountId,
-      }));
-  }, [accountId, selector.options]);
-
-  const logOut = async () => {
-    const wallet = await selector.wallet();
-
-    wallet.signOut().catch((err) => {
-      console.log('Failed to sign out');
-      console.error(err);
-    });
   };
 
-  const logIn = () => {
-    modal.show();
+  const disconnectWallet = async () => {
+    if (wallet) {
+      dispatch({ type: 'disconnect' });
+    }
   };
 
   const renderWallet = () => {
     {
-      if (accountId) {
+      if (wallet) {
         return (
           <Button
             textColor="white-light font-bold"
             color="indigo-buttonblue"
             rounded="rounded-md"
             size="h-full py-1 px-1"
-            onClick={logOut}
+            onClick={disconnectWallet}
           >
-            {entryCut(accountId)}
+            {entryCut(wallet)}
           </Button>
         );
       } else {
@@ -69,7 +66,7 @@ const HeaderBase = () => {
             rounded="rounded-sm"
             textColor="white-light"
             color="indigo-buttonblue"
-            onClick={logIn}
+            onClick={connectWallet}
             size="py-1 px-1 h-full"
           >
             <div className="flex flex-row text-sm h-12 items-center">

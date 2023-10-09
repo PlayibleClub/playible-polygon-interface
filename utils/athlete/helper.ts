@@ -5,10 +5,11 @@ import {
   GET_CRICKET_ATHLETE_BY_ID,
   GET_CRICKET_SCHEDULE,
   GET_PLAYER_SCHEDULE,
+  GET_ATHLETE_BY_API_ID,
 } from '../queries';
 import { formatToUTCDate, getUTCTimestampFromLocal } from 'utils/date/helper';
 import { getSportType } from 'data/constants/sportConstants';
-
+import { AthleteIPFSMetadata, AthleteExtraMetadata } from 'utils/athlete/types';
 interface trait_type {
   athlete_id: string;
   rarity: string;
@@ -22,6 +23,38 @@ interface trait_type {
 
 // pull from graphQL and append the nft animation
 // return assembled Athlete
+async function getAthleteInfoByApiId(item, from, to) {
+  const { data } = await client.query({
+    query: GET_ATHLETE_BY_API_ID,
+    variables: {
+      getAthleteByApiId: parseFloat(item.metadata.properties.symbol),
+      from: from,
+      to: to,
+    },
+  });
+
+  const returningData = {
+    primary_id: item.metadata.properties.athleteId,
+    athlete_id: item.extra.tokenId,
+    rarity: 'test',
+    usage: 'test',
+    name: item.metadata.properties.name,
+    team: item.metadata.properties.team,
+    position: item.metadata.properties.position,
+    release: 'test',
+    isPromo: false,
+    isOpen: false,
+    animation: data.getAthleteByApiId.nftAnimation,
+    image: item.metadata.image,
+    fantasy_score: getAvgSeasonFantasyScore(data.getAthleteByApiId.stats),
+    stats_breakdown: data.getAthleteByApiId.stats,
+    isInGame: false,
+    isInjured: data.getAthleteByApiId.isInjured,
+    isActive: data.getAthleteByApiId.isActive,
+    playerHeadshot: data.getAthleteByApiId.playerHeadshot,
+  };
+  return returningData;
+}
 async function getAthleteInfoById(item, from, to) {
   //console.log(item.extra);
   let value = {} as trait_type;
@@ -217,6 +250,19 @@ function convertNftToAthlete(item) {
   };
 }
 
+function convertPolygonNftToAthlete(item) {
+  const extraMetadata: AthleteExtraMetadata = {
+    tokenId: item[0],
+    restrictedUntil: Number(item[1]),
+  };
+  const ipfsMetadata: AthleteIPFSMetadata = JSON.parse(item[2]);
+  return {
+    token_id: extraMetadata.tokenId,
+    metadata: ipfsMetadata,
+    extra: extraMetadata,
+  };
+}
+
 function getPositionDisplay(position, currentSport) {
   let flex = false;
   let found;
@@ -253,7 +299,7 @@ function checkInjury(injury) {
 }
 
 function cutAthleteName(name) {
-  const slice = name.slice(0, 12);
+  const slice = name?.slice(0, 12);
   const newName = slice + '...';
 
   return newName;
@@ -262,6 +308,7 @@ function cutAthleteName(name) {
 export {
   convertNftToAthlete,
   getAthleteInfoById,
+  getAthleteInfoByApiId,
   getPositionDisplay,
   checkInjury,
   cutAthleteName,
@@ -269,4 +316,5 @@ export {
   getCricketAthleteInfoById,
   getCricketSchedule,
   getPortfolioAssetDetailsById,
+  convertPolygonNftToAthlete,
 };
