@@ -34,7 +34,7 @@ export default function CreateLineup(props) {
   const currentSport = query.sport.toString().toUpperCase();
   const router = useRouter();
   const dispatch = useDispatch();
-  const { state: wallet } = useWalletSelector();
+  const { accountId } = useWalletSelector();
   const [gameData, setGameData] = useState(null);
   const [playerTeams, setPlayerTeams] = useState([]);
   // const [err, setErr] = useState(error);
@@ -135,13 +135,13 @@ export default function CreateLineup(props) {
   }, []);
   useEffect(() => {
     if (playerLineups !== undefined) {
-      sortPlayerTeamScores(wallet);
+      sortPlayerTeamScores(accountId);
     }
   }, [playerLineups]);
   useEffect(() => {
     if (gameData !== undefined && gameData !== null) {
       // console.log('Joined team counter: ' + gameData.joined_team_counter);
-      get_player_teams(wallet, gameId);
+      get_player_teams(accountId, gameId);
       get_all_players_lineup_with_index();
       //get_all_players_lineup_rposition(gameData.joined_team_counter);
     }
@@ -202,10 +202,10 @@ export default function CreateLineup(props) {
                         <ViewTeamsContainer
                           teamNames={data.teamName}
                           gameId={gameId}
-                          accountId={wallet}
+                          accountId={accountId}
                           fromGames={false}
                           onClickFn={() => {
-                            viewPopup(wallet, data.teamName);
+                            viewPopup(accountId, data.teamName);
                           }}
                         />
                       );

@@ -79,7 +79,7 @@ const PerformerContainer = (props) => {
       <div className="h-1/2 flex justify-center mb-6">
         <div className="flex flex-col w-28 mt-4">
           <div className="mt-2 text-xs font-bold uppercase">
-            {AthleteName?.length >= 14 ? cutAthleteName(AthleteName) : AthleteName}
+            {AthleteName.length >= 14 ? cutAthleteName(AthleteName) : AthleteName}
           </div>
           <div>
             <div className="group relative ml-28">

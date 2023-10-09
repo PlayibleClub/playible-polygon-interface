@@ -30,7 +30,7 @@ export default function CreateLineup(props) {
   const dispatch = useDispatch();
   const router = useRouter();
   const reduxLineup = useSelector(getAthleteLineup);
-  // const { selector } = useWalletSelector();
+  const { selector } = useWalletSelector();
   // @ts-ignore:next-line
   const [teamName, setTeamName] = useState('Team 1');
   const [gameData, setGameData] = useState([]);
@@ -66,32 +66,35 @@ export default function CreateLineup(props) {
   }
 
   async function execute_submit_lineup(game_id, team_name, token_ids, promo_ids) {
-    // const submitLineupArgs = Buffer.from(
-    //   JSON.stringify({
-    //     game_id: game_id,
-    //     team_name: team_name,
-    //     token_ids: token_ids.length === 0 ? null : token_ids,
-    //     token_promo_ids: promo_ids.length === 0 ? null : promo_ids,
-    //   })
-    // );
-    // const action_submit_lineup = {
-    //   type: 'FunctionCall',
-    //   params: {
-    //     methodName: 'submit_lineup',
-    //     args: submitLineupArgs,
-    //     gas: DEFAULT_MAX_FEES,
-    //   },
-    // };
-    // const wallet = await selector.wallet();
-    // const tx = wallet.signAndSendTransactions({
-    //   transactions: [
-    //     {
-    //       receiverId: getSportType(currentSport).gameContract,
-    //       //@ts-ignore:next-line
-    //       actions: [action_submit_lineup],
-    //     },
-    //   ],
-    // });
+    const submitLineupArgs = Buffer.from(
+      JSON.stringify({
+        game_id: game_id,
+        team_name: team_name,
+        token_ids: token_ids.length === 0 ? null : token_ids,
+        token_promo_ids: promo_ids.length === 0 ? null : promo_ids,
+      })
+    );
+
+    const action_submit_lineup = {
+      type: 'FunctionCall',
+      params: {
+        methodName: 'submit_lineup',
+        args: submitLineupArgs,
+        gas: DEFAULT_MAX_FEES,
+      },
+    };
+
+    const wallet = await selector.wallet();
+
+    const tx = wallet.signAndSendTransactions({
+      transactions: [
+        {
+          receiverId: getSportType(currentSport).gameContract,
+          //@ts-ignore:next-line
+          actions: [action_submit_lineup],
+        },
+      ],
+    });
   }
   function verifyLineup(game_id, team_name, lineup) {
     const token_ids = lineup
@@ -117,26 +120,30 @@ export default function CreateLineup(props) {
 
   const checkLineups = () => {
     let errors = [];
+  
+      const trueNumber = lineup.filter((player) => player.isAthlete === true).length;
+      const diff = lineup.length - trueNumber;
 
-    const trueNumber = lineup.filter((player) => player.isAthlete === true).length;
-    const diff = lineup.length - trueNumber;
-
-    if (lineup.length !== trueNumber) {
-      errors.push(`Add more Athletes. (Need ${diff} more)`);
-    }
-
+      if (lineup.length !== trueNumber) {
+        errors.push(`Add more Athletes. (Need ${diff} more)`);
+      }
+    
     return errors;
   };
-
+  
   const validateLineup = () => {
     const errors = checkLineups();
     if (errors.length > 0) {
-      alert(`ERROR: \n${errors.map((item) => '❌ ' + item).join(` \n`)}`.replace(',', ''));
+      alert(
+        `ERROR: \n${errors
+          .map((item) => '❌ ' + item)
+          .join(` \n`)}`.replace(',', '')
+      );
     } else {
       setSubmitModal(true);
     }
   };
-
+  
   const handleLineupClick = (game_id, position, athleteLineup, index, teamName) => {
     dispatch(setGameId(game_id));
     dispatch(setPosition(position));

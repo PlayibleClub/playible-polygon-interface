@@ -66,30 +66,6 @@ export const GET_ATHLETE_BY_ID = gql`
   }
 `;
 
-export const GET_ATHLETE_BY_API_ID = gql`
-  query GetAthleteByApiId($getAthleteByApiId: Float!, $to: DateTime, $from: DateTime) {
-    getAthleteByApiId(id: $getAthleteByApiId, to: $to, from: $from) {
-      nftAnimation
-      nftImage
-      isInjured
-      isActive
-      playerHeadshot
-      stats {
-        season
-        fantasyScore
-        week
-        type
-        opponent {
-          name
-          key
-        }
-        gameDate
-        played
-      }
-    }
-  }
-`;
-
 export const GET_CRICKET_ATHLETE_BY_ID = gql`
   query GetCricketAthleteById(
     $getCricketAthleteById: Float!

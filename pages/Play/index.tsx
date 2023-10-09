@@ -13,7 +13,7 @@ import { query_games_list, query_game_supply } from 'utils/near/helper';
 import { useWalletSelector } from 'contexts/WalletSelectorContext';
 
 const Play = (props) => {
-  const { state: wallet } = useWalletSelector();
+  const { accountId } = useWalletSelector();
   const [activeCategory, setCategory] = useState('NEW');
   const [offset, setOffset] = useState(0);
   const [pageCount, setPageCount] = useState(0);
@@ -206,13 +206,13 @@ const Play = (props) => {
       const upcomingGames = await Promise.all(
         result
           .filter((x) => x[1].start_time > getUTCTimestampFromLocal())
-          .map((item) => getGameInfoById(wallet, item, 'new', currentSport))
+          .map((item) => getGameInfoById(accountId, item, 'new', currentSport))
       );
 
       const completedGames = await Promise.all(
         result
           .filter((x) => x[1].end_time < getUTCTimestampFromLocal())
-          .map((item) => getGameInfoById(wallet, item, 'completed', currentSport))
+          .map((item) => getGameInfoById(accountId, item, 'completed', currentSport))
       );
 
       const ongoingGames = await Promise.all(
@@ -222,7 +222,7 @@ const Play = (props) => {
               x[1].start_time < getUTCTimestampFromLocal() &&
               x[1].end_time > getUTCTimestampFromLocal()
           )
-          .map((item) => getGameInfoById(wallet, item, 'on-going', currentSport))
+          .map((item) => getGameInfoById(accountId, item, 'on-going', currentSport))
       );
       upcomingGames.sort(function (a, b) {
         return a.start_time - b.start_time;
@@ -251,7 +251,7 @@ const Play = (props) => {
         const upcomingGames = await Promise.all(
           result
             .filter((x) => x[1].start_time > getUTCTimestampFromLocal())
-            .map((item) => getGameInfoById(wallet, item, 'new', sport))
+            .map((item) => getGameInfoById(accountId, item, 'new', sport))
         );
 
         const ongoingGames = await Promise.all(
@@ -261,7 +261,7 @@ const Play = (props) => {
                 x[1].start_time < getUTCTimestampFromLocal() &&
                 x[1].end_time > getUTCTimestampFromLocal()
             )
-            .map((item) => getGameInfoById(wallet, item, 'on-going', sport))
+            .map((item) => getGameInfoById(accountId, item, 'on-going', sport))
         );
 
         upcomingGames.sort(function (a, b) {
