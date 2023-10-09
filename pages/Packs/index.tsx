@@ -1,6 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { ethers } from 'ethers';
-import { fetchTokensByOwner, fetchTokenSupplyByOwner } from 'utils/polygon/ethers';
+import {
+  // claimSoulboundPack,
+  // fetchClaimSoulboundStatus,
+  // fetchPromoPackTokensByOwner,
+  // fetchPromoPackTokenSupplyByOwner,
+  fetchRegularPackTokenMetadata,
+  fetchRegularPackTokenSupplyByOwner,
+  fetchRegularPackTokensByOwner,
+} from 'utils/polygon/ethers';
 import PortfolioContainer from '../../components/containers/PortfolioContainer';
 import Container from '../../components/containers/Container';
 import Main from '../../components/Main';
@@ -15,14 +23,15 @@ import { getIsPromoRedux, getSportTypeRedux, setSportTypeRedux } from 'redux/ath
 import { persistor } from 'redux/athlete/store';
 import Modal from 'components/modals/Modal';
 import { SPORT_TYPES, getSportType, SPORT_NAME_LOOKUP } from 'data/constants/sportConstants';
+import { useWalletSelector } from 'contexts/WalletSelectorContext';
 export default function Packs() {
   const router = useRouter();
-  const dispatch = useDispatch();
+  const reduxDispatch = useDispatch();
 
-  // const provider = new ethers.providers.JsonRpcProvider(
-  //   'https://mainnet.infura.io/v3/YOUR_INFURA_PROJECT_ID'
-  // );
-  // const contract = new ethers.Contract(contractAddress, contractABI, provider);
+  const {
+    dispatch,
+    state: { status, isMetamaskInstalled, isSignedIn, wallet },
+  } = useWalletSelector();
 
   const [packs, setPacks] = useState([]);
   const [soulboundPacks, setSoulboundPacks] = useState([]);
@@ -161,16 +170,19 @@ export default function Packs() {
 
   const handleButtonClick = (e) => {
     e.preventDefault();
-    dispatch(setSportTypeRedux(currentSport));
+    reduxDispatch(setSportTypeRedux(currentSport));
   };
-  const userAccount = '0x8F60285800f298F24244ECfe969F2c8A3D2Cb2BC';
+
   async function fetchTokens() {
     try {
-      const tokens = await fetchTokensByOwner(userAccount, packOffset, packLimit);
+      const tokens = await fetchRegularPackTokensByOwner(wallet, packOffset, packLimit);
+
+      const tokenIds = tokens[1]; // Assuming tokenIds is the second element
+      const metadata = tokens[2]; // Assuming metadata is the third element
 
       //change metadata to contents instead of just retrieving the IPFS Link
       const updatedTokens = await Promise.all(
-        tokens.metadata
+        metadata
           .filter((metadataObject) => metadataObject) // Filter out empty metadataObjects
           .map(async (metadataObject) => {
             const metadata = JSON.parse(metadataObject).metadata;
@@ -179,7 +191,7 @@ export default function Packs() {
           })
       );
 
-      const tokenIdsArray = Object.values(tokens.tokenIds);
+      const tokenIdsArray = Object.values(tokenIds);
       //restructures array for better mapping
       const structuredTokens = tokenIdsArray
         .filter((_, index) => updatedTokens[index] !== undefined)
@@ -190,77 +202,73 @@ export default function Packs() {
           };
         });
 
-      setFootballSbPacks(structuredTokens);
+      setFootballPacks(structuredTokens);
     } catch (error) {
       console.error('Error parsing JSON:', error);
     }
   }
 
-  async function fetchTokenSupply() {
-    const resultFootballSb = fetchTokenSupplyByOwner(userAccount)
-      .then((supply) => setTotalSupply(supply))
-      .catch((error) => console.error(error));
+  async function fetchRegularTokens() {}
 
-    setTotalSupply(Number(resultFootballSb));
+  async function fetchTokenSupply() {
+    try {
+      const resultFootball = await fetchRegularPackTokenSupplyByOwner(wallet);
+
+      console.log(resultFootball);
+      setTotalSupply(Number(resultFootball));
+    } catch (error) {
+      console.error(error);
+    }
+    // try {
+    //   resultFootballSb = await fetchPromoPackTokenSupplyByOwner(userAccount);
+
+    //   setTotalSupply(resultFootballSb);
+    // } catch (error) {
+    //   console.error(error);
+    // }
   }
 
-  // async function fetchSoulboundTokens() {
-  //   try {
-  //     const tokens = await fetchTokensByOwner(userAccount, packOffset, packLimit);
-
-  //     //change metadata to contents instead of just retrieving the IPFS Link
-  //     const updatedTokens = await Promise.all(
-  //       tokens.metadata
-  //         .filter((metadataObject) => metadataObject) // Filter out empty metadataObjects
-  //         .map(async (metadataObject) => {
-  //           const metadata = JSON.parse(metadataObject).metadata;
-  //           const response = await fetch(metadata);
-  //           return response.json(); // Directly parse the response as JSON
-  //         })
-  //     );
-
-  //     const tokenIdsArray = Object.values(tokens.tokenIds);
-  //     //restructures array for better mapping
-  //     const structuredTokens = tokenIdsArray
-  //       .filter((_, index) => updatedTokens[index] !== undefined)
-  //       .map((tokenId, index) => {
-  //         return {
-  //           token_id: Number(tokenId),
-  //           metadata: updatedTokens[index], // Assuming updatedTokens is an array of objects
-  //         };
-  //       });
-
-  //     setSoulboundPacks(structuredTokens);
-  //   } catch (error) {
-  //     console.error('Error parsing JSON:', error);
-  //   }
+  // async function fetchClaimStatus(accountId) {
+  //   const isClaimed = await fetchClaimSoulboundStatus(accountId);
+  //   setIsClaimed(isClaimed);
   // }
 
-  // async function fetchSoulboundTokenSupply() {
-  //   const resultFootballSb = fetchTokenSupplyByOwner(userAccount)
-  //     .then((supply) => setTotalSupply(supply))
-  //     .catch((error) => console.error(error));
-
-  //   setTotalSoulboundPacks(Number(resultFootballSb));
-  // }
+  const handleClaimButton = async () => {
+    try {
+      // await claimSoulboundPack()
+      //   .then((txHash) => {
+      //     console.log('Transaction Hash:', txHash);
+      //     // Handle the transaction hash as needed (e.g., display it on the UI)
+      //   })
+      //   .catch((error) => {
+      //     console.error('Error:', error);
+      //     // Handle the error (e.g., display an error message on the UI)
+      //   });
+    } catch (error) {
+      console.error('Error claiming Soulbound Pack:', error);
+    }
+  };
 
   useEffect(() => {
-    fetchTokenSupply();
-    getPackLimit();
-    setPageCount(
-      categoryList[0].isActive
-        ? Math.floor(Number(totalSupply) / packLimit)
-        : Math.ceil(totalPacks / packLimit)
-    );
-    const endOffset = packOffset + packLimit;
-    console.log(`Loading packs from ${packOffset} to ${endOffset}`);
-    fetchTokens();
-    console.log(allPacks);
+    if (isSignedIn && wallet) {
+      fetchTokenSupply();
+      getPackLimit();
+      setPageCount(
+        categoryList[0].isActive
+          ? Math.floor(totalSupply / packLimit)
+          : Math.ceil(totalPacks / packLimit)
+      );
+      const endOffset = packOffset + packLimit;
+      console.log(`Loading packs from ${packOffset} to ${endOffset}`);
+      fetchTokens();
+      console.log('isClaimedStatus', isClaimed);
+    } else {
+      console.log('Account Id not found');
+    }
   }, [totalPacks, packLimit, packOffset, currentSport, totalSupply, categoryList, sportList]);
 
   useEffect(() => {
-    // fetchSoulboundTokenSupply();
-    // fetchSoulboundTokens();
+    // fetchClaimStatus(userAccount);
   }, [currentSport]);
 
   useEffect(() => {
@@ -336,7 +344,7 @@ export default function Packs() {
 
               <div className="flex flex-col">
                 <hr className="opacity-10 -ml-6" />
-                <div className="flex flex-row first:md:ml-10 iphone5:ml-2">
+                {/* <div className="flex flex-row first:md:ml-10 iphone5:ml-2">
                   {sportList.map((x, index) => {
                     return (
                       <button
@@ -355,8 +363,8 @@ export default function Packs() {
                       </button>
                     );
                   })}
-                </div>
-                <div className="iphone5:ml-6 md:ml-9 iphone5:mr-0 md:mr-4 iphone5:mt-4">
+                </div> */}
+                {/* <div className="iphone5:ml-6 md:ml-9 iphone5:mr-0 md:mr-4 iphone5:mt-4">
                   {categoryList[0].isActive ? null : isClaimed ? (
                     ''
                   ) : (
@@ -371,7 +379,7 @@ export default function Packs() {
                       <button
                         className="bg-indigo-buttonblue text-indigo-white iphone5:w-full md:w-80 h-10 
       text-center font-bold text-xs"
-                        onClick={(e) => handleButtonClick(e)}
+                        onClick={(e) => handleClaimButton()}
                       >
                         {currentSport === SPORT_NAME_LOOKUP.basketball
                           ? 'CLAIM BASKETBALL PACK'
@@ -383,7 +391,7 @@ export default function Packs() {
                       </button>
                     </div>
                   )}
-                </div>
+                </div> */}
                 <div className="grid iphone5:grid-cols-2 gap-y-8 mt-4 md:grid-cols-4 iphone5:mt-8 iphone5:ml-2 md:ml-7 md:mt-9 ">
                   {categoryList[0].isActive
                     ? (categoryList[0].isActive ? allPacks : packs).length > 0 &&

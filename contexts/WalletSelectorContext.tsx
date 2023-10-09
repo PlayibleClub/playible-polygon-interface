@@ -1,119 +1,104 @@
-import React, { useCallback, useContext, useEffect, useState } from 'react';
-import { map, distinctUntilChanged } from 'rxjs';
-import { setupWalletSelector } from '@near-wallet-selector/core';
-import { WalletSelector, AccountState } from '@near-wallet-selector/core';
-import { setupModal } from '@near-wallet-selector/modal-ui';
-import { WalletSelectorModal } from '@near-wallet-selector/modal-ui';
-import { setupNearWallet } from '@near-wallet-selector/near-wallet';
-import { setupNeth } from '@near-wallet-selector/neth';
-import { setupLedger } from '@near-wallet-selector/ledger';
-import { setupNightly } from '@near-wallet-selector/nightly';
-import { setupMyNearWallet } from '@near-wallet-selector/my-near-wallet';
-import { setupMeteorWallet } from '@near-wallet-selector/meteor-wallet';
-import { getConfig, getContract } from '../utils/near';
-import { MINTER_NFL } from '../data/constants/nearContracts';
+import { Wallet } from 'ethers';
+import React, { useEffect, type PropsWithChildren } from 'react';
 
 declare global {
   interface Window {
-    selector: WalletSelector;
-    modal: WalletSelectorModal;
+    ethereum: InjectedProviders & {
+      on: (...args: any[]) => void;
+      removeListener?: (...args: any[]) => void;
+      request<T = any>(args: any): Promise<T>;
+    };
   }
 }
-interface WalletSelectorContextValue {
-  selector: WalletSelector;
-  modal: WalletSelectorModal;
-  accounts: Array<AccountState>;
-  accountId: string | null;
-}
-
-const WalletSelectorContext = React.createContext<WalletSelectorContextValue | null>(null);
-
-// @ts-ignore:next-line
-export const WalletSelectorContextProvider: React.FC = ({ children }) => {
-  const [selector, setSelector] = useState<WalletSelector | null>(null);
-  const [modal, setModal] = useState<WalletSelectorModal | null>(null);
-  const [accounts, setAccounts] = useState<Array<AccountState>>([]);
-
-  const init = useCallback(async () => {
-    const _selector = await setupWalletSelector({
-      network: getConfig(),
-      debug: true,
-      modules: [
-        setupNearWallet(),
-        setupMyNearWallet(),
-        setupNeth(),
-        setupLedger(),
-        setupNightly(),
-        setupMeteorWallet(),
-      ],
-    });
-    const _modal = setupModal(_selector, {
-      contractId: getContract(MINTER_NFL),
-      methodNames: [...MINTER_NFL.interface.viewMethods, ...MINTER_NFL.interface.changeMethods],
-    });
-    const state = _selector.store.getState();
-
-    setAccounts(state.accounts);
-
-    window.selector = _selector;
-    window.modal = _modal;
-
-    setSelector(_selector);
-    setModal(_modal);
-  }, []);
-
-  useEffect(() => {
-    init().catch((err) => {
-      console.error(err);
-      alert('Failed to initialise wallet selector');
-    });
-  }, [init]);
-
-  useEffect(() => {
-    if (!selector) {
-      return;
-    }
-
-    const subscription = selector.store.observable
-      .pipe(
-        map((state) => state.accounts),
-        distinctUntilChanged()
-      )
-      .subscribe((nextAccounts) => {
-        console.log('Accounts Update', nextAccounts);
-
-        setAccounts(nextAccounts);
-      });
-
-    return () => subscription.unsubscribe();
-  }, [selector]);
-
-  if (!selector || !modal) {
-    return null;
-  }
-
-  const accountId = accounts.find((account) => account.active)?.accountId || null;
-
-  return (
-    <WalletSelectorContext.Provider
-      value={{
-        selector,
-        modal,
-        accounts,
-        accountId,
-      }}
-    >
-      {children}
-    </WalletSelectorContext.Provider>
-  );
+type ConnectAction = { type: 'connect'; wallet: string };
+type DisconnectAction = { type: 'disconnect' };
+type PageLoadedAction = { type: 'pageLoaded'; isMetamaskInstalled: boolean };
+type LoadingAction = { type: 'loading' };
+type InjectedProviders = {
+  isMetaMask?: true;
 };
 
-export function useWalletSelector() {
-  const context = useContext(WalletSelectorContext);
+type Action = ConnectAction | DisconnectAction | PageLoadedAction | LoadingAction;
 
-  if (!context) {
-    throw new Error('useWalletSelector must be used within a WalletSelectorContextProvider');
+type Dispatch = (action: Action) => void;
+
+type Status = 'loading' | 'idle' | 'pageNotLoaded';
+
+type State = {
+  wallet: string | null;
+  isMetamaskInstalled: boolean;
+  isSignedIn: boolean;
+  status: Status;
+};
+
+const WalletSelectorContext = React.createContext<{ state: State; dispatch: Dispatch } | undefined>(
+  undefined
+);
+
+const initialState: State = {
+  wallet: null,
+  isMetamaskInstalled: false,
+  status: 'loading',
+  isSignedIn: false,
+} as const;
+
+const localStorageKey = 'metamaskState';
+function metamaskReducer(state: State, action: Action): State {
+  switch (action.type) {
+    case 'connect': {
+      const { wallet } = action;
+      const newState = { ...state, wallet, status: 'idle' as Status, isSignedIn: true };
+      localStorage.setItem(localStorageKey, JSON.stringify(newState)); // Save state to local storage
+      return newState;
+    }
+    case 'disconnect': {
+      const newState = { ...state, wallet: null, isSignedIn: false };
+      localStorage.setItem(localStorageKey, JSON.stringify(newState)); // Save state to local storage
+      return newState;
+    }
+    case 'pageLoaded': {
+      const { isMetamaskInstalled } = action;
+      const storedState = localStorage.getItem(localStorageKey);
+      if (storedState) {
+        const parsedState = JSON.parse(storedState);
+        return { ...parsedState, isMetamaskInstalled }; // Load state from local storage
+      }
+      return { ...state, isMetamaskInstalled };
+    }
+    case 'loading': {
+      return { ...state, status: 'loading' };
+    }
+    default: {
+      throw new Error('Unhandled action type');
+    }
   }
+}
 
+function WalletSelectorContextProvider({ children }: PropsWithChildren) {
+  const [state, dispatch] = React.useReducer(metamaskReducer, initialState);
+  const value = { state, dispatch };
+
+  useEffect(() => {
+    if (typeof window !== undefined) {
+      // start by checking if window.ethereum is present, indicating a wallet extension
+      const ethereumProviderInjected = typeof window.ethereum !== 'undefined';
+      // this could be other wallets so we can verify if we are dealing with metamask
+      // using the boolean constructor to be explicit and not let this be used as a falsy value (optional)
+      const isMetamaskInstalled = ethereumProviderInjected && Boolean(window.ethereum.isMetaMask);
+
+      dispatch({ type: 'pageLoaded', isMetamaskInstalled });
+    }
+  }, []);
+
+  return <WalletSelectorContext.Provider value={value}>{children}</WalletSelectorContext.Provider>;
+}
+
+function useWalletSelector() {
+  const context = React.useContext(WalletSelectorContext);
+  if (context === undefined) {
+    throw new Error('useMetamask must be used within a MetamaskProvider');
+  }
   return context;
 }
+
+export { WalletSelectorContextProvider, useWalletSelector };

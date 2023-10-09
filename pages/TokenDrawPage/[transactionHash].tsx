@@ -103,12 +103,12 @@ const TokenDrawPage = (props) => {
     }
   }
 
-  const { selector, accountId } = useWalletSelector();
+  const { state: wallet } = useWalletSelector();
 
   const query_transaction_testnet = useCallback(async () => {
     const queryFromNear = await provider.sendJsonRpc<responseExperimentalTxStatus>(
       'EXPERIMENTAL_tx_status',
-      [query.transactionHash, accountId]
+      [query.transactionHash, wallet]
     );
     //@ts-ignore:next-line
     //get the last transaction to check if token was transferred successfully
@@ -198,7 +198,7 @@ const TokenDrawPage = (props) => {
   const query_transaction_mainnet = useCallback(async () => {
     const queryFromNear = await provider.sendJsonRpc<responseExperimentalTxStatus>(
       'EXPERIMENTAL_tx_status',
-      [query.transactionHash, accountId]
+      [query.transactionHash, wallet]
     );
     //@ts-ignore:next-line
     //get the last transaction to check if token was transferred successfully
@@ -419,7 +419,7 @@ const TokenDrawPage = (props) => {
                       error()
                     ) : (
                       <div className="mb-10">
-                        <div>{!accountId ? walletConnection() : tokenRevealPage()}</div>
+                        <div>{!wallet ? walletConnection() : tokenRevealPage()}</div>
                         <div className="flex h-14 mt-16">
                           <div className="w-full justify-end"></div>
                           <Link href="/Portfolio" replace>
