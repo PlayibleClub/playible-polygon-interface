@@ -24,7 +24,7 @@ const regularPackNFLStorageContractAddress = '0x00AdA1B38dFF832A8b85935B8B8BC923
 const regularPackNFLLogicContractAddress = '0xc101792c937A61b39118083d470ad3bE4c5FC6D5';
 const regularNFLAthleteStorageAddress = '0x32ec30629f306261a8c38658d0dc4b2e1c493585';
 //const regularNFLAthleteLogicAddress = '0x6b53db22961B40c89F82a6C47Fe8d138Efd4cdDc';
-const regularNFLAthleteLogicAddress = '0x7454F97E507fBF1F65cf145ac3922d7c0cf9eB4C';
+const regularNFLAthleteLogicAddress = '0x73e44E63D9264C575b08Ef7161c8B1957e536BDB';
 
 const packStorageNFLContractABI = pack_nft_storage as unknown as packStorageABI;
 const packLogicNFLContractABI = pack_nft_logic as unknown as packLogicABI;
@@ -332,12 +332,7 @@ export async function fetchFilteredAthleteSupplyForOwner(accountId, position, te
       const contract = new Contract(abi, regularNFLAthleteLogicAddress);
       contract.setProvider(window.ethereum);
       const result = await contract.methods
-        .getFilteredTokenSupplyForOwner(
-          '0x89F51006918A33244062eD1c5415253800640edA',
-          position,
-          team,
-          name
-        )
+        .getFilteredTokenSupplyForOwner(accountId, position, team, name)
         .call({ gas: '30000000' });
       console.log(result);
       return Number(result);
@@ -356,21 +351,32 @@ export async function fetchFilteredAthleteTokensForOwner(
   supply
 ) {
   try {
+    console.log(`Athlete offset: ${athleteOffset}`);
     if (window.ethereum) {
+      let result = [];
+      if (supply === 0) {
+        return result;
+      }
       if (!/\S/.test(name)) {
         name = 'allNames';
       }
       if (supply < athleteLimit) {
         athleteLimit = supply;
+      } else if (supply - athleteOffset < 10) {
+        athleteLimit = supply % athleteLimit;
       }
+
       const abi = athlete_logic as unknown as AthleteLogicABI;
+      console.log(position);
       console.log(`Supply check: ${supply}`);
+      console.log(`Athlete limit : ${athleteLimit}`);
+      console.log(`Name: ${name}`);
       await window.ethereum.request({ method: 'eth_requestAccounts' });
       const contract = new Contract(abi, regularNFLAthleteLogicAddress);
       contract.setProvider(window.ethereum);
-      const result = await contract.methods
+      result = await contract.methods
         .getFilteredTokensForOwnerPagination(
-          '0x89F51006918A33244062eD1c5415253800640edA',
+          accountId,
           position,
           team,
           name,
@@ -379,7 +385,6 @@ export async function fetchFilteredAthleteTokensForOwner(
         )
         .call({ gas: '30000000' })
         .then((result) => {
-          console.log('hello');
           return Promise.all(
             result
               .filter((item) => Number(item[0] !== 0 && item[2].length > 0))
