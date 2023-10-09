@@ -722,7 +722,25 @@
 			}
 		],
 		"name": "updateTokensRestriction",
-		"outputs": [],
+		"outputs": [
+			{
+				"components": [
+					{
+						"internalType": "string[]",
+						"name": "positions",
+						"type": "string[]"
+					},
+					{
+						"internalType": "uint8",
+						"name": "amount",
+						"type": "uint8"
+					}
+				],
+				"internalType": "struct AthleteLogic.PositionsInfo[]",
+				"name": "",
+				"type": "tuple[]"
+			}
+		],
 		"stateMutability": "nonpayable",
 		"type": "function"
 	},
