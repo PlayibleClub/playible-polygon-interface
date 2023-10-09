@@ -11,8 +11,8 @@ import BackFunction from 'components/buttons/BackFunction';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useWalletSelector } from 'contexts/WalletSelectorContext';
-import openPackAbi from 'utils/polygon/ABI/openPackAbi.json';
-import packNftAbi from 'utils/polygon/ABI/pack_nft.json';
+import openPack from 'utils/polygon/ABI/openPackAbi.json';
+import openPackLogic from 'utils/polygon/ABI/openPackLogicAbi.json';
 import Web3 from 'web3';
 export default function PackDetails(props) {
   const {
@@ -33,8 +33,8 @@ export default function PackDetails(props) {
     id: id,
     sport: query.sport.toString().toUpperCase(),
   };
-  const openPackContractAddress = '0xd9dEAB4B51b8477f7ccD274413E66F6142877C49';
-  const regularPackStorageContractAddress = '0x00AdA1B38dFF832A8b85935B8B8BC9234024084A';
+  const openPackContractAddress = '0xc5f71dd851431b4de6Ecbe4eFCa9a4ac8f3b9E72';
+  const openPackLogicContractAddress = '0x3Ba67aBAFDcdEeB185F555aec3dE52889F969Ec0';
   const [packDetails, setPackDetails] = useState([]);
   const [hasFetchedData, setHasFetchedData] = useState(false);
   const [isOwner, setIsOwner] = useState(null);
@@ -46,11 +46,13 @@ export default function PackDetails(props) {
 
         const web3 = new Web3(window.ethereum);
 
-        const contract = new web3.eth.Contract(openPackAbi, openPackContractAddress);
+        const contractStorage = new web3.eth.Contract(openPack, openPackContractAddress);
+        const contractLogic = new web3.eth.Contract(openPackLogic, openPackLogicContractAddress);
+
         const accounts = await web3.eth.getAccounts();
 
         // Estimate gas for mintPacks function
-        const gasEstimate = await contract.methods
+        const gasEstimate = await contractStorage.methods
           .requestRandomWords()
           .estimateGas({ from: accounts[0] });
         console.log('Estimated Gas:', gasEstimate);
@@ -62,7 +64,7 @@ export default function PackDetails(props) {
           //@ts-ignore
           gas: parseInt(gasEstimate),
           gasPrice: gasPrice,
-          data: contract.methods.requestRandomWords().encodeABI(),
+          data: contractStorage.methods.requestRandomWords().encodeABI(),
         };
 
         // Call mint regular packs function
@@ -74,7 +76,7 @@ export default function PackDetails(props) {
 
         // Get requestId by user
         //@ts-ignore
-        const requestId = await contract.methods.getRequestIdByUser(accounts[0]).call();
+        const requestId = await contractStorage.methods.getRequestIdByUser(accounts[0]).call();
         console.log('Random words requested successful, requestId:', requestId);
 
         let loopCount = 0;
@@ -83,13 +85,13 @@ export default function PackDetails(props) {
           console.log('Checking request status...', loopCount);
 
           //@ts-ignore
-          let fulfilled = await contract.methods.getRequestStatus(requestId).call();
+          let fulfilled = await contractStorage.methods.getRequestStatus(requestId).call();
 
           //@ts-ignore
           if (fulfilled.fulfilled) {
             clearInterval(intervalId);
             // Estimate gas for mintPacks function
-            const gasEstimate = await contract.methods
+            const gasEstimate = await contractLogic.methods
               //@ts-ignore
               .mintBatch(requestId)
               .estimateGas({ from: accounts[0] });
@@ -98,12 +100,12 @@ export default function PackDetails(props) {
             const gasPrice = await web3.eth.getGasPrice();
             const mintTx = {
               from: accounts[0],
-              to: openPackContractAddress,
+              to: openPackLogicContractAddress,
               //@ts-ignore
               gas: parseInt(gasEstimate),
               gasPrice: gasPrice,
               //@ts-ignore
-              data: contract.methods.mintBatch(requestId).encodeABI(),
+              data: contractLogic.methods.mintBatch(requestId).encodeABI(),
             };
 
             const mintReceipt = await web3.eth
