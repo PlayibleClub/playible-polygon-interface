@@ -48,7 +48,6 @@ export default function PackDetails(props) {
 
         const contractStorage = new web3.eth.Contract(openPack, openPackContractAddress);
         const contractLogic = new web3.eth.Contract(openPackLogic, openPackLogicContractAddress);
-
         const accounts = await web3.eth.getAccounts();
 
         // Estimate gas for mintPacks function
@@ -93,11 +92,10 @@ export default function PackDetails(props) {
             // Estimate gas for mintPacks function
             const gasEstimate = await contractLogic.methods
               //@ts-ignore
-              .mintBatch(requestId)
+              .mintBatch(requestId, accounts[0], query.id)
               .estimateGas({ from: accounts[0] });
             console.log('Estimated Gas:', gasEstimate);
 
-            const gasPrice = await web3.eth.getGasPrice();
             const mintTx = {
               from: accounts[0],
               to: openPackLogicContractAddress,
@@ -105,7 +103,7 @@ export default function PackDetails(props) {
               gas: parseInt(gasEstimate),
               gasPrice: gasPrice,
               //@ts-ignore
-              data: contractLogic.methods.mintBatch(requestId).encodeABI(),
+              data: contractLogic.methods.mintBatch(requestId, accounts[0], query.id).encodeABI(),
             };
 
             const mintReceipt = await web3.eth
@@ -115,7 +113,6 @@ export default function PackDetails(props) {
               })
               .on('receipt', function (receipt) {
                 console.log('Minting Successful');
-
                 router.push(`/TokenDrawPage/${receipt.transactionHash}`);
               });
           }
