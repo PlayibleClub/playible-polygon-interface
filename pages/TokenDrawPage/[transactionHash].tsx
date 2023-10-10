@@ -29,6 +29,7 @@ import {
 import { query_nft_tokens_for_owner } from 'utils/near/helper';
 import { query_nft_tokens_by_id } from 'utils/near/helper';
 import Web3 from 'web3';
+import { GET_ATHLETE_BY_ID } from 'utils/queries';
 interface responseExperimentalTxStatus {
   receipts: Array<receipt>;
 }
@@ -101,8 +102,13 @@ const TokenDrawPage = (props) => {
 
       let firstEightLogs = logs.slice(0, 8);
 
+      // Create an empty array to hold all athletes
+      let allAthletes = [];
+
       // Print each log individually
-      firstEightLogs.forEach((log, index) => {
+      for (let i = 0; i < firstEightLogs.length; i++) {
+        let log = firstEightLogs[i];
+
         // Extract the data field
         let data = log.data;
 
@@ -113,19 +119,59 @@ const TokenDrawPage = (props) => {
 
           // Convert the hex string to ASCII
           let asciiString = '';
-          for (let i = 0; i < cleanHexString.length; i += 2) {
-            asciiString += String.fromCharCode(parseInt(cleanHexString.substr(i, 2), 16));
+          for (let j = 0; j < cleanHexString.length; j += 2) {
+            asciiString += String.fromCharCode(parseInt(cleanHexString.substr(j, 2), 16));
           }
 
           // Remove non-ASCII characters
           asciiString = asciiString.replace(/[^\x20-\x7E]/g, '');
+          // console.log(asciiString);
+          // Parse the ASCII string as JSON
+          let jsonData = JSON.parse(asciiString);
 
-          // Log the ASCII string to the console
-          console.log(asciiString);
+          // Extract the properties field as metadata
+          let metadataAthleteId = jsonData.properties.athleteId;
+          let metadataName = jsonData.properties.name;
+          let metadataPosition = jsonData.properties.position;
+          let metadataSymbol = jsonData.properties.symbol;
+          let metadataTeam = jsonData.properties.team;
+          let metadataImage = jsonData.image;
+          // console.log(metadataImage);
+
+          // Use the athleteId to fetch nftAnimation
+          const { data: queryData } = await client.query({
+            query: GET_ATHLETE_BY_ID,
+            variables: {
+              getAthleteById: parseFloat(metadataAthleteId),
+              from: null,
+              to: null,
+            },
+          });
+
+          // console.log(queryData.getAthleteById.nftAnimation);
+
+          // Create a new athlete object with all fields from metadata, image, and nftAnimation
+          let newAthlete = {
+            name: metadataName,
+            athleteId: metadataAthleteId,
+            position: metadataPosition,
+            symbol: metadataSymbol,
+            team: metadataTeam,
+            image: metadataImage,
+            nftAnimation: queryData.getAthleteById.nftAnimation,
+            isOpen: false,
+          };
+
+          // Add the new athlete to the allAthletes array
+          console.log(newAthlete);
+          allAthletes.push(newAthlete);
         } else {
-          console.log(`Data in Log ${index + 1} is not a string.`);
+          console.log(`Data in Log ${i + 1} is not a string.`);
         }
-      });
+      }
+
+      // Update athletes state with all athletes
+      setAthletes(allAthletes);
     } catch (error) {
       console.error(error);
     }
