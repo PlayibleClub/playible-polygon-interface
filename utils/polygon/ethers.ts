@@ -204,54 +204,6 @@ export async function fetchRegularPackTokenSupplyByOwner(account) {
   }
 }
 
-export async function mintRegularPacks(amount, accountId) {
-  try {
-    if (window.ethereum) {
-      console.log('Mint packs function called');
-      await window.ethereum.request({ method: 'eth_requestAccounts' });
-
-      const web3 = new Web3(window.ethereum);
-
-      const contract = new web3.eth.Contract(
-        packStorageNFLContractABI,
-        regularPackNFLStorageContractAddress
-      );
-
-      // Estimate gas for mintPacks function
-      console.log('Amount:', amount);
-      const gasEstimate = await contract.methods.mintPacks(amount).estimateGas({ from: accountId });
-      console.log('Estimated Gas:', gasEstimate);
-
-      const gasPrice = await web3.eth.getGasPrice();
-      const tx = {
-        from: accountId,
-        to: regularPackNFLStorageContractAddress,
-        //@ts-ignore
-        gas: parseInt(gasEstimate),
-        gasPrice: gasPrice,
-        data: contract.methods.mintPacks(amount).encodeABI(),
-      };
-      // Call mint regular packs function
-      web3.eth
-        .sendTransaction(tx)
-        .on('transactionHash', function (hash) {
-          console.log('Transaction Hash:', hash);
-        })
-        //@ts-ignore
-        .on('confirmation', function (confirmationNumber, receipt) {
-          console.log('Confirmation Number:', confirmationNumber);
-          console.log('Receipt:', receipt);
-          console.log('Regular Pack minted successfully');
-        })
-        .on('error', function (error) {
-          console.error('Error:', error);
-        });
-    }
-  } catch (error) {
-    console.error('Error minting regular pack:', error);
-  }
-}
-
 export async function fetchAccountBalance(accountId) {
   try {
     if (window.ethereum) {
