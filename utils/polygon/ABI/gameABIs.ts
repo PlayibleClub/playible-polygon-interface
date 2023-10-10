@@ -1,4 +1,4 @@
-export type gameStorageABI = [
+export type GameStorageABI = [
   {
     anonymous: false;
     inputs: [
@@ -782,7 +782,7 @@ export type gameStorageABI = [
   }
 ];
 
-export type gameLogicABI = [
+export type GameLogicABI = [
   {
     anonymous: false;
     inputs: [
