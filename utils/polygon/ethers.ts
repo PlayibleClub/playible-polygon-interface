@@ -14,8 +14,10 @@ import promotional_pack_nft from 'utils/polygon/ABI/promotional_pack_nft.json';
 import pack_nft_storage from 'utils/polygon/ABI/pack_nft.json';
 import pack_nft_logic from 'utils/polygon/ABI/pack_nft_logic.json';
 import athlete_logic from '../polygon/ABI/athletelogic_abi.json';
+import game_storage from '../polygon/ABI/gamestorage_abi.json';
 import athlete_storage from '../polygon/ABI/athletestorage_abi.json';
 import { AthleteStorageABI, AthleteLogicABI } from '../polygon/ABI/athleteABIs';
+import { GameStorageABI, GameLogicABI } from '../polygon/ABI/gameABIs';
 import { isWindows } from 'react-device-detect';
 
 const promoPackContractAddress = '0xecdf1d718adf8930661a80b37bdbda83fdc538e3';
@@ -418,5 +420,22 @@ export async function fetchAthleteTokenMetadataAndURIById(tokenId: number, start
     }
   } catch (error) {
     console.log(error);
+  }
+}
+
+export async function fetchAllGames() {
+  try {
+    if (window.ethereum) {
+      console.log('call function');
+      await window.ethereum.request({ method: 'eth_requestAccounts' });
+      const abi = game_storage as unknown as GameStorageABI;
+      const contract = new Contract(abi, gameNFLStorageAddress);
+      contract.setProvider(window.ethereum);
+      const result = await contract.methods.getAllGamesInfo().call({ gas: '30000000' });
+      //console.log(result);
+      return result;
+    }
+  } catch (e) {
+    console.log(e);
   }
 }
