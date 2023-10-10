@@ -32,9 +32,31 @@ async function getGameInfoById(accountId, item, status, currentSport) {
         : status === 'on-going'
         ? await query_player_teams(accountId, item[0], getSportType(currentSport).gameContract)
         : '',
-    sport:currentSport,
+    sport: currentSport,
   };
 
+  return returningData;
+}
+//TODO: add accountId for getting player teams, add currentSport/currentContract
+async function mapGameInfo(item, status) {
+  const returningData = {
+    game_id: Number(item.gameId),
+    start_time: Number(item.startTime),
+    end_time: Number(item.endTime),
+    whitelist: item.whitelist,
+    usage_cost: Number(item.usageCost),
+    positions: item.positions,
+    lineup_len: Number(item.lineupLen),
+    game_image: item.gameImage,
+    prize_description: item.prizeDescription,
+    game_description: item.gameDescription,
+    joined_player_counter: Number(item.joinedPlayerCounter),
+    joined_team_counter: Number(item.joinedTeamCounter),
+    isCompleted: getUTCTimestampFromLocal() >= item.endTime ? true : false,
+    status: status,
+    user_team_count: 0,
+    sport: 'nfl',
+  };
   return returningData;
 }
 
@@ -99,4 +121,4 @@ function getPrizePool(gameId: string): string {
   }
 }
 
-export { getGameInfoById, getImage, getDescription, getPrizePool };
+export { getGameInfoById, getImage, getDescription, getPrizePool, mapGameInfo };
