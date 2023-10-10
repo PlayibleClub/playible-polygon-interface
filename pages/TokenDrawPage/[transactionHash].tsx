@@ -121,7 +121,7 @@ const TokenDrawPage = (props) => {
           asciiString = asciiString.replace(/[^\x20-\x7E]/g, '');
 
           // Log the ASCII string to the console
-          console.log(`Data in ASCII (Log ${index + 1}):`, asciiString);
+          console.log(asciiString);
         } else {
           console.log(`Data in Log ${index + 1} is not a string.`);
         }
