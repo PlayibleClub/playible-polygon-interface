@@ -25,7 +25,7 @@ const regularPackNFLLogicContractAddress = '0xc101792c937A61b39118083d470ad3bE4c
 const regularNFLAthleteStorageAddress = '0x32ec30629f306261a8c38658d0dc4b2e1c493585';
 //const regularNFLAthleteLogicAddress = '0x6b53db22961B40c89F82a6C47Fe8d138Efd4cdDc';
 const regularNFLAthleteLogicAddress = '0x73e44E63D9264C575b08Ef7161c8B1957e536BDB';
-
+const gameNFLStorageAddress = '0x769450D2Eb8fD1F810E75131eC91A7E0E96fd497';
 const packStorageNFLContractABI = pack_nft_storage as unknown as packStorageABI;
 const packLogicNFLContractABI = pack_nft_logic as unknown as packLogicABI;
 
