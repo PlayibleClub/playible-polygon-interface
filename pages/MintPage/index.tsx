@@ -146,6 +146,7 @@ export default function Home(props) {
         onChange={(event) => {
           setSelectedMintAmount(event.value);
           setBalanceErrorMsg('');
+          setApprovedComplete(false);
           setRemountComponent(Math.random());
         }}
         options={optionMint}
@@ -293,6 +294,7 @@ export default function Home(props) {
           .on('confirmation', function (confirmationNumber, receipt) {
             console.log('Confirmation Number:', confirmationNumber);
             console.log('Receipt:', receipt);
+            setApprovedComplete(true);
             setRemountComponent(Math.random());
           })
           .on('error', function (error) {
@@ -375,6 +377,7 @@ export default function Home(props) {
           .sendTransaction(tx)
           .on('transactionHash', function (hash) {
             console.log('Transaction Hash:', hash);
+            setLoading(true);
           })
           //@ts-ignore
           .on('confirmation', function (confirmationNumber, receipt) {
@@ -384,6 +387,7 @@ export default function Home(props) {
             setMintingComplete(true);
           })
           .on('error', function (error) {
+            setLoading(false);
             console.error('Error:', error);
           });
       }
@@ -451,9 +455,10 @@ export default function Home(props) {
         : setModalImage(cricketRegImage);
 
       console.log(mintingComplete);
+      setLoading(false);
       setEditModal(true);
     }
-  }, [mintingComplete, sportFromRedux]);
+  }, [mintingComplete, sportFromRedux, loading]);
 
   useEffect(() => {
     fetchPackPrice();
@@ -475,7 +480,7 @@ export default function Home(props) {
     fetchUserERC20Allowance();
     fetchUserAccountBalance();
     console.log('Approved Amount:', accountERC20ApprovalAmount);
-  }, [currentSport, minterConfig, wallet, remountComponent]);
+  }, [currentSport, minterConfig, wallet, remountComponent, approvedComplete]);
 
   useEffect(() => {
     if (!isMetamaskInstalled) {
@@ -484,32 +489,6 @@ export default function Home(props) {
       setInstallMetamaskModal(false);
     }
   }, [status, isMetamaskInstalled]);
-
-  useEffect(() => {
-    if (router.asPath.indexOf('transactionHashes') > -1 && isPromoFromRedux === false) {
-      sportFromRedux === SPORT_NAME_LOOKUP.basketball
-        ? setModalImage(nbaRegImage)
-        : sportFromRedux === SPORT_NAME_LOOKUP.football
-        ? setModalImage(nflRegImage)
-        : sportFromRedux === SPORT_NAME_LOOKUP.baseball
-        ? setModalImage(mlbRegImage)
-        : setModalImage(cricketRegImage);
-      setTimeout(() => persistor.purge(), 200);
-      setEditModal(true);
-    } else if (router.asPath.indexOf('transactionHashes') > -1) {
-      {
-        sportFromRedux === 'BASKETBALL'
-          ? setModalImage(nbaSbImage)
-          : sportFromRedux === 'FOOTBALL'
-          ? setModalImage(nflSbImage)
-          : sportFromRedux === 'BASEBALL'
-          ? setModalImage(mlbSbImage)
-          : setModalImage(cricketSbImage);
-      }
-      setTimeout(() => persistor.purge(), 200);
-      setEditModal(true);
-    }
-  }, []);
 
   useEffect(() => {
     if (remountComponent !== 0) {
@@ -736,24 +715,33 @@ export default function Home(props) {
                         /*parseInt(String(storageDepositAccountBalance)) >= selectedMintAmount * MINT_STORAGE_COST*/
                       } ? (
                         <>
-                          {accountERC20ApprovalAmount !== null && (
-                            <button
-                              className="w-9/12 flex text-center justify-center items-center bg-indigo-buttonblue font-montserrat text-indigo-white p-4 text-xs mt-8"
-                              onClick={
-                                accountERC20ApprovalAmount <= 0 ||
+                          {loading ? (
+                            <div className="flex w-full mt-10">
+                              <div className="w-5 h-5 rounded-full bg-indigo-buttonblue animate-bounce mr-5"></div>
+                              <div className="w-5 h-5 rounded-full bg-indigo-buttonblue animate-bounce mr-5"></div>
+                              <div className="w-5 h-5 rounded-full bg-indigo-buttonblue animate-bounce"></div>
+                            </div>
+                          ) : (
+                            accountERC20ApprovalAmount !== null && (
+                              <button
+                                className="w-9/12 flex text-center justify-center items-center bg-indigo-buttonblue font-montserrat text-indigo-white p-4 text-xs mt-8"
+                                onClick={
+                                  accountERC20ApprovalAmount <= 0 ||
+                                  accountERC20ApprovalAmount <
+                                    Number(minterConfig.minting_price_decimals_6) *
+                                      selectedMintAmount
+                                    ? () => approveERC20TokenSpending()
+                                    : () => executeMintRegularPacks()
+                                }
+                                key={remountComponent}
+                              >
+                                {accountERC20ApprovalAmount <= 0 ||
                                 accountERC20ApprovalAmount <
                                   Number(minterConfig.minting_price_decimals_6) * selectedMintAmount
-                                  ? () => approveERC20TokenSpending()
-                                  : () => executeMintRegularPacks()
-                              }
-                              key={remountComponent}
-                            >
-                              {accountERC20ApprovalAmount <= 0 ||
-                              accountERC20ApprovalAmount <
-                                Number(minterConfig.minting_price_decimals_6) * selectedMintAmount
-                                ? 'APPROVE THIS SMART CONTRACT TO CONTINUE MINTING'
-                                : `Mint ${Math.floor(selectedMintAmount * format_price())} USDT`}
-                            </button>
+                                  ? 'APPROVE THIS SMART CONTRACT TO CONTINUE MINTING'
+                                  : `Mint ${Math.floor(selectedMintAmount * format_price())} USDT`}
+                              </button>
+                            )
                           )}
                           {currentSport === 'FOOTBALL' ? (
                             <div className="flex-col mt-10 hidden">
