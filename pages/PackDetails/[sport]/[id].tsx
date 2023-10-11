@@ -11,7 +11,9 @@ import BackFunction from 'components/buttons/BackFunction';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useWalletSelector } from 'contexts/WalletSelectorContext';
-
+import openPack from 'utils/polygon/ABI/openPackAbi.json';
+import openPackLogic from 'utils/polygon/ABI/openPackLogicAbi.json';
+import Web3 from 'web3';
 export default function PackDetails(props) {
   const {
     state: { wallet },
@@ -31,10 +33,95 @@ export default function PackDetails(props) {
     id: id,
     sport: query.sport.toString().toUpperCase(),
   };
-
+  const openPackContractAddress = '0xc5f71dd851431b4de6Ecbe4eFCa9a4ac8f3b9E72';
+  const openPackLogicContractAddress = '0x3Ba67aBAFDcdEeB185F555aec3dE52889F969Ec0';
   const [packDetails, setPackDetails] = useState([]);
   const [hasFetchedData, setHasFetchedData] = useState(false);
   const [isOwner, setIsOwner] = useState(null);
+
+  async function requestAndMint() {
+    try {
+      if (window.ethereum) {
+        await window.ethereum.request({ method: 'eth_requestAccounts' });
+
+        const web3 = new Web3(window.ethereum);
+
+        const contractStorage = new web3.eth.Contract(openPack, openPackContractAddress);
+        const contractLogic = new web3.eth.Contract(openPackLogic, openPackLogicContractAddress);
+        const accounts = await web3.eth.getAccounts();
+
+        // Estimate gas for mintPacks function
+        const gasEstimate = await contractStorage.methods
+          .requestRandomWords()
+          .estimateGas({ from: accounts[0] });
+        console.log('Estimated Gas:', gasEstimate);
+
+        const gasPrice = await web3.eth.getGasPrice();
+        const tx = {
+          from: accounts[0],
+          to: openPackContractAddress,
+          //@ts-ignore
+          gas: parseInt(gasEstimate),
+          gasPrice: gasPrice,
+          data: contractStorage.methods.requestRandomWords().encodeABI(),
+        };
+
+        // Call mint regular packs function
+        const receipt = await web3.eth.sendTransaction(tx).on('transactionHash', function (hash) {
+          console.log('Transaction Hash:', hash);
+        });
+
+        console.log('Request Successful');
+
+        // Get requestId by user
+        //@ts-ignore
+        const requestId = await contractStorage.methods.getRequestIdByUser(accounts[0]).call();
+        console.log('Random words requested successful, requestId:', requestId);
+
+        let loopCount = 0;
+        const intervalId = setInterval(async () => {
+          loopCount++;
+          console.log('Checking request status...', loopCount);
+
+          //@ts-ignore
+          let fulfilled = await contractStorage.methods.getRequestStatus(requestId).call();
+
+          //@ts-ignore
+          if (fulfilled.fulfilled) {
+            clearInterval(intervalId);
+            // Estimate gas for mintPacks function
+            const gasEstimate = await contractLogic.methods
+              //@ts-ignore
+              .mintBatch(requestId, accounts[0], query.id)
+              .estimateGas({ from: accounts[0] });
+            console.log('Estimated Gas:', gasEstimate);
+
+            const mintTx = {
+              from: accounts[0],
+              to: openPackLogicContractAddress,
+              //@ts-ignore
+              gas: parseInt(gasEstimate),
+              gasPrice: gasPrice,
+              //@ts-ignore
+              data: contractLogic.methods.mintBatch(requestId, accounts[0], query.id).encodeABI(),
+            };
+
+            const mintReceipt = await web3.eth
+              .sendTransaction(mintTx)
+              .on('transactionHash', function (hash) {
+                console.log('Mint Transaction Hash:', hash);
+              })
+              .on('receipt', function (receipt) {
+                console.log('Minting Successful');
+                router.push(`/TokenDrawPage/${receipt.transactionHash}`);
+              });
+          }
+        }, 5000); // Check every 5 seconds
+      }
+    } catch (error) {
+      console.error('Error Request and Mint:', error);
+    }
+  }
 
   async function fetchData() {
     try {
@@ -115,7 +202,7 @@ export default function PackDetails(props) {
             {isOwner ? (
               <button
                 className="bg-indigo-buttonblue text-indigo-white w-5/6 md:w-80 h-10 text-center font-bold text-sm mt-4"
-                onClick={() => 'Place Execute Open Pack Function Here'}
+                onClick={() => requestAndMint()}
               >
                 OPEN PACK
               </button>
