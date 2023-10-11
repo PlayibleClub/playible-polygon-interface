@@ -20,7 +20,9 @@ import Link from 'next/link';
 import { SPORT_TYPES, getSportType, SPORT_NAME_LOOKUP } from 'data/constants/sportConstants';
 import ModalPortfolioContainer from 'components/containers/ModalPortfolioContainer';
 import usdcABI from 'utils/polygon/ABI/usdcABI.json';
+import { packStorageABI } from 'utils/polygon/ABI/pack_nft';
 import { ERC20ABI } from 'utils/polygon/ABI/usdcABI';
+import pack_nft_storage from 'utils/polygon/ABI/pack_nft.json';
 import Web3 from 'web3';
 import {
   getIsPromoRedux,
@@ -36,7 +38,6 @@ import {
   // fetchClaimSoulboundStatus,
   fetchRegularPackPrice,
   fetchAccountBalance,
-  mintRegularPacks,
 } from 'utils/polygon/ethers';
 import { formatUnits } from 'ethers';
 import { current } from '@reduxjs/toolkit';
@@ -117,6 +118,11 @@ export default function Home(props) {
   const cricketSbImage = '/images/packimages/Cricket-SB-Pack.png';
   const [modalImage, setModalImage] = useState(nflSbImage);
 
+  const [mintingComplete, setMintingComplete] = useState(false);
+  const [approvedComplete, setApprovedComplete] = useState(false);
+  const packStorageNFLContractABI = pack_nft_storage as unknown as packStorageABI;
+  const regularPackNFLStorageContractAddress = '0x00AdA1B38dFF832A8b85935B8B8BC9234024084A';
+
   const changeCategoryList = (name) => {
     const tabList = [...categoryList];
     tabList.forEach((item) => {
@@ -140,6 +146,7 @@ export default function Home(props) {
         onChange={(event) => {
           setSelectedMintAmount(event.value);
           setBalanceErrorMsg('');
+          setApprovedComplete(false);
           setRemountComponent(Math.random());
         }}
         options={optionMint}
@@ -249,7 +256,7 @@ export default function Home(props) {
     }
   }
 
-  const approveERC20TokenSpending = useCallback(async () => {
+  async function approveERC20TokenSpending() {
     try {
       if (window.ethereum) {
         await window.ethereum.request({ method: 'eth_requestAccounts' });
@@ -287,6 +294,8 @@ export default function Home(props) {
           .on('confirmation', function (confirmationNumber, receipt) {
             console.log('Confirmation Number:', confirmationNumber);
             console.log('Receipt:', receipt);
+            setApprovedComplete(true);
+            setRemountComponent(Math.random());
           })
           .on('error', function (error) {
             console.error('Error:', error);
@@ -295,10 +304,9 @@ export default function Home(props) {
     } catch (error) {
       console.error('Error approving metamask address:', error);
     }
-    setRemountComponent(Math.random());
-  }, []);
+  }
 
-  const executeMintRegularPacks = useCallback(async () => {
+  async function executeMintRegularPacks() {
     let mint_cost =
       (Number(minterConfig.minting_price_decimals_6) * selectedMintAmount) / DECIMALS_USDC;
     if (accountERC20ApprovalAmount / DECIMALS_USDC < mint_cost) {
@@ -317,7 +325,6 @@ export default function Home(props) {
           ' ' +
           usePOL141.title
       );
-      setRemountComponent(Math.random());
       return;
     }
 
@@ -338,14 +345,56 @@ export default function Home(props) {
     setBalanceErrorMsg('');
 
     try {
-      const txHash = await mintRegularPacks(selectedMintAmount, wallet);
-      console.log('Transaction Hash:', txHash);
-      setRemountComponent(Math.random());
-      reduxDispatch(setSportTypeRedux(currentSport));
+      if (window.ethereum) {
+        console.log('Mint packs function called');
+        await window.ethereum.request({ method: 'eth_requestAccounts' });
+
+        const web3 = new Web3(window.ethereum);
+
+        const contract = new web3.eth.Contract(
+          packStorageNFLContractABI,
+          regularPackNFLStorageContractAddress
+        );
+
+        // Estimate gas for mintPacks function
+        console.log('Amount:', selectedMintAmount);
+        const gasEstimate = await contract.methods
+          .mintPacks(selectedMintAmount)
+          .estimateGas({ from: wallet });
+        console.log('Estimated Gas:', gasEstimate);
+
+        const gasPrice = await web3.eth.getGasPrice();
+        const tx = {
+          from: wallet,
+          to: regularPackNFLStorageContractAddress,
+          //@ts-ignore
+          gas: parseInt(gasEstimate),
+          gasPrice: gasPrice,
+          data: contract.methods.mintPacks(selectedMintAmount).encodeABI(),
+        };
+        // Call mint regular packs function
+        web3.eth
+          .sendTransaction(tx)
+          .on('transactionHash', function (hash) {
+            console.log('Transaction Hash:', hash);
+            setLoading(true);
+          })
+          //@ts-ignore
+          .on('confirmation', function (confirmationNumber, receipt) {
+            console.log('Confirmation Number:', confirmationNumber);
+            console.log('Receipt:', receipt);
+            console.log('Regular Pack minted successfully');
+            setMintingComplete(true);
+          })
+          .on('error', function (error) {
+            setLoading(false);
+            console.error('Error:', error);
+          });
+      }
     } catch (error) {
       console.error('Error minting regular pack:', error);
     }
-  }, [accountBalance, currentSport, minterConfig, selectedMintAmount, wallet]);
+  }
 
   // async function fetchClaimStatus(accountId) {
   //   const isClaimed = await fetchClaimSoulboundStatus(accountId);
@@ -396,6 +445,22 @@ export default function Home(props) {
   }
 
   useEffect(() => {
+    if (mintingComplete) {
+      sportFromRedux === SPORT_NAME_LOOKUP.basketball
+        ? setModalImage(nbaRegImage)
+        : sportFromRedux === SPORT_NAME_LOOKUP.football
+        ? setModalImage(nflRegImage)
+        : sportFromRedux === SPORT_NAME_LOOKUP.baseball
+        ? setModalImage(mlbRegImage)
+        : setModalImage(cricketRegImage);
+
+      console.log(mintingComplete);
+      setLoading(false);
+      setEditModal(true);
+    }
+  }, [mintingComplete, sportFromRedux, loading]);
+
+  useEffect(() => {
     fetchPackPrice();
   }, [currentSport, usePOL141, accountBalance, accountERC20ApprovalAmount]);
 
@@ -415,7 +480,7 @@ export default function Home(props) {
     fetchUserERC20Allowance();
     fetchUserAccountBalance();
     console.log('Approved Amount:', accountERC20ApprovalAmount);
-  }, [currentSport, minterConfig, wallet, remountComponent]);
+  }, [currentSport, minterConfig, wallet, remountComponent, approvedComplete]);
 
   useEffect(() => {
     if (!isMetamaskInstalled) {
@@ -424,32 +489,6 @@ export default function Home(props) {
       setInstallMetamaskModal(false);
     }
   }, [status, isMetamaskInstalled]);
-
-  useEffect(() => {
-    if (router.asPath.indexOf('transactionHashes') > -1 && isPromoFromRedux === false) {
-      sportFromRedux === SPORT_NAME_LOOKUP.basketball
-        ? setModalImage(nbaRegImage)
-        : sportFromRedux === SPORT_NAME_LOOKUP.football
-        ? setModalImage(nflRegImage)
-        : sportFromRedux === SPORT_NAME_LOOKUP.baseball
-        ? setModalImage(mlbRegImage)
-        : setModalImage(cricketRegImage);
-      setTimeout(() => persistor.purge(), 200);
-      setEditModal(true);
-    } else if (router.asPath.indexOf('transactionHashes') > -1) {
-      {
-        sportFromRedux === 'BASKETBALL'
-          ? setModalImage(nbaSbImage)
-          : sportFromRedux === 'FOOTBALL'
-          ? setModalImage(nflSbImage)
-          : sportFromRedux === 'BASEBALL'
-          ? setModalImage(mlbSbImage)
-          : setModalImage(cricketSbImage);
-      }
-      setTimeout(() => persistor.purge(), 200);
-      setEditModal(true);
-    }
-  }, []);
 
   useEffect(() => {
     if (remountComponent !== 0) {
@@ -676,20 +715,33 @@ export default function Home(props) {
                         /*parseInt(String(storageDepositAccountBalance)) >= selectedMintAmount * MINT_STORAGE_COST*/
                       } ? (
                         <>
-                          {accountERC20ApprovalAmount !== null && (
-                            <button
-                              className="w-9/12 flex text-center justify-center items-center bg-indigo-buttonblue font-montserrat text-indigo-white p-4 text-xs mt-8"
-                              onClick={
-                                accountERC20ApprovalAmount <= 0
-                                  ? () => approveERC20TokenSpending()
-                                  : () => executeMintRegularPacks()
-                              }
-                              key={remountComponent}
-                            >
-                              {accountERC20ApprovalAmount <= 0
-                                ? 'APPROVE THIS SMART CONTRACT TO SPEND YOUR TOKENS'
-                                : `Mint ${Math.floor(selectedMintAmount * format_price())} USDT`}
-                            </button>
+                          {loading ? (
+                            <div className="flex w-full mt-10">
+                              <div className="w-5 h-5 rounded-full bg-indigo-buttonblue animate-bounce mr-5"></div>
+                              <div className="w-5 h-5 rounded-full bg-indigo-buttonblue animate-bounce mr-5"></div>
+                              <div className="w-5 h-5 rounded-full bg-indigo-buttonblue animate-bounce"></div>
+                            </div>
+                          ) : (
+                            accountERC20ApprovalAmount !== null && (
+                              <button
+                                className="w-9/12 flex text-center justify-center items-center bg-indigo-buttonblue font-montserrat text-indigo-white p-4 text-xs mt-8"
+                                onClick={
+                                  accountERC20ApprovalAmount <= 0 ||
+                                  accountERC20ApprovalAmount <
+                                    Number(minterConfig.minting_price_decimals_6) *
+                                      selectedMintAmount
+                                    ? () => approveERC20TokenSpending()
+                                    : () => executeMintRegularPacks()
+                                }
+                                key={remountComponent}
+                              >
+                                {accountERC20ApprovalAmount <= 0 ||
+                                accountERC20ApprovalAmount <
+                                  Number(minterConfig.minting_price_decimals_6) * selectedMintAmount
+                                  ? 'APPROVE THIS SMART CONTRACT TO CONTINUE MINTING'
+                                  : `Mint ${Math.floor(selectedMintAmount * format_price())} USDT`}
+                              </button>
+                            )
                           )}
                           {currentSport === 'FOOTBALL' ? (
                             <div className="flex-col mt-10 hidden">
