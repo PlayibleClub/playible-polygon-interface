@@ -264,19 +264,6 @@ export type AthleteStorageABI = [
     inputs: [
       {
         internalType: 'address';
-        name: '_minter';
-        type: 'address';
-      }
-    ];
-    name: 'addMinter';
-    outputs: [];
-    stateMutability: 'nonpayable';
-    type: 'function';
-  },
-  {
-    inputs: [
-      {
-        internalType: 'address';
         name: 'account';
         type: 'address';
       },
@@ -633,84 +620,6 @@ export type AthleteStorageABI = [
       }
     ];
     stateMutability: 'view';
-    type: 'function';
-  },
-  {
-    inputs: [
-      {
-        internalType: 'address';
-        name: '';
-        type: 'address';
-      },
-      {
-        internalType: 'address';
-        name: '';
-        type: 'address';
-      },
-      {
-        internalType: 'uint256[]';
-        name: '';
-        type: 'uint256[]';
-      },
-      {
-        internalType: 'uint256[]';
-        name: '';
-        type: 'uint256[]';
-      },
-      {
-        internalType: 'bytes';
-        name: '';
-        type: 'bytes';
-      }
-    ];
-    name: 'onERC1155BatchReceived';
-    outputs: [
-      {
-        internalType: 'bytes4';
-        name: '';
-        type: 'bytes4';
-      }
-    ];
-    stateMutability: 'nonpayable';
-    type: 'function';
-  },
-  {
-    inputs: [
-      {
-        internalType: 'address';
-        name: '';
-        type: 'address';
-      },
-      {
-        internalType: 'address';
-        name: '';
-        type: 'address';
-      },
-      {
-        internalType: 'uint256';
-        name: '';
-        type: 'uint256';
-      },
-      {
-        internalType: 'uint256';
-        name: '';
-        type: 'uint256';
-      },
-      {
-        internalType: 'bytes';
-        name: '';
-        type: 'bytes';
-      }
-    ];
-    name: 'onERC1155Received';
-    outputs: [
-      {
-        internalType: 'bytes4';
-        name: '';
-        type: 'bytes4';
-      }
-    ];
-    stateMutability: 'nonpayable';
     type: 'function';
   },
   {
@@ -1729,7 +1638,25 @@ export type AthleteLogicABI = [
       }
     ];
     name: 'updateTokensRestriction';
-    outputs: [];
+    outputs: [
+      {
+        components: [
+          {
+            internalType: 'string[]';
+            name: 'positions';
+            type: 'string[]';
+          },
+          {
+            internalType: 'uint8';
+            name: 'amount';
+            type: 'uint8';
+          }
+        ];
+        internalType: 'struct AthleteLogic.PositionsInfo[]';
+        name: '';
+        type: 'tuple[]';
+      }
+    ];
     stateMutability: 'nonpayable';
     type: 'function';
   },

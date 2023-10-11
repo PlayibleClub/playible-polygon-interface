@@ -55,6 +55,7 @@ const AssetDetails = (props) => {
     let result = await fetchAthleteTokenMetadataAndURIById(athleteId, null, null);
     let games = result.stats_breakdown.slice();
     console.log(result);
+    console.log(games);
     setAthlete(result);
     setSortedGames(
       games
@@ -149,13 +150,16 @@ const AssetDetails = (props) => {
     let queryMlb = await getSportCurrentSeason({
       variables: { sport: 'mlb' },
     });
-    setMlbSeason(await queryMlb.data.getSportCurrentSeason.apiSeason);
+    console.log(`MLB Season: ${await queryMlb.data.getSportCurrentSeason.apiSeason}`);
+    //setMlbSeason(await queryMlb.data.getSportCurrentSeason.apiSeason);
+    setMlbSeason('2023REG');
   }, []);
   useEffect(() => {
     fetchCurrentSeason();
   }, []);
 
   useEffect(() => {
+    console.log('for sorted games');
     console.log(sortedGames);
   }, [sortedGames]);
   console.log(athlete?.primary_id);

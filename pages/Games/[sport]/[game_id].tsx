@@ -17,6 +17,8 @@ import {
   query_player_lineup,
   compute_scores,
 } from 'utils/near/helper';
+import { mapGameInfo } from 'utils/game/helper';
+import { fetchGame } from 'utils/polygon/ethers';
 import { getNflWeek, getNflSeason, formatToUTCDate } from 'utils/date/helper';
 import LoadingPageDark from 'components/loading/LoadingPageDark';
 import { setTeamName, setAccountId, setGameId, setSport2 } from 'redux/athlete/teamSlice';
@@ -41,7 +43,7 @@ const Games = (props) => {
   const { state: wallet } = useWalletSelector();
   const [playerTeams, setPlayerTeams] = useState([]);
   const [playerTeamSorted, setPlayerTeamSorted] = useState([]);
-  const [gameInfo, setGameInfo] = useState([]);
+  const [gameInfo, setGameInfo] = useState({});
   const [week, setWeek] = useState(0);
   const [nflSeason, setNflSeason] = useState('');
   const [gameData, setGameData] = useState(null);
@@ -50,8 +52,12 @@ const Games = (props) => {
   const [isExtendedLeaderboard, setIsExtendedLeaderboard] = useState(0);
   const playGameImage = '/images/game.png';
   async function get_game_data(game_id) {
-    setGameInfo(await query_game_data(game_id, getSportType(currentSport).gameContract));
-    setGameData(await query_game_data(game_id, getSportType(currentSport).gameContract));
+    const result = await fetchGame(gameId);
+    const game = await mapGameInfo(result, 'games');
+    setGameInfo(game);
+    setGameData(game);
+    //setGameInfo(await fetchGame(gameId));
+    //setGameData(await query_game_data(game_id, getSportType(currentSport).gameContract));
   }
   // async function get_all_players_lineup_chunks(joined_team_counter) {
   //   const startTimeFormatted = formatToUTCDate(gameData.start_time);
@@ -188,8 +194,8 @@ const Games = (props) => {
   useEffect(() => {
     if (gameData !== undefined && gameData !== null) {
       // console.log('Joined team counter: ' + gameData.joined_team_counter);
-      get_player_teams(wallet, gameId);
-      get_all_players_lineup_with_index();
+      //get_player_teams(wallet, gameId);
+      //get_all_players_lineup_with_index();
       //get_all_players_lineup_rposition(gameData.joined_team_counter);
     }
   }, [gameData]);

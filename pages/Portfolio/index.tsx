@@ -278,10 +278,8 @@ const Portfolio = () => {
   }, [selectedRegular, selectedPromo, currentSport]);
 
   useEffect(() => {
-    if (totalRegularSupply > 0) {
-      getFilterTokensForOwner();
-    }
-  }, [totalRegularSupply, athleteOffset, team, position, currentPage]);
+    getFilterTokensForOwner();
+  }, [totalRegularSupply, currentPage, pageCount]); //athleteOffset, currentPage, currentSport
   useEffect(() => {
     console.log(athletes);
   }, [athletes]);

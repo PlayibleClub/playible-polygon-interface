@@ -12,6 +12,8 @@ import 'regenerator-runtime/runtime';
 import Router from 'next/router';
 import BaseModal from 'components/modals/BaseModal';
 import { query_game_data } from 'utils/near/helper';
+import { fetchGame } from 'utils/polygon/ethers';
+import { mapGameInfo } from 'utils/game/helper';
 import { getSportType } from 'data/constants/sportConstants';
 
 export default function PlayDetails(props) {
@@ -41,8 +43,10 @@ export default function PlayDetails(props) {
     }, 1000);
   }
 
-  async function get_game_data(game_id) {
-    setGameData(await query_game_data(game_id, getSportType(currentSport).gameContract));
+  async function get_game_data(gameId) {
+    const result = await fetchGame(gameId);
+    const game = await mapGameInfo(result, 'games');
+    setGameData(game);
   }
 
   function checkIfPaidGame(gameData) {

@@ -5,13 +5,13 @@ import Link from 'next/link';
 import PlayComponent from './components/PlayComponent';
 import Container from '../../components/containers/Container';
 import 'regenerator-runtime/runtime';
-import { getGameInfoById } from 'utils/game/helper';
+import { getGameInfoById, mapGameInfo } from 'utils/game/helper';
 import { getUTCTimestampFromLocal } from 'utils/date/helper';
 import ReactPaginate from 'react-paginate';
 import { SPORT_NAME_LOOKUP, SPORT_TYPES, getSportType } from 'data/constants/sportConstants';
 import { query_games_list, query_game_supply } from 'utils/near/helper';
 import { useWalletSelector } from 'contexts/WalletSelectorContext';
-
+import { fetchAllGames } from 'utils/polygon/ethers';
 const Play = (props) => {
   const { state: wallet } = useWalletSelector();
   const [activeCategory, setCategory] = useState('NEW');
@@ -47,7 +47,7 @@ const Play = (props) => {
 
   function getActiveTabGameTotal() {
     const active = categoryList.find((x) => x.isActive);
-
+    console.log('going here');
     switch (active.name) {
       case 'NEW':
         setCurrentTotal(sportList[0].isActive ? allNew.length : newGames.length);
@@ -181,19 +181,48 @@ const Play = (props) => {
     let totalGames = 0;
     const sports = [
       SPORT_NAME_LOOKUP.football,
-      SPORT_NAME_LOOKUP.basketball,
-      SPORT_NAME_LOOKUP.baseball,
-      SPORT_NAME_LOOKUP.cricket,
+      // SPORT_NAME_LOOKUP.basketball,
+      // SPORT_NAME_LOOKUP.baseball,
+      // SPORT_NAME_LOOKUP.cricket,
     ];
 
-    await Promise.all(
-      sports.map(async (sport) => {
-        const result = await query_game_supply(getSportType(sport).gameContract);
-        totalGames += Number(result);
-      })
+    // await Promise.all(
+    //   sports.map(async (sport) => {
+    //     const result = await query_game_supply(getSportType(sport).gameContract);
+    //     totalGames += Number(result);
+    //   })
+    // );
+    console.log('test');
+    const result = await fetchAllGames();
+    console.log(result);
+    setTotalGames(result.length);
+    console.log(getUTCTimestampFromLocal());
+    console.log(`Compare: ${Number(result[0].startTime) * 1000}`);
+    const upcoming = await Promise.all(
+      result
+        .filter((x) => Number(x.startTime) * 1000 > getUTCTimestampFromLocal())
+        .map((item) => mapGameInfo(item, 'new'))
     );
-
-    setTotalGames(totalGames);
+    const completed = await Promise.all(
+      result
+        .filter((x) => Number(x.endTime) * 1000 < getUTCTimestampFromLocal())
+        .map((item) => mapGameInfo(item, 'completed'))
+    );
+    const ongoing = await Promise.all(
+      result
+        .filter(
+          (x) =>
+            Number(x.startTime) * 1000 < getUTCTimestampFromLocal() &&
+            Number(x.endTime) * 1000 > getUTCTimestampFromLocal()
+        )
+        .map((item) => mapGameInfo(item, 'on-going'))
+    );
+    console.log(upcoming);
+    console.log(completed);
+    console.log(ongoing);
+    setNewGames(upcoming);
+    setCompletedGames(completed);
+    setOngoingGames(ongoing);
   }
 
   console.log(totalGames);
@@ -236,69 +265,112 @@ const Play = (props) => {
 
   function get_all_games_list(totalGames) {
     const sports = [
-      SPORT_NAME_LOOKUP.cricket,
+      //SPORT_NAME_LOOKUP.cricket,
       SPORT_NAME_LOOKUP.football,
-      SPORT_NAME_LOOKUP.basketball,
-      SPORT_NAME_LOOKUP.baseball,
+      //SPORT_NAME_LOOKUP.basketball,
+      //SPORT_NAME_LOOKUP.baseball,
     ];
 
     sports.forEach((sport) => {
-      const gameContract = getSportType(sport).gameContract;
-      query_games_list(totalGames, gameContract).then(async (data) => {
-        //@ts-ignore:next-line
-        const result = JSON.parse(Buffer.from(data.result).toString());
-
-        const upcomingGames = await Promise.all(
+      fetchAllGames().then(async (result) => {
+        const upcoming = await Promise.all(
           result
-            .filter((x) => x[1].start_time > getUTCTimestampFromLocal())
-            .map((item) => getGameInfoById(wallet, item, 'new', sport))
+            .filter((x) => Number(x.startTime) * 1000 > getUTCTimestampFromLocal())
+            .map((item) => mapGameInfo(item, 'new'))
         );
-
-        const ongoingGames = await Promise.all(
+        const ongoing = await Promise.all(
           result
             .filter(
               (x) =>
-                x[1].start_time < getUTCTimestampFromLocal() &&
-                x[1].end_time > getUTCTimestampFromLocal()
+                Number(x.startTime) * 1000 < getUTCTimestampFromLocal() &&
+                Number(x.endTime) * 1000 > getUTCTimestampFromLocal()
             )
-            .map((item) => getGameInfoById(wallet, item, 'on-going', sport))
+            .map((item) => mapGameInfo(item, 'on-going'))
         );
-
-        upcomingGames.sort(function (a, b) {
-          return a.start_time - b.start_time;
-        });
 
         switch (sport) {
           case SPORT_NAME_LOOKUP.cricket:
-            setCricketNew(upcomingGames);
-            setCricketGoing(ongoingGames);
+            setCricketNew(upcoming);
+            setCricketGoing(ongoing);
             break;
           case SPORT_NAME_LOOKUP.football:
-            setFootballNew(upcomingGames);
-            setFootballGoing(ongoingGames);
+            setFootballNew(upcoming);
+            setFootballGoing(ongoing);
             break;
           case SPORT_NAME_LOOKUP.basketball:
-            setBasketballNew(upcomingGames);
-            setBasketballGoing(ongoingGames);
+            setBasketballNew(upcoming);
+            setBasketballGoing(ongoing);
             break;
           case SPORT_NAME_LOOKUP.baseball:
-            setBaseballNew(upcomingGames);
-            setBaseballGoing(ongoingGames);
+            setBaseballNew(upcoming);
+            setBaseballGoing(ongoing);
             break;
           default:
             break;
         }
       });
     });
+
+    // sports.forEach((sport) => {
+    //   const gameContract = getSportType(sport).gameContract;
+    //   query_games_list(totalGames, gameContract).then(async (data) => {
+    //     //@ts-ignore:next-line
+    //     const result = JSON.parse(Buffer.from(data.result).toString());
+
+    //     const upcomingGames = await Promise.all(
+    //       result
+    //         .filter((x) => x[1].start_time > getUTCTimestampFromLocal())
+    //         .map((item) => getGameInfoById(wallet, item, 'new', sport))
+    //     );
+
+    //     const ongoingGames = await Promise.all(
+    //       result
+    //         .filter(
+    //           (x) =>
+    //             x[1].start_time < getUTCTimestampFromLocal() &&
+    //             x[1].end_time > getUTCTimestampFromLocal()
+    //         )
+    //         .map((item) => getGameInfoById(wallet, item, 'on-going', sport))
+    //     );
+
+    //     upcomingGames.sort(function (a, b) {
+    //       return a.start_time - b.start_time;
+    //     });
+
+    //     switch (sport) {
+    //       case SPORT_NAME_LOOKUP.cricket:
+    //         setCricketNew(upcomingGames);
+    //         setCricketGoing(ongoingGames);
+    //         break;
+    //       case SPORT_NAME_LOOKUP.football:
+    //         setFootballNew(upcomingGames);
+    //         setFootballGoing(ongoingGames);
+    //         break;
+    //       case SPORT_NAME_LOOKUP.basketball:
+    //         setBasketballNew(upcomingGames);
+    //         setBasketballGoing(ongoingGames);
+    //         break;
+    //       case SPORT_NAME_LOOKUP.baseball:
+    //         setBaseballNew(upcomingGames);
+    //         setBaseballGoing(ongoingGames);
+    //         break;
+    //       default:
+    //         break;
+    //     }
+    //   });
+    // });
   }
 
   useEffect(() => {
-    console.log(sportList);
+    console.log(categoryList);
     get_game_supply();
-    get_games_list(totalGames);
     get_all_games_list(totalGames);
   }, [totalGames, currentSport, sportList]);
 
+  useEffect(() => {
+    console.log;
+    console.log(ongoingGames.length);
+  }, [ongoingGames]);
   useEffect(() => {
     getActiveTabGameTotal();
   }, [newGames, ongoingGames, completedGames, allNew, allGoing]);
@@ -428,6 +500,7 @@ const Play = (props) => {
                               const currentSportIndex = allGoing.findIndex(
                                 (game) => game.sport === data.sport
                               );
+                              console.log('test went here');
                               console.log(currentTotal);
                               return (
                                 <div key={i} className="flex">
@@ -469,9 +542,10 @@ const Play = (props) => {
                             ? completedGames
                             : emptyGames
                           )
-                            .filter((data, i) => i >= gamesOffset && i < gamesOffset + gamesLimit)
+                            //.filter((data, i) => i >= gamesOffset && i < gamesOffset + gamesLimit)
                             .map((data, i) => {
                               console.log(currentTotal);
+                              console.log('ongoing-test');
                               return (
                                 <div key={i} className="flex">
                                   <div className="iphone5:mr-0 md:mr-6 cursor-pointer">

@@ -14,8 +14,10 @@ import promotional_pack_nft from 'utils/polygon/ABI/promotional_pack_nft.json';
 import pack_nft_storage from 'utils/polygon/ABI/pack_nft.json';
 import pack_nft_logic from 'utils/polygon/ABI/pack_nft_logic.json';
 import athlete_logic from '../polygon/ABI/athletelogic_abi.json';
+import game_storage from '../polygon/ABI/gamestorage_abi.json';
 import athlete_storage from '../polygon/ABI/athletestorage_abi.json';
 import { AthleteStorageABI, AthleteLogicABI } from '../polygon/ABI/athleteABIs';
+import { GameStorageABI, GameLogicABI } from '../polygon/ABI/gameABIs';
 import { isWindows } from 'react-device-detect';
 
 const promoPackContractAddress = '0xecdf1d718adf8930661a80b37bdbda83fdc538e3';
@@ -24,8 +26,8 @@ const regularPackNFLStorageContractAddress = '0x00AdA1B38dFF832A8b85935B8B8BC923
 const regularPackNFLLogicContractAddress = '0xc101792c937A61b39118083d470ad3bE4c5FC6D5';
 const regularNFLAthleteStorageAddress = '0x32ec30629f306261a8c38658d0dc4b2e1c493585';
 //const regularNFLAthleteLogicAddress = '0x6b53db22961B40c89F82a6C47Fe8d138Efd4cdDc';
-const regularNFLAthleteLogicAddress = '0x7454F97E507fBF1F65cf145ac3922d7c0cf9eB4C ';
-
+const regularNFLAthleteLogicAddress = '0x73e44E63D9264C575b08Ef7161c8B1957e536BDB';
+const gameNFLStorageAddress = '0x769450D2Eb8fD1F810E75131eC91A7E0E96fd497';
 const packStorageNFLContractABI = pack_nft_storage as unknown as packStorageABI;
 const packLogicNFLContractABI = pack_nft_logic as unknown as packLogicABI;
 
@@ -273,11 +275,11 @@ export async function fetchFilteredAthleteSupplyForOwner(accountId, position, te
       if (!/\S/.test(name)) {
         name = 'allNames';
       }
-      console.log('function called');
-      console.log(`Position: ${position}`);
-      console.log(`Team ${team}`);
-      console.log(`Name ${name}`);
-      console.log(`Address: ${accountId}`);
+      // console.log('function called');
+      // console.log(`Position: ${position}`);
+      // console.log(`Team ${team}`);
+      // console.log(`Name ${name}`);
+      // console.log(`Address: ${accountId}`);
       //const provider = new Web3(window.ethereum);
       const abi = athlete_logic as unknown as AthleteLogicABI;
       await window.ethereum.request({ method: 'eth_requestAccounts' });
@@ -289,7 +291,9 @@ export async function fetchFilteredAthleteSupplyForOwner(accountId, position, te
       console.log(result);
       return Number(result);
     }
-  } catch (error) {}
+  } catch (error) {
+    console.log(error);
+  }
 }
 export async function fetchFilteredAthleteTokensForOwner(
   accountId,
@@ -301,15 +305,30 @@ export async function fetchFilteredAthleteTokensForOwner(
   supply
 ) {
   try {
+    console.log(`Athlete offset: ${athleteOffset}`);
     if (window.ethereum) {
+      let result = [];
+      if (supply === 0) {
+        return result;
+      }
       if (!/\S/.test(name)) {
         name = 'allNames';
       }
+      if (supply < athleteLimit) {
+        athleteLimit = supply;
+      } else if (supply - athleteOffset < 10) {
+        athleteLimit = supply % athleteLimit;
+      }
+
       const abi = athlete_logic as unknown as AthleteLogicABI;
+      console.log(position);
+      console.log(`Supply check: ${supply}`);
+      console.log(`Athlete limit : ${athleteLimit}`);
+      console.log(`Name: ${name}`);
       await window.ethereum.request({ method: 'eth_requestAccounts' });
       const contract = new Contract(abi, regularNFLAthleteLogicAddress);
       contract.setProvider(window.ethereum);
-      const result = await contract.methods
+      result = await contract.methods
         .getFilteredTokensForOwnerPagination(
           accountId,
           position,
@@ -327,6 +346,7 @@ export async function fetchFilteredAthleteTokensForOwner(
               .map((item) => getAthleteInfoByApiId(item, undefined, undefined))
           );
         });
+      console.log(result);
       return result;
     }
   } catch (error) {
@@ -352,5 +372,54 @@ export async function fetchAthleteTokenMetadataAndURIById(tokenId: number, start
     }
   } catch (error) {
     console.log(error);
+  }
+}
+
+export async function fetchAllGames() {
+  try {
+    if (window.ethereum) {
+      console.log('call function');
+      await window.ethereum.request({ method: 'eth_requestAccounts' });
+      const abi = game_storage as unknown as GameStorageABI;
+      const contract = new Contract(abi, gameNFLStorageAddress);
+      contract.setProvider(window.ethereum);
+      const result = await contract.methods.getAllGamesInfo().call({ gas: '30000000' });
+      //console.log(result);
+      return result;
+    }
+  } catch (e) {
+    console.log(e);
+  }
+}
+export async function fetchGame(gameId: number) {
+  try {
+    if (window.ethereum) {
+      await window.ethereum.request({ method: 'eth_requestAccounts' });
+      const abi = game_storage as unknown as GameStorageABI;
+      const contract = new Contract(abi, gameNFLStorageAddress);
+      contract.setProvider(window.ethereum);
+      const result = await contract.methods.getGameInfo(gameId).call({ gas: '30000000' });
+      return result;
+    }
+  } catch (e) {
+    console.log(e);
+  }
+}
+
+export async function fetchPlayerTeams(accountId, gameId: number) {
+  try {
+    if (window.ethereum) {
+      console.log(accountId);
+      await window.ethereum.request({ method: 'eth_requestAccounts' });
+      const abi = game_storage as unknown as GameStorageABI;
+      const contract = new Contract(abi, gameNFLStorageAddress);
+      contract.setProvider(window.ethereum);
+      const result = await contract.methods
+        .getPlayerTeam(accountId, gameId)
+        .call({ gas: '30000000', from: accountId });
+      console.log(result);
+    }
+  } catch (e) {
+    console.log(e);
   }
 }

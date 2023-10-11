@@ -266,7 +266,9 @@ function convertPolygonNftToAthlete(item) {
 function getPositionDisplay(position, currentSport) {
   let flex = false;
   let found;
-  getSportType(currentSport).extra.forEach((x) => {
+  console.log(position);
+  console.log(currentSport.toLowerCase());
+  getSportType(currentSport.toLowerCase()).extra.forEach((x) => {
     if (x.key.toString() === position.toString()) {
       found = x.name;
       flex = true;
@@ -280,7 +282,9 @@ function getPositionDisplay(position, currentSport) {
     flex = false;
     return found;
   } else {
-    found = getSportType(currentSport).positionList.find((x) => x.key === position[0]);
+    found = getSportType(currentSport.toLowerCase()).positionList.find(
+      (x) => x.key === position[0]
+    );
     return found.name;
   }
 }
