@@ -11,6 +11,8 @@ import { useDispatch, useSelector } from 'react-redux';
 import Modal from 'components/modals/Modal';
 import { getSportType } from 'data/constants/sportConstants';
 import { DEFAULT_MAX_FEES } from 'data/constants/gasFees';
+import { fetchGame } from 'utils/polygon/ethers';
+import { mapGameInfo } from 'utils/game/helper';
 import { getAthleteLineup, getTeamName } from 'redux/athlete/athleteSlice';
 import {
   setAthleteLineup,
@@ -33,7 +35,7 @@ export default function CreateLineup(props) {
   // const { selector } = useWalletSelector();
   // @ts-ignore:next-line
   const [teamName, setTeamName] = useState('Team 1');
-  const [gameData, setGameData] = useState([]);
+  const [gameData, setGameData] = useState(undefined);
   const [submitModal, setSubmitModal] = useState(false);
   const [editModal, setEditModal] = useState(false);
   const [editInput, setEditInput] = useState(teamName);
@@ -62,7 +64,10 @@ export default function CreateLineup(props) {
     setLineup(array2);
   }
   async function get_game_data(game_id) {
-    setGameData(await query_game_data(game_id, getSportType(currentSport).gameContract));
+    const result = await fetchGame(game_id);
+    const game = await mapGameInfo(result, 'createlineup');
+    console.log(game);
+    setGameData(game);
   }
 
   async function execute_submit_lineup(game_id, team_name, token_ids, promo_ids) {
@@ -157,7 +162,7 @@ export default function CreateLineup(props) {
   useEffect(() => {
     //@ts-ignore:next-line
     console.log(gameData);
-    if (gameData.length !== 0) {
+    if (gameData !== undefined) {
       //@ts-ignore:next-line
       populateLineup(gameData.positions);
     }

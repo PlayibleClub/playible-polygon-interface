@@ -21,6 +21,8 @@ import { formatToUTCDate } from 'utils/date/helper';
 import { getRPCProvider } from 'utils/near';
 import EntrySummaryModal from 'components/modals/EntrySummaryModal';
 import EntrySummaryPopup from 'pages/Games/components/EntrySummaryPopup';
+import { fetchGame, fetchPlayerTeams } from 'utils/polygon/ethers';
+import { mapGameInfo } from 'utils/game/helper';
 export default function CreateLineup(props) {
   const { query } = props;
   const provider = new providers.JsonRpcProvider({ url: getRPCProvider() });
@@ -34,20 +36,25 @@ export default function CreateLineup(props) {
   const currentSport = query.sport.toString().toUpperCase();
   const router = useRouter();
   const dispatch = useDispatch();
-  const { state: wallet } = useWalletSelector();
+  const {
+    state: { wallet },
+  } = useWalletSelector();
   const [gameData, setGameData] = useState(null);
   const [playerTeams, setPlayerTeams] = useState([]);
   // const [err, setErr] = useState(error);
   const playGameImage = '/images/game.png';
 
   async function get_player_teams(account, game_id) {
-    setPlayerTeams(
-      await query_player_teams(account, game_id, getSportType(currentSport).gameContract)
-    );
+    await fetchPlayerTeams(wallet, game_id);
+    // setPlayerTeams(
+    //   await query_player_teams(account, game_id, getSportType(currentSport).gameContract)
+    // );
   }
 
   async function get_game_data(game_id) {
-    setGameData(await query_game_data(game_id, getSportType(currentSport).gameContract));
+    const result = await fetchGame(game_id);
+    const game = await mapGameInfo(result, 'lineup');
+    setGameData(game);
   }
   async function get_all_player_keys() {
     const query = JSON.stringify({});
@@ -135,14 +142,14 @@ export default function CreateLineup(props) {
   }, []);
   useEffect(() => {
     if (playerLineups !== undefined) {
-      sortPlayerTeamScores(wallet);
+      //sortPlayerTeamScores(wallet);
     }
   }, [playerLineups]);
   useEffect(() => {
     if (gameData !== undefined && gameData !== null) {
       // console.log('Joined team counter: ' + gameData.joined_team_counter);
       get_player_teams(wallet, gameId);
-      get_all_players_lineup_with_index();
+      //get_all_players_lineup_with_index();
       //get_all_players_lineup_rposition(gameData.joined_team_counter);
     }
   }, [gameData]);
