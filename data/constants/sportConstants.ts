@@ -245,7 +245,7 @@ export const SPORT_NAME_LOOKUP = {
 export const SPORT_TYPES = [
   {
     key: 'NFL',
-    sport: SPORT_NAME_LOOKUP.football,
+    sport: SPORT_NAME_LOOKUP.footballKey,
     mintContract: getContract(MINTER_NFL),
     packContract: getContract(PACK_NFL),
     packPromoContract: getContract(PACK_PROMO_NFL),
