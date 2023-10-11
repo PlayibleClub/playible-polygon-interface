@@ -439,3 +439,35 @@ export async function fetchAllGames() {
     console.log(e);
   }
 }
+export async function fetchGame(gameId: number) {
+  try {
+    if (window.ethereum) {
+      await window.ethereum.request({ method: 'eth_requestAccounts' });
+      const abi = game_storage as unknown as GameStorageABI;
+      const contract = new Contract(abi, gameNFLStorageAddress);
+      contract.setProvider(window.ethereum);
+      const result = await contract.methods.getGameInfo(gameId).call({ gas: '30000000' });
+      return result;
+    }
+  } catch (e) {
+    console.log(e);
+  }
+}
+
+export async function fetchPlayerTeams(accountId, gameId: number) {
+  try {
+    if (window.ethereum) {
+      console.log(accountId);
+      await window.ethereum.request({ method: 'eth_requestAccounts' });
+      const abi = game_storage as unknown as GameStorageABI;
+      const contract = new Contract(abi, gameNFLStorageAddress);
+      contract.setProvider(window.ethereum);
+      const result = await contract.methods
+        .getPlayerTeam(accountId, gameId)
+        .call({ gas: '30000000', from: accountId });
+      console.log(result);
+    }
+  } catch (e) {
+    console.log(e);
+  }
+}
