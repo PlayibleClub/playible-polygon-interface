@@ -38,7 +38,7 @@ async function getGameInfoById(accountId, item, status, currentSport) {
   return returningData;
 }
 //TODO: add accountId for getting player teams, add currentSport/currentContract
-async function mapGameInfo(item, status) {
+async function mapGameInfo(item, status, currentSport) {
   const returningData = {
     game_id: Number(item.gameId),
     start_time: Number(item.startTime),
@@ -54,8 +54,8 @@ async function mapGameInfo(item, status) {
     joined_team_counter: Number(item.joinedTeamCounter),
     isCompleted: getUTCTimestampFromLocal() >= item.endTime ? true : false,
     status: status,
-    user_team_count: 0,
-    sport: 'nfl',
+    user_team_count: 0, //TODO: add user team count
+    sport: currentSport,
   };
   return returningData;
 }
