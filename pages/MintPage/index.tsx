@@ -289,12 +289,14 @@ export default function Home(props) {
           .sendTransaction(tx)
           .on('transactionHash', function (hash) {
             console.log('Transaction Hash:', hash);
+            setLoading(true);
           })
           //@ts-ignore
           .on('confirmation', function (confirmationNumber, receipt) {
             console.log('Confirmation Number:', confirmationNumber);
             console.log('Receipt:', receipt);
             setApprovedComplete(true);
+            setLoading(false);
             setRemountComponent(Math.random());
           })
           .on('error', function (error) {
