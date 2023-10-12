@@ -23,7 +23,7 @@ import {
   setSport,
 } from 'redux/athlete/athleteSlice';
 import { query_game_data } from 'utils/near/helper';
-
+import { executeSubmitLineup } from 'utils/polygon/ethers';
 export default function CreateLineup(props) {
   const { query } = props;
   const gameId = query.game_id;
@@ -32,6 +32,9 @@ export default function CreateLineup(props) {
   const dispatch = useDispatch();
   const router = useRouter();
   const reduxLineup = useSelector(getAthleteLineup);
+  const {
+    state: { wallet },
+  } = useWalletSelector();
   // const { selector } = useWalletSelector();
   // @ts-ignore:next-line
   const [teamName, setTeamName] = useState('Team 1');
@@ -99,24 +102,27 @@ export default function CreateLineup(props) {
     // });
   }
   function verifyLineup(game_id, team_name, lineup) {
-    const token_ids = lineup
+    const tokenIds = lineup
       .filter((data) => {
         return data.isPromo === false && data.isAthlete === true;
       })
       .map((data) => {
-        return data.athlete.athlete_id;
+        return Number(data.athlete.athlete_id);
       });
 
-    const promo_ids = lineup
+    const promoIds = lineup
       .filter((data) => {
         return data.isPromo === true && data.isAthlete === true;
       })
       .map((data) => {
-        return data.athlete.athlete_id;
+        return Number(data.athlete.athlete_id);
       });
+    const tokenLineup = tokenIds.concat(promoIds); //combined token ids
+    const apiIds = lineup.map((data) => {
+      return Number(data.athlete.primary_id);
+    });
 
-    console.log(token_ids);
-    console.log(promo_ids);
+    executeSubmitLineup(wallet, gameId, teamName, tokenIds, promoIds, tokenLineup, apiIds);
     //execute_submit_lineup(game_id, team_name, token_ids, promo_ids);
   }
 
