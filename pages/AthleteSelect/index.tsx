@@ -23,6 +23,10 @@ import {
   query_filter_tokens_for_owner,
   query_mixed_tokens_pagination,
 } from 'utils/near/helper';
+import {
+  fetchFilteredAthleteSupplyForOwner,
+  fetchFilteredAthleteTokensForOwner,
+} from 'utils/polygon/ethers';
 import { getGameStartDate, getGameEndDate } from 'redux/athlete/athleteSlice';
 import { getSportType, SPORT_NAME_LOOKUP } from 'data/constants/sportConstants';
 import NftTypeComponent from 'pages/Portfolio/components/NftTypeComponent';
@@ -95,7 +99,7 @@ const AthleteSelect = (props) => {
       position: position,
       isAthlete: true,
       isPromo:
-        athletes[radioIndex].athlete_id.includes('SB') ||
+        athletes[radioIndex].athlete_id.includes('SB') || //TODO: add differentiation for polygon tokens
         athletes[radioIndex].athlete_id.includes('PR')
           ? true
           : false,
