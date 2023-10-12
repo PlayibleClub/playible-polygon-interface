@@ -57,10 +57,12 @@ const AthleteSelect = (props) => {
   const [totalRegularSupply, setTotalRegularSupply] = useState(0);
   const [totalPromoSupply, setTotalPromoSupply] = useState(0);
   const [radioSelected, setRadioSelected] = useState(null);
-  const [team, setTeam] = useState(['allTeams']);
-  const [name, setName] = useState(['allNames']);
+  const [team, setTeam] = useState('allTeams');
+  const [name, setName] = useState('allNames');
   const [lineup, setLineup] = useState([]);
-  const { state: wallet } = useWalletSelector();
+  const {
+    state: { wallet },
+  } = useWalletSelector();
   const [pageCount, setPageCount] = useState(0);
   const [regPageCount, setRegPageCount] = useState(0);
   const [remountComponent, setRemountComponent] = useState(0);
@@ -70,15 +72,16 @@ const AthleteSelect = (props) => {
   const [teams, setTeams] = useState([]);
 
   async function get_filter_supply_for_owner() {
-    setTotalRegularSupply(
-      await query_filter_supply_for_owner(
-        wallet,
-        position,
-        team,
-        name,
-        getSportType(currentSport).regContract
-      )
-    );
+    setTotalRegularSupply(await fetchFilteredAthleteSupplyForOwner(wallet, position, team, name));
+    // setTotalRegularSupply(
+    //   await query_filter_supply_for_owner(
+    //     wallet,
+    //     position,
+    //     team,
+    //     name,
+    //     getSportType(currentSport).regContract
+    //   )
+    // );
   }
 
   async function get_filter_soulbound_supply_for_owner() {
@@ -98,11 +101,14 @@ const AthleteSelect = (props) => {
     passedLineup.splice(index, 1, {
       position: position,
       isAthlete: true,
+      // isPromo:
+      //   athletes[radioIndex].athlete_id.includes('SB') || //TODO: add differentiation for polygon tokens
+      //   athletes[radioIndex].athlete_id.includes('PR')
+      //     ? true
+      //     : false,
       isPromo:
-        athletes[radioIndex].athlete_id.includes('SB') || //TODO: add differentiation for polygon tokens
-        athletes[radioIndex].athlete_id.includes('PR')
-          ? true
-          : false,
+        athletes[radioIndex].athlete_id.charAt(0) === '2' ||
+        athletes[radioIndex].athlete_id.charAt(0) === '3',
       athlete: athletes[radioIndex],
     });
     setLineup(passedLineup);
@@ -122,34 +128,45 @@ const AthleteSelect = (props) => {
     return false;
   }
   async function get_filter_tokens_for_owner(contract) {
-    await query_filter_tokens_for_owner(
+    const result = await fetchFilteredAthleteTokensForOwner(
       wallet,
       athleteOffset,
       athleteLimit,
       position,
       team,
       name,
-      contract,
-      currentSport
-    ).then(async (result) => {
-      let athletes = result;
-      if (currentSport === SPORT_NAME_LOOKUP.basketball) {
-        athletes = await Promise.all(
-          result.map((x) => getAthleteSchedule(x, startDate, endDate, 'nba'))
-        );
-      } else if (currentSport === SPORT_NAME_LOOKUP.baseball) {
-        athletes = await Promise.all(
-          result.map((x) => getAthleteSchedule(x, startDate, endDate, 'mlb'))
-        );
-      } else if (currentSport === SPORT_NAME_LOOKUP.cricket) {
-        athletes = await Promise.all(
-          result
-            .filter((x) => x.status !== 'not_started')
-            .map((x) => getCricketSchedule(x, startDate, endDate))
-        );
-      }
-      setAthletes(athletes);
-    });
+      totalRegularSupply
+    );
+    console.log(result);
+    setAthletes(result);
+    // await query_filter_tokens_for_owner(
+    //   wallet,
+    //   athleteOffset,
+    //   athleteLimit,
+    //   position,
+    //   team,
+    //   name,
+    //   contract,
+    //   currentSport
+    // ).then(async (result) => {
+    //   let athletes = result;
+    //   if (currentSport === SPORT_NAME_LOOKUP.basketball) {
+    //     athletes = await Promise.all(
+    //       result.map((x) => getAthleteSchedule(x, startDate, endDate, 'nba'))
+    //     );
+    //   } else if (currentSport === SPORT_NAME_LOOKUP.baseball) {
+    //     athletes = await Promise.all(
+    //       result.map((x) => getAthleteSchedule(x, startDate, endDate, 'mlb'))
+    //     );
+    //   } else if (currentSport === SPORT_NAME_LOOKUP.cricket) {
+    //     athletes = await Promise.all(
+    //       result
+    //         .filter((x) => x.status !== 'not_started')
+    //         .map((x) => getCricketSchedule(x, startDate, endDate))
+    //     );
+    //   }
+    //   setAthletes(athletes);
+    // });
     //   setAthletes(
     //     await query_filter_tokens_for_owner(
     //       accountId,
@@ -230,6 +247,7 @@ const AthleteSelect = (props) => {
 
   async function query_teams_graphql(currentSport) {
     let query;
+    console.log(currentSport);
     if (currentSport !== SPORT_NAME_LOOKUP.cricket) {
       query = await getTeams({
         variables: { sport: getSportType(currentSport).key.toLocaleLowerCase() },
@@ -275,9 +293,9 @@ const AthleteSelect = (props) => {
     if (selectedRegular !== false && selectedPromo === false) {
       get_filter_tokens_for_owner(getSportType(currentSport).regContract);
     } else if (selectedRegular === false && selectedPromo !== false) {
-      get_filter_tokens_for_owner(getSportType(currentSport).promoContract);
+      //get_filter_tokens_for_owner(getSportType(currentSport).promoContract);
     } else if (selectedRegular !== false && selectedPromo !== false) {
-      get_mixed_tokens_for_pagination();
+      //get_mixed_tokens_for_pagination();
     } else {
       setAthletes([]);
     }
@@ -296,13 +314,13 @@ const AthleteSelect = (props) => {
   useEffect(() => {
     if (selectedRegular !== false && selectedPromo === false) {
       get_filter_supply_for_owner();
-      setTotalPromoSupply(0);
+      //setTotalPromoSupply(0);
     } else if (selectedRegular === false && selectedPromo !== false) {
-      get_filter_soulbound_supply_for_owner();
-      setTotalRegularSupply(0);
+      //get_filter_soulbound_supply_for_owner();
+      //setTotalRegularSupply(0);
     } else if (selectedRegular !== false && selectedPromo !== false) {
-      get_filter_supply_for_owner();
-      get_filter_soulbound_supply_for_owner();
+      //get_filter_supply_for_owner();
+      //get_filter_soulbound_supply_for_owner();
     } else {
       setTotalRegularSupply(0);
       setTotalPromoSupply(0);
@@ -328,7 +346,7 @@ const AthleteSelect = (props) => {
             <select
               onChange={(e) => {
                 handleDropdownChange();
-                setTeam([e.target.value]);
+                setTeam(e.target.value);
               }}
               className="bg-filter-icon bg-no-repeat bg-right bg-indigo-white iphone5:w-28 w-36 md:w-60 lg:w-60
                       ring-2 ring-offset-4 ring-indigo-black ring-opacity-25 focus:ring-2 focus:ring-indigo-black 
