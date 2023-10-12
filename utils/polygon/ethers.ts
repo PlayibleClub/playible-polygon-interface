@@ -15,6 +15,7 @@ import pack_nft_storage from 'utils/polygon/ABI/pack_nft.json';
 import pack_nft_logic from 'utils/polygon/ABI/pack_nft_logic.json';
 import athlete_logic from '../polygon/ABI/athletelogic_abi.json';
 import game_storage from '../polygon/ABI/gamestorage_abi.json';
+import game_logic from '../polygon/ABI/gamelogic_abi.json';
 import athlete_storage from '../polygon/ABI/athletestorage_abi.json';
 import { AthleteStorageABI, AthleteLogicABI } from '../polygon/ABI/athleteABIs';
 import { GameStorageABI, GameLogicABI } from '../polygon/ABI/gameABIs';
@@ -28,6 +29,7 @@ const regularNFLAthleteStorageAddress = '0x32ec30629f306261a8c38658d0dc4b2e1c493
 //const regularNFLAthleteLogicAddress = '0x6b53db22961B40c89F82a6C47Fe8d138Efd4cdDc';
 const regularNFLAthleteLogicAddress = '0x73e44E63D9264C575b08Ef7161c8B1957e536BDB';
 const gameNFLStorageAddress = '0x769450D2Eb8fD1F810E75131eC91A7E0E96fd497';
+const gameNFLLogicAddress = '0xfA3114b61621110458738b033B966B9813019865';
 const packStorageNFLContractABI = pack_nft_storage as unknown as packStorageABI;
 const packLogicNFLContractABI = pack_nft_logic as unknown as packLogicABI;
 
@@ -364,7 +366,7 @@ export async function fetchFilteredAthleteTokensForOwner(
       }
       if (supply < athleteLimit) {
         athleteLimit = supply;
-      } else if (supply - athleteOffset < 10) {
+      } else if (supply - athleteOffset < athleteLimit) {
         athleteLimit = supply % athleteLimit;
       }
 
@@ -391,7 +393,7 @@ export async function fetchFilteredAthleteTokensForOwner(
             result
               .filter((item) => Number(item[0] !== 0 && item[2].length > 0))
               .map(convertPolygonNftToAthlete)
-              .map((item) => getAthleteInfoByApiId(item, undefined, undefined))
+              .map((item) => getAthleteInfoByApiId(item, undefined, undefined)) //for portfolio, assetdetails, and athleteselect
           );
         });
       console.log(result);
@@ -470,4 +472,58 @@ export async function fetchPlayerTeams(accountId, gameId: number) {
   } catch (e) {
     console.log(e);
   }
+}
+
+export async function executeSubmitLineup(
+  accountId,
+  gameId,
+  teamName,
+  tokenIds,
+  tokenPromoIds,
+  lineup,
+  apiIds
+) {
+  try {
+    if (window.ethereum) {
+      console.log(`Account id: ${accountId}`);
+      console.log(`Game ID: ${gameId}`);
+      console.log(`Team name: ${teamName}`);
+      console.log(tokenIds);
+      console.log(tokenPromoIds);
+      console.log(lineup);
+      console.log(apiIds);
+      await window.ethereum.request({ method: 'eth_requestAccounts' });
+      const web3 = new Web3(window.ethereum);
+      const abi = game_logic as unknown as GameLogicABI;
+      const contract = new web3.eth.Contract(abi, gameNFLLogicAddress);
+
+      const gasEstimate = await contract.methods
+        .submitLineup(gameId, teamName, tokenIds, tokenPromoIds, lineup, apiIds, 0)
+        .estimateGas({ from: accountId });
+      console.log(`Estimated gas: ${gasEstimate}`);
+      console.log('test');
+      const gasPrice = await web3.eth.getGasPrice();
+      const tx = {
+        from: accountId,
+        to: gameNFLLogicAddress,
+        gas: Number(gasEstimate).toString(),
+        gasPrice: gasPrice,
+        data: contract.methods
+          .submitLineup(gameId, teamName, tokenIds, tokenPromoIds, lineup, apiIds, 0)
+          .encodeABI(),
+      };
+      web3.eth.sendTransaction(tx).on('transactionHash', (hash) => {
+        console.log(`Transaction hash: ${hash}`);
+      });
+    }
+  } catch (e) {
+    console.log(e);
+  }
+  // console.log(`Account id: ${accountId}`);
+  // console.log(`Game ID: ${gameId}`);
+  // console.log(`Team name: ${teamName}`);
+  // console.log(tokenIds);
+  // console.log(tokenPromoIds);
+  // console.log(lineup);
+  // console.log(apiIds);
 }
