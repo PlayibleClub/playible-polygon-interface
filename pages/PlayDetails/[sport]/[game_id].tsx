@@ -45,7 +45,7 @@ export default function PlayDetails(props) {
 
   async function get_game_data(gameId) {
     const result = await fetchGame(gameId);
-    const game = await mapGameInfo(result, 'games');
+    const game = await mapGameInfo(result, 'games', currentSport);
     setGameData(game);
   }
 

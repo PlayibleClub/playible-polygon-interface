@@ -53,7 +53,7 @@ export default function CreateLineup(props) {
 
   async function get_game_data(game_id) {
     const result = await fetchGame(game_id);
-    const game = await mapGameInfo(result, 'lineup');
+    const game = await mapGameInfo(result, 'lineup', currentSport);
     setGameData(game);
   }
   async function get_all_player_keys() {

@@ -65,7 +65,7 @@ export default function CreateLineup(props) {
   }
   async function get_game_data(game_id) {
     const result = await fetchGame(game_id);
-    const game = await mapGameInfo(result, 'createlineup');
+    const game = await mapGameInfo(result, 'createlineup', currentSport);
     console.log(game);
     setGameData(game);
   }
@@ -117,7 +117,7 @@ export default function CreateLineup(props) {
 
     console.log(token_ids);
     console.log(promo_ids);
-    execute_submit_lineup(game_id, team_name, token_ids, promo_ids);
+    //execute_submit_lineup(game_id, team_name, token_ids, promo_ids);
   }
 
   const checkLineups = () => {
