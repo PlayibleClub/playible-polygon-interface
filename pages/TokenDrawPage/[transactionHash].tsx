@@ -20,6 +20,7 @@ import {
   getAthleteInfoById,
   convertNftToAthlete,
   getCricketAthleteInfoById,
+  convertPolygonNftToAthlete,
 } from 'utils/athlete/helper';
 import {
   SPORT_NAME_LOOKUP,
@@ -50,7 +51,7 @@ const TokenDrawPage = (props) => {
   const { query, result } = props;
 
   const dispatch = useDispatch();
-
+  const footballContract = '0x73e44e63d9264c575b08ef7161c8b1957e536bdb';
   const [videoPlaying, setVideoPlaying] = useState(true);
   const [sport, setSport] = useState('');
   const [loading, setLoading] = useState(true);
@@ -86,98 +87,76 @@ const TokenDrawPage = (props) => {
   ]);
   const [videoFile, setVideoFile] = useState('');
 
-  const router = useRouter();
-  const { transactionHash } = router.query;
-  const transactionHashAsString = Array.isArray(transactionHash)
-    ? transactionHash[0]
-    : (transactionHash as string);
+  // const router = useRouter();
+  // const { transactionHash } = router.query;
 
-  // Create a web3 instance using the MetaMask Ethereum provider
-  const web3 = new Web3(window.ethereum);
+  const processTransactionAndAthletes = useCallback(async () => {
+    //temporary way to get transcation hash router.query is not loading on page load fast enough
+    const url = window.location.href;
+    const parts = url.split('/');
+    const transactionHash = parts[parts.length - 1];
+    const web3 = new Web3(window.ethereum);
 
-  async function getTransactionLogs() {
-    try {
-      let receipt = await web3.eth.getTransactionReceipt(transactionHashAsString);
-      let logs = receipt.logs;
+    const receipt = await web3.eth.getTransactionReceipt(transactionHash);
+    let logs = receipt.logs;
 
-      let firstEightLogs = logs.slice(0, 8);
-
-      // Create an empty array to hold all athletes
-      let allAthletes = [];
-
-      // Print each log individually
-      for (let i = 0; i < firstEightLogs.length; i++) {
-        let log = firstEightLogs[i];
-
-        // Extract the data field
-        let data = log.data;
-
-        // Check if data is a string
-        if (typeof data === 'string') {
-          // Remove the '0x' from the start
-          let cleanHexString = data.slice(2);
-
-          // Convert the hex string to ASCII
-          let asciiString = '';
-          for (let j = 0; j < cleanHexString.length; j += 2) {
-            asciiString += String.fromCharCode(parseInt(cleanHexString.substr(j, 2), 16));
-          }
-
-          // Remove non-ASCII characters
-          asciiString = asciiString.replace(/[^\x20-\x7E]/g, '');
-          // console.log(asciiString);
-          // Parse the ASCII string as JSON
-          let jsonData = JSON.parse(asciiString);
-
-          // Extract the properties field as metadata
-          let metadataAthleteId = jsonData.properties.athleteId;
-          let metadataName = jsonData.properties.name;
-          let metadataPosition = jsonData.properties.position;
-          let metadataSymbol = jsonData.properties.symbol;
-          let metadataTeam = jsonData.properties.team;
-          let metadataImage = jsonData.image;
-          // console.log(metadataImage);
-
-          // Use the athleteId to fetch nftAnimation
-          const { data: queryData } = await client.query({
-            query: GET_ATHLETE_BY_ID,
-            variables: {
-              getAthleteById: parseFloat(metadataAthleteId),
-              from: null,
-              to: null,
-            },
-          });
-
-          // console.log(queryData.getAthleteById.nftAnimation);
-
-          // Create a new athlete object with all fields from metadata, image, and nftAnimation
-          let newAthlete = {
-            name: metadataName,
-            athleteId: metadataAthleteId,
-            position: metadataPosition,
-            symbol: metadataSymbol,
-            team: metadataTeam,
-            image: metadataImage,
-            nftAnimation: queryData.getAthleteById.nftAnimation,
-            isOpen: false,
-          };
-
-          // Add the new athlete to the allAthletes array
-          console.log(newAthlete);
-          allAthletes.push(newAthlete);
-        } else {
-          console.log(`Data in Log ${i + 1} is not a string.`);
-        }
+    if (logs[8].address === footballContract) {
+      let success = receipt.status;
+      if (success === BigInt('1')) {
+        const footballFile = fileList.find((file) => file.name === SPORT_NAME_LOOKUP.football);
+        setVideoFile(footballFile.base);
+        console.log(videoFile);
+        setRemountComponent(Math.random());
       }
 
-      // Update athletes state with all athletes
-      setAthletes(allAthletes);
-    } catch (error) {
-      console.error(error);
-    }
-  }
+      const athleteDataArray = logs
+        .slice(0, 8)
+        .map((log) => {
+          // Extract the data field
+          let data = log.data;
 
-  getTransactionLogs();
+          // Check if data is a string
+          if (typeof data === 'string') {
+            // Remove the '0x' from the start
+            let cleanHexString = data.slice(2);
+
+            // Convert the hex string to ASCII
+            let asciiString = '';
+            for (let j = 0; j < cleanHexString.length; j += 2) {
+              asciiString += String.fromCharCode(parseInt(cleanHexString.substr(j, 2), 16));
+            }
+
+            // Remove non-ASCII characters
+            asciiString = asciiString.replace(/[^\x20-\x7E]/g, '');
+
+            // Trim leading and trailing whitespaces
+            asciiString = asciiString.trim();
+            try {
+              return JSON.parse(asciiString);
+            } catch (error) {
+              console.error('Error parsing JSON:', error);
+              return null;
+            }
+          }
+        })
+        .filter((item) => item !== null); // Filter out any null values from failed JSON parsing
+      console.log(athleteDataArray, 'dataarray');
+      // Now, pass the extracted data to convertPolygonNftToAthlete
+      const athletes = athleteDataArray.map(convertPolygonNftToAthlete);
+      console.log(athletes, 'converted athletes');
+      const athleteInfo = await Promise.all(
+        athletes.map((item) => getAthleteInfoById(item, null, null))
+      );
+
+      setAthletes(athleteInfo);
+
+      setLoading(false);
+    }
+  }, [length]);
+
+  useEffect(() => {
+    processTransactionAndAthletes().catch(console.error);
+  }, [processTransactionAndAthletes()]);
 
   function findContract(contract) {
     if (contract.includes(SPORT_CONTRACT_LOOKUP.football)) {

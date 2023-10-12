@@ -252,12 +252,12 @@ function convertNftToAthlete(item) {
 
 function convertPolygonNftToAthlete(item) {
   const extraMetadata: AthleteExtraMetadata = {
-    tokenId: item[0],
+    token_Id: item.properties.athleteId,
     restrictedUntil: Number(item[1]),
   };
-  const ipfsMetadata: AthleteIPFSMetadata = JSON.parse(item[2]);
+  const ipfsMetadata: AthleteIPFSMetadata = item;
   return {
-    token_id: extraMetadata.tokenId,
+    token_id: extraMetadata.token_Id,
     metadata: ipfsMetadata,
     extra: extraMetadata,
   };
