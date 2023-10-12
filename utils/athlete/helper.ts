@@ -34,7 +34,7 @@ async function getAthleteInfoByApiId(item, from, to) {
   });
 
   const returningData = {
-    primary_id: item.metadata.properties.athleteId,
+    primary_id: item.metadata.properties.symbol,
     athlete_id: item.extra.tokenId,
     rarity: 'test',
     usage: 'test',
