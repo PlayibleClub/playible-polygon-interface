@@ -55,6 +55,33 @@ async function getAthleteInfoByApiId(item, from, to) {
   };
   return returningData;
 }
+
+async function getAthleteInfoByApiIdTokenDraw(item) {
+  const { data } = await client.query({
+    query: GET_ATHLETE_BY_API_ID,
+    variables: {
+      getAthleteByApiId: parseFloat(item.metadata.properties.symbol),
+      from: null,
+      to: null,
+    },
+  });
+  const returningData = {
+    primary_id: item.metadata.properties.symbol,
+    athlete_id: item.tokenId,
+    rarity: 'test',
+    usage: 'test',
+    name: item.metadata.properties.name,
+    team: item.metadata.properties.team,
+    position: item.metadata.properties.position,
+    release: 'test',
+    isPromo: false,
+    isOpen: false,
+    animation: data.getAthleteByApiId.nftAnimation,
+    image: item.metadata.image,
+  };
+  console.log(returningData);
+  return returningData;
+}
 async function getAthleteInfoById(item, from, to) {
   //console.log(item.extra);
   let value = {} as trait_type;
@@ -322,4 +349,5 @@ export {
   getCricketSchedule,
   getPortfolioAssetDetailsById,
   convertPolygonNftToAthlete,
+  getAthleteInfoByApiIdTokenDraw,
 };

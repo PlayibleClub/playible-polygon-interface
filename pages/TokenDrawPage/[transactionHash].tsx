@@ -22,6 +22,7 @@ import {
   getCricketAthleteInfoById,
   convertPolygonNftToAthlete,
   getAthleteInfoByApiId,
+  getAthleteInfoByApiIdTokenDraw,
 } from 'utils/athlete/helper';
 import {
   SPORT_NAME_LOOKUP,
@@ -101,6 +102,7 @@ const TokenDrawPage = (props) => {
     const receipt = await web3.eth.getTransactionReceipt(transactionHash);
     let logs = receipt.logs;
 
+    console.log(receipt);
     if (logs[10].address === footballContract) {
       let success = receipt.status;
       if (success === BigInt('1')) {
@@ -117,7 +119,7 @@ const TokenDrawPage = (props) => {
         if (typeof data === 'string') {
           // Remove the '0x' from the start
           let cleanHexString = data.slice(2);
-
+          let topicHex = log.topics[1].toString().slice(2);
           // Convert the hex string to ASCII
           let asciiString = '';
           for (let j = 0; j < cleanHexString.length; j += 2) {
@@ -126,29 +128,39 @@ const TokenDrawPage = (props) => {
 
           // Remove non-ASCII characters
           asciiString = asciiString.replace(/[^\x20-\x7E]/g, '');
-
           // Trim leading and trailing whitespaces
           asciiString = asciiString.trim();
           try {
-            return JSON.parse(asciiString);
+            return JSON.parse(
+              JSON.stringify({
+                tokenId: parseInt(topicHex, 16),
+                metadata: JSON.parse(asciiString),
+              })
+            ); //JSON.parse(asciiString);
           } catch (error) {
             console.error('Error parsing JSON:', error);
             return null;
           }
         }
       });
-      const athletes = athleteDataArray.map(convertPolygonNftToAthlete);
 
-      const athleteInfoPromises = athletes.map((item) => getAthleteInfoByApiId(item, null, null));
-      const athleteInfo = await Promise.all(athleteInfoPromises);
+      console.log(athleteDataArray);
+      // const athleteInfoPromises = athletes.map((item) => getAthleteInfoByApiId(item, null, null));
+      // const athleteInfo = await Promise.all(athleteInfoPromises);
+      const athleteInfos = await Promise.all(
+        athleteDataArray.map((item) => getAthleteInfoByApiIdTokenDraw(item))
+      );
 
-      setAthletes(athleteInfo);
+      console.log('Athletes infos');
+      console.log(athleteInfos);
+      setAthletes(athleteInfos);
 
       setLoading(false);
     }
   }, [length]);
 
   useEffect(() => {
+    console.log('test');
     processTransactionAndAthletes().catch(console.error);
   }, [processTransactionAndAthletes]);
   function findContract(contract) {
