@@ -101,7 +101,7 @@ const TokenDrawPage = (props) => {
     const receipt = await web3.eth.getTransactionReceipt(transactionHash);
     let logs = receipt.logs;
 
-    if (logs[8].address === footballContract) {
+    if (logs[10].address === footballContract) {
       let success = receipt.status;
       if (success === BigInt('1')) {
         const footballFile = fileList.find((file) => file.name === SPORT_NAME_LOOKUP.football);
@@ -151,7 +151,6 @@ const TokenDrawPage = (props) => {
   useEffect(() => {
     processTransactionAndAthletes().catch(console.error);
   }, [processTransactionAndAthletes]);
-
   function findContract(contract) {
     if (contract.includes(SPORT_CONTRACT_LOOKUP.football)) {
       setLength(8);
