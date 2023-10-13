@@ -20,6 +20,8 @@ import {
   getAthleteInfoById,
   convertNftToAthlete,
   getCricketAthleteInfoById,
+  convertPolygonNftToAthlete,
+  getAthleteInfoByApiId,
 } from 'utils/athlete/helper';
 import {
   SPORT_NAME_LOOKUP,
@@ -50,7 +52,7 @@ const TokenDrawPage = (props) => {
   const { query, result } = props;
 
   const dispatch = useDispatch();
-
+  const footballContract = '0x73e44e63d9264c575b08ef7161c8b1957e536bdb';
   const [videoPlaying, setVideoPlaying] = useState(true);
   const [sport, setSport] = useState('');
   const [loading, setLoading] = useState(true);
@@ -86,29 +88,28 @@ const TokenDrawPage = (props) => {
   ]);
   const [videoFile, setVideoFile] = useState('');
 
-  const router = useRouter();
-  const { transactionHash } = router.query;
-  const transactionHashAsString = Array.isArray(transactionHash)
-    ? transactionHash[0]
-    : (transactionHash as string);
+  // const router = useRouter();
+  // const { transactionHash } = router.query;
 
-  // Create a web3 instance using the MetaMask Ethereum provider
-  const web3 = new Web3(window.ethereum);
+  const processTransactionAndAthletes = useCallback(async () => {
+    //temporary way to get transcation hash router.query is not loading on page load fast enough
+    const url = window.location.href;
+    const parts = url.split('/');
+    const transactionHash = parts[parts.length - 1];
+    const web3 = new Web3(window.ethereum);
 
-  async function getTransactionLogs() {
-    try {
-      let receipt = await web3.eth.getTransactionReceipt(transactionHashAsString);
-      let logs = receipt.logs;
+    const receipt = await web3.eth.getTransactionReceipt(transactionHash);
+    let logs = receipt.logs;
 
-      let firstEightLogs = logs.slice(0, 8);
+    if (logs[10].address === footballContract) {
+      let success = receipt.status;
+      if (success === BigInt('1')) {
+        const footballFile = fileList.find((file) => file.name === SPORT_NAME_LOOKUP.football);
+        setVideoFile(footballFile.base);
+        setRemountComponent(Math.random());
+      }
 
-      // Create an empty array to hold all athletes
-      let allAthletes = [];
-
-      // Print each log individually
-      for (let i = 0; i < firstEightLogs.length; i++) {
-        let log = firstEightLogs[i];
-
+      const athleteDataArray = logs.slice(0, 8).map((log) => {
         // Extract the data field
         let data = log.data;
 
@@ -125,60 +126,31 @@ const TokenDrawPage = (props) => {
 
           // Remove non-ASCII characters
           asciiString = asciiString.replace(/[^\x20-\x7E]/g, '');
-          // console.log(asciiString);
-          // Parse the ASCII string as JSON
-          let jsonData = JSON.parse(asciiString);
 
-          // Extract the properties field as metadata
-          let metadataAthleteId = jsonData.properties.athleteId;
-          let metadataName = jsonData.properties.name;
-          let metadataPosition = jsonData.properties.position;
-          let metadataSymbol = jsonData.properties.symbol;
-          let metadataTeam = jsonData.properties.team;
-          let metadataImage = jsonData.image;
-          // console.log(metadataImage);
-
-          // Use the athleteId to fetch nftAnimation
-          const { data: queryData } = await client.query({
-            query: GET_ATHLETE_BY_ID,
-            variables: {
-              getAthleteById: parseFloat(metadataAthleteId),
-              from: null,
-              to: null,
-            },
-          });
-
-          // console.log(queryData.getAthleteById.nftAnimation);
-
-          // Create a new athlete object with all fields from metadata, image, and nftAnimation
-          let newAthlete = {
-            name: metadataName,
-            athleteId: metadataAthleteId,
-            position: metadataPosition,
-            symbol: metadataSymbol,
-            team: metadataTeam,
-            image: metadataImage,
-            nftAnimation: queryData.getAthleteById.nftAnimation,
-            isOpen: false,
-          };
-
-          // Add the new athlete to the allAthletes array
-          console.log(newAthlete);
-          allAthletes.push(newAthlete);
-        } else {
-          console.log(`Data in Log ${i + 1} is not a string.`);
+          // Trim leading and trailing whitespaces
+          asciiString = asciiString.trim();
+          try {
+            return JSON.parse(asciiString);
+          } catch (error) {
+            console.error('Error parsing JSON:', error);
+            return null;
+          }
         }
-      }
+      });
+      const athletes = athleteDataArray.map(convertPolygonNftToAthlete);
 
-      // Update athletes state with all athletes
-      setAthletes(allAthletes);
-    } catch (error) {
-      console.error(error);
+      const athleteInfoPromises = athletes.map((item) => getAthleteInfoByApiId(item, null, null));
+      const athleteInfo = await Promise.all(athleteInfoPromises);
+
+      setAthletes(athleteInfo);
+
+      setLoading(false);
     }
-  }
+  }, [length]);
 
-  getTransactionLogs();
-
+  useEffect(() => {
+    processTransactionAndAthletes().catch(console.error);
+  }, [processTransactionAndAthletes]);
   function findContract(contract) {
     if (contract.includes(SPORT_CONTRACT_LOOKUP.football)) {
       setLength(8);
@@ -476,6 +448,7 @@ const TokenDrawPage = (props) => {
                         name={data.name}
                         isOpen={data.isOpen}
                         img={data.image}
+                        animation={data.animation}
                       />
                     </div>
                   </div>
@@ -505,27 +478,23 @@ const TokenDrawPage = (props) => {
                   <LoadingPageDark />
                 ) : (
                   <>
-                    {!result ? (
-                      error()
-                    ) : (
-                      <div className="mb-10">
-                        {/* <div>{!accountId ? walletConnection() : tokenRevealPage()}</div> */}
-                        <div className="flex h-14 mt-16">
-                          <div className="w-full justify-end"></div>
-                          <Link href="/Portfolio" replace>
-                            <button className="bg-indigo-buttonblue cursor-pointer text-indigo-white w-5/6 md:w-80 h-14 text-center font-bold text-md">
-                              GO TO MY SQUAD
-                            </button>
-                          </Link>
-                        </div>
+                    <div className="mb-10">
+                      <div>{tokenRevealPage()}</div>
+                      <div className="flex h-14 mt-16">
+                        <div className="w-full justify-end"></div>
+                        <Link href="/Portfolio" replace>
+                          <button className="bg-indigo-buttonblue cursor-pointer text-indigo-white w-5/6 md:w-80 h-14 text-center font-bold text-md">
+                            GO TO MY SQUAD
+                          </button>
+                        </Link>
                       </div>
-                    )}
+                    </div>
                   </>
                 )}
               </>
             )}
           </Main>
-          <div>{athletes}</div>
+          {/* <div>{athletes}</div> */}
         </div>
       </Container>
     </>
