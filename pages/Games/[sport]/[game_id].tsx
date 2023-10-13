@@ -53,7 +53,7 @@ const Games = (props) => {
   const playGameImage = '/images/game.png';
   async function get_game_data(game_id) {
     const result = await fetchGame(gameId);
-    const game = await mapGameInfo(result, 'games');
+    const game = await mapGameInfo(result, 'games', currentSport);
     setGameInfo(game);
     setGameData(game);
     //setGameInfo(await fetchGame(gameId));
