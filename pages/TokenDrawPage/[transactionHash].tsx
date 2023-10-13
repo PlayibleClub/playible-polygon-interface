@@ -479,27 +479,23 @@ const TokenDrawPage = (props) => {
                   <LoadingPageDark />
                 ) : (
                   <>
-                    {!result ? (
-                      error()
-                    ) : (
-                      <div className="mb-10">
-                        {/* <div>{!accountId ? walletConnection() : tokenRevealPage()}</div> */}
-                        <div className="flex h-14 mt-16">
-                          <div className="w-full justify-end"></div>
-                          <Link href="/Portfolio" replace>
-                            <button className="bg-indigo-buttonblue cursor-pointer text-indigo-white w-5/6 md:w-80 h-14 text-center font-bold text-md">
-                              GO TO MY SQUAD
-                            </button>
-                          </Link>
-                        </div>
+                    <div className="mb-10">
+                      <div>{tokenRevealPage()}</div>
+                      <div className="flex h-14 mt-16">
+                        <div className="w-full justify-end"></div>
+                        <Link href="/Portfolio" replace>
+                          <button className="bg-indigo-buttonblue cursor-pointer text-indigo-white w-5/6 md:w-80 h-14 text-center font-bold text-md">
+                            GO TO MY SQUAD
+                          </button>
+                        </Link>
                       </div>
-                    )}
+                    </div>
                   </>
                 )}
               </>
             )}
           </Main>
-          <div>{athletes}</div>
+          {/* <div>{athletes}</div> */}
         </div>
       </Container>
     </>
