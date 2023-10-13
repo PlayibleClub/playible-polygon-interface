@@ -695,15 +695,19 @@ export default function Home(props) {
                     </div>
                     <div className="mt-8 mb-0 p-0 w-9/12"></div>
                     <div className="text-xs "></div>
-                    <div>
-                      {currentSport === 'FOOTBALL'
-                        ? selectMint()
-                        : currentSport === 'BASKETBALL'
-                        ? selectMintNba()
-                        : currentSport === 'BASEBALL'
-                        ? selectMintMlb()
-                        : selectMintIpl()}
-                    </div>
+                    {accountERC20ApprovalAmount <= 0 ? (
+                      ''
+                    ) : (
+                      <div>
+                        {currentSport === 'FOOTBALL'
+                          ? selectMint()
+                          : currentSport === 'BASKETBALL'
+                          ? selectMintNba()
+                          : currentSport === 'BASEBALL'
+                          ? selectMintMlb()
+                          : selectMintIpl()}
+                      </div>
+                    )}
                     {/*TODO: start styling */}
                     {/*<div>*/}
                     {/*  <p>Receipt total price ${Math.floor((selectedMintAmount * parseInt(minterConfig.minting_price)) / STABLE_DECIMAL)}</p>*/}
