@@ -24,6 +24,7 @@ import { persistor } from 'redux/athlete/store';
 import Modal from 'components/modals/Modal';
 import { SPORT_TYPES, getSportType, SPORT_NAME_LOOKUP } from 'data/constants/sportConstants';
 import { useWalletSelector } from 'contexts/WalletSelectorContext';
+import { current } from '@reduxjs/toolkit';
 export default function Packs() {
   const router = useRouter();
   const reduxDispatch = useDispatch();
@@ -91,6 +92,7 @@ export default function Packs() {
   const [sportFromRedux, setSportFromRedux] = useState(useSelector(getSportTypeRedux));
   const [isPromoFromRedux, setIsPromoFromRedux] = useState(useSelector(getIsPromoRedux));
   const [remountComponent, setRemountComponent] = useState(0);
+  const [currentPage, setCurrentPage] = useState(0);
   const changecategoryList = (name) => {
     const tabList = [...categoryList];
     setPackOffset(0);
@@ -167,6 +169,7 @@ export default function Packs() {
       ? (event.selected * packLimit) % totalSupply
       : (event.selected * packLimit) % totalPacks;
     setPackOffset(newOffset);
+    setCurrentPage(event.selected);
   };
 
   const handleButtonClick = (e) => {
@@ -208,6 +211,7 @@ export default function Packs() {
       console.error('Error parsing JSON:', error);
     }
     try {
+      console.log({ wallet, packOffset, packLimit });
       const tokens = await fetchRegularPackTokensByOwner(wallet, packOffset, packLimit);
 
       const tokenIds = tokens[1]; // Assuming tokenIds is the second element
@@ -245,7 +249,6 @@ export default function Packs() {
     try {
       const resultFootball = await fetchRegularPackTokenSupplyByOwner(wallet);
 
-      console.log(resultFootball);
       setTotalPacks(Number(resultFootball));
     } catch (error) {
       console.error(error);
@@ -253,7 +256,6 @@ export default function Packs() {
     try {
       const resultFootball = await fetchRegularPackTokenSupplyByOwner(wallet);
 
-      console.log(resultFootball);
       setTotalSupply(Number(resultFootball));
     } catch (error) {
       console.error(error);
@@ -294,18 +296,37 @@ export default function Packs() {
       getPackLimit();
       setPageCount(
         categoryList[0].isActive
-          ? Math.floor(totalSupply / packLimit)
+          ? Math.ceil(totalSupply / packLimit)
           : Math.ceil(totalPacks / packLimit)
       );
       const endOffset = packOffset + packLimit;
       console.log(`Loading packs from ${packOffset} to ${endOffset}`);
-      fetchTokens();
       console.log('isClaimedStatus', isClaimed);
-      console.log(totalSupply);
+      console.log('Total Supply:', totalSupply);
+
+      console.log('packOffset:', packOffset);
+      console.log('PackLimit: ', packLimit);
+      console.log('endOffset:', endOffset);
     } else {
       console.log('Account Id not found');
     }
-  }, [totalPacks, packLimit, packOffset, currentSport, totalSupply, categoryList, sportList]);
+  }, [packLimit, packOffset, currentSport, categoryList, sportList]);
+
+  useEffect(() => {
+    if (isSignedIn && wallet) {
+      fetchTokens();
+    } else {
+      console.log('Account Id not found');
+    }
+  }, [totalPacks, pageCount, packOffset, totalSupply, currentPage]);
+
+  useEffect(() => {
+    console.log('Packs', packs);
+    console.log(
+      'Filtered',
+      packs.filter((data, i) => i >= packOffset && i < packOffset + packLimit)
+    );
+  }, [packs]);
 
   useEffect(() => {
     // fetchClaimStatus(userAccount);
@@ -436,7 +457,9 @@ export default function Packs() {
                   {categoryList[0].isActive
                     ? (categoryList[0].isActive ? allPacks : packs).length > 0 &&
                       (categoryList[0].isActive ? allPacks : packs)
-                        .filter((data, i) => i >= packOffset && i < packOffset + packLimit)
+                        .filter(
+                          (data, i) => i + packOffset >= packOffset && i < packOffset + packLimit
+                        )
                         .map(({ metadata, token_id }) => (
                           <PackComponent
                             key={token_id}
@@ -448,7 +471,9 @@ export default function Packs() {
                         ))
                     : (categoryList[1].isActive ? soulboundPacks : packs).length > 0 &&
                       (categoryList[1].isActive ? soulboundPacks : packs)
-                        .filter((data, i) => i >= packOffset && i < packOffset + packLimit)
+                        .filter(
+                          (data, i) => i + packOffset >= packOffset && i < packOffset + packLimit
+                        )
                         .map(({ metadata, token_id }) => (
                           <PackComponent
                             key={token_id}
