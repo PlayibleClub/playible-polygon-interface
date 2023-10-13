@@ -201,12 +201,12 @@ const Play = (props) => {
     const upcoming = await Promise.all(
       result
         .filter((x) => Number(x.startTime) * 1000 > getUTCTimestampFromLocal())
-        .map((item) => mapGameInfo(item, 'new'))
+        .map((item) => mapGameInfo(item, 'new', currentSport))
     );
     const completed = await Promise.all(
       result
         .filter((x) => Number(x.endTime) * 1000 < getUTCTimestampFromLocal())
-        .map((item) => mapGameInfo(item, 'completed'))
+        .map((item) => mapGameInfo(item, 'completed', currentSport))
     );
     const ongoing = await Promise.all(
       result
@@ -215,7 +215,7 @@ const Play = (props) => {
             Number(x.startTime) * 1000 < getUTCTimestampFromLocal() &&
             Number(x.endTime) * 1000 > getUTCTimestampFromLocal()
         )
-        .map((item) => mapGameInfo(item, 'on-going'))
+        .map((item) => mapGameInfo(item, 'on-going', currentSport))
     );
     console.log(upcoming);
     console.log(completed);
@@ -276,7 +276,7 @@ const Play = (props) => {
         const upcoming = await Promise.all(
           result
             .filter((x) => Number(x.startTime) * 1000 > getUTCTimestampFromLocal())
-            .map((item) => mapGameInfo(item, 'new'))
+            .map((item) => mapGameInfo(item, 'new', currentSport))
         );
         const ongoing = await Promise.all(
           result
@@ -285,7 +285,7 @@ const Play = (props) => {
                 Number(x.startTime) * 1000 < getUTCTimestampFromLocal() &&
                 Number(x.endTime) * 1000 > getUTCTimestampFromLocal()
             )
-            .map((item) => mapGameInfo(item, 'on-going'))
+            .map((item) => mapGameInfo(item, 'on-going', currentSport))
         );
 
         switch (sport) {

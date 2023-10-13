@@ -34,7 +34,7 @@ async function getAthleteInfoByApiId(item, from, to) {
   });
 
   const returningData = {
-    primary_id: item.metadata.properties.athleteId,
+    primary_id: item.metadata.properties.symbol,
     athlete_id: item.extra.tokenId,
     rarity: 'test',
     usage: 'test',
@@ -48,7 +48,7 @@ async function getAthleteInfoByApiId(item, from, to) {
     image: item.metadata.image,
     fantasy_score: getAvgSeasonFantasyScore(data.getAthleteByApiId.stats),
     stats_breakdown: data.getAthleteByApiId.stats,
-    isInGame: false,
+    isInGame: item.extra.restrictedUntil > getUTCTimestampFromLocal() ? true : false,
     isInjured: data.getAthleteByApiId.isInjured,
     isActive: data.getAthleteByApiId.isActive,
     playerHeadshot: data.getAthleteByApiId.playerHeadshot,
@@ -252,12 +252,12 @@ function convertNftToAthlete(item) {
 
 function convertPolygonNftToAthlete(item) {
   const extraMetadata: AthleteExtraMetadata = {
-    tokenId: item.properties.athleteId,
+    tokenId: Number(item[0]).toString(),
     restrictedUntil: Number(item[1]),
   };
   const ipfsMetadata: AthleteIPFSMetadata = item;
   return {
-    token_id: extraMetadata.tokenId,
+    token_id: Number(extraMetadata.tokenId).toString(),
     metadata: ipfsMetadata,
     extra: extraMetadata,
   };
@@ -267,8 +267,8 @@ function getPositionDisplay(position, currentSport) {
   let flex = false;
   let found;
   console.log(position);
-  console.log(currentSport.toLowerCase());
-  getSportType(currentSport.toLowerCase()).extra.forEach((x) => {
+  console.log(currentSport);
+  getSportType(currentSport).extra.forEach((x) => {
     if (x.key.toString() === position.toString()) {
       found = x.name;
       flex = true;
@@ -282,9 +282,8 @@ function getPositionDisplay(position, currentSport) {
     flex = false;
     return found;
   } else {
-    found = getSportType(currentSport.toLowerCase()).positionList.find(
-      (x) => x.key === position[0]
-    );
+    console.log(currentSport);
+    found = getSportType(currentSport).positionList.find((x) => x.key === position[0]);
     return found.name;
   }
 }
