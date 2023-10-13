@@ -39,8 +39,6 @@ import {
   fetchRegularPackPrice,
   fetchAccountBalance,
 } from 'utils/polygon/ethers';
-import { formatUnits } from 'ethers';
-import { current } from '@reduxjs/toolkit';
 const NANO_TO_SECONDS_DENOMINATOR = 1000000;
 const DECIMALS_USDC = 1000000;
 export default function Home(props) {
@@ -424,11 +422,11 @@ export default function Home(props) {
       const regularPackPrice = await fetchRegularPackPrice(); // Assuming this function returns a BigNumber
 
       // Convert the price to a string with 18 decimal places
-      const priceString = formatUnits(Number(regularPackPrice), 0);
+      const priceString = Number(regularPackPrice);
 
       setMinterConfig({
         ...minterConfig,
-        minting_price_decimals_6: priceString,
+        minting_price_decimals_6: priceString.toString(),
       });
     } catch (error) {
       console.error('Error fetching regular pack price:', error);
