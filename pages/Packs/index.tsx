@@ -296,7 +296,7 @@ export default function Packs() {
       getPackLimit();
       setPageCount(
         categoryList[0].isActive
-          ? Math.ceil(totalSupply / packLimit)
+          ? Math.floor(totalSupply / packLimit)
           : Math.ceil(totalPacks / packLimit)
       );
       const endOffset = packOffset + packLimit;
@@ -310,7 +310,7 @@ export default function Packs() {
     } else {
       console.log('Account Id not found');
     }
-  }, [packLimit, packOffset, currentSport, categoryList, sportList]);
+  }, [packLimit, packOffset, currentSport, categoryList, sportList, totalSupply]);
 
   useEffect(() => {
     if (isSignedIn && wallet) {
