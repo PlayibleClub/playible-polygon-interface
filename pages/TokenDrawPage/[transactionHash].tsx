@@ -21,6 +21,7 @@ import {
   convertNftToAthlete,
   getCricketAthleteInfoById,
   convertPolygonNftToAthlete,
+  getAthleteInfoByApiId,
 } from 'utils/athlete/helper';
 import {
   SPORT_NAME_LOOKUP,
@@ -105,7 +106,6 @@ const TokenDrawPage = (props) => {
       if (success === BigInt('1')) {
         const footballFile = fileList.find((file) => file.name === SPORT_NAME_LOOKUP.football);
         setVideoFile(footballFile.base);
-        console.log(videoFile);
         setRemountComponent(Math.random());
       }
 
@@ -137,13 +137,10 @@ const TokenDrawPage = (props) => {
           }
         }
       });
-      console.log(athleteDataArray, 'dataarray');
-      // Now, pass the extracted data to convertPolygonNftToAthlete
       const athletes = athleteDataArray.map(convertPolygonNftToAthlete);
-      console.log(athletes, 'converted athletes');
-      const athleteInfo = await Promise.all(
-        athletes.map((item) => getAthleteInfoById(item, null, null))
-      );
+
+      const athleteInfoPromises = athletes.map((item) => getAthleteInfoByApiId(item, null, null));
+      const athleteInfo = await Promise.all(athleteInfoPromises);
 
       setAthletes(athleteInfo);
 
@@ -153,7 +150,7 @@ const TokenDrawPage = (props) => {
 
   useEffect(() => {
     processTransactionAndAthletes().catch(console.error);
-  }, [processTransactionAndAthletes()]);
+  }, [processTransactionAndAthletes]);
 
   function findContract(contract) {
     if (contract.includes(SPORT_CONTRACT_LOOKUP.football)) {
@@ -452,6 +449,7 @@ const TokenDrawPage = (props) => {
                         name={data.name}
                         isOpen={data.isOpen}
                         img={data.image}
+                        animation={data.animation}
                       />
                     </div>
                   </div>
