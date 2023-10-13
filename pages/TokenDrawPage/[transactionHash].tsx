@@ -52,7 +52,7 @@ const TokenDrawPage = (props) => {
   const { query, result } = props;
 
   const dispatch = useDispatch();
-  const footballContract = '0x73e44e63d9264c575b08ef7161c8b1957e536bdb';
+  const footballContract = '0xd5ac1637dac23cd4b25542cee92664b7646f7e53';
   const [videoPlaying, setVideoPlaying] = useState(true);
   const [sport, setSport] = useState('');
   const [loading, setLoading] = useState(true);
