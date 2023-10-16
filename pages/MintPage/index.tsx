@@ -260,15 +260,13 @@ export default function Home(props) {
         await window.ethereum.request({ method: 'eth_requestAccounts' });
         const web3 = new Web3(window.ethereum);
 
-        let amountToApprove = 1;
-
         const usdcERC20ContractABI = usdcABI as unknown as ERC20ABI;
         const usdcContract = new web3.eth.Contract(usdcERC20ContractABI, usdcContractAddress, {
           from: wallet,
         });
 
         const usdcGasEstimate = await usdcContract.methods
-          .approve(regularPackStorageContractAddress, amountToApprove)
+          .approve(regularPackStorageContractAddress, accountBalance)
           .estimateGas();
 
         const gasPrice = await web3.eth.getGasPrice();
@@ -279,7 +277,7 @@ export default function Home(props) {
           gas: parseInt(usdcGasEstimate),
           gasPrice: gasPrice,
           data: usdcContract.methods
-            .approve(regularPackStorageContractAddress, amountToApprove)
+            .approve(regularPackStorageContractAddress, accountBalance)
             .encodeABI(),
         };
 
@@ -480,7 +478,7 @@ export default function Home(props) {
     fetchUserERC20Allowance();
     fetchUserAccountBalance();
     console.log('Approved Amount:', accountERC20ApprovalAmount);
-  }, [currentSport, minterConfig, wallet, remountComponent, approvedComplete]);
+  }, [currentSport, minterConfig, wallet, remountComponent, approvedComplete, loading]);
 
   useEffect(() => {
     if (!isMetamaskInstalled) {
