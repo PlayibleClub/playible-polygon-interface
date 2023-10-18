@@ -82,7 +82,11 @@ export default function PackDetails(props) {
         const intervalId = setInterval(async () => {
           loopCount++;
           console.log('Checking request status...', loopCount);
-
+          if (loopCount > 30) {
+            clearInterval(intervalId);
+            alert('Request timed out. Please refresh the page');
+            return;
+          }
           //@ts-ignore
           let fulfilled = await contractStorage.methods.getRequestStatus(requestId).call();
 
