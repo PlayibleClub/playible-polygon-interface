@@ -23,8 +23,8 @@ import { isWindows } from 'react-device-detect';
 
 const promoPackContractAddress = '0xecdf1d718adf8930661a80b37bdbda83fdc538e3';
 // const regularPackStorageContractAddress = '0x672DBaFAE1F18642c0Ed845ab8bD5824a6F2D502';
-const regularPackNFLStorageContractAddress = '0x00AdA1B38dFF832A8b85935B8B8BC9234024084A';
-const regularPackNFLLogicContractAddress = '0xc101792c937A61b39118083d470ad3bE4c5FC6D5';
+const regularPackNFLStorageContractAddress = '0x0B0f1766f78cf70bAcA70AF09Ac8DDd8Fce77D4F';
+const regularPackNFLLogicContractAddress = '0xCa49D6474f59479680b8b6EC3db7b5f6f0d17b24';
 const regularNFLAthleteStorageAddress = '0x32ec30629f306261a8c38658d0dc4b2e1c493585';
 //const regularNFLAthleteLogicAddress = '0x6b53db22961B40c89F82a6C47Fe8d138Efd4cdDc';
 const regularNFLAthleteLogicAddress = '0xD5Ac1637dAC23cD4b25542cee92664b7646F7e53';
@@ -248,6 +248,27 @@ export async function fetchRegularPackPrice() {
     }
   } catch (error) {
     console.error('Error fetching pack price:', error);
+  }
+}
+
+export async function fetchMintedTokenAmount(accountId) {
+  try {
+    if (window.ethereum) {
+      console.log('Fetch minted token amount called');
+      await window.ethereum.request({ method: 'eth_requestAccounts' });
+      const contract = new Contract(packLogicNFLContractABI, regularPackNFLLogicContractAddress);
+      contract.setProvider(window.ethereum);
+
+      // Call the get regular pack price function
+      const tokensMintedAmount = await contract.methods
+        .getMintedTokensAmount()
+        .call({ from: accountId });
+
+      console.log('Amount of minted tokens fetch successfully:', tokensMintedAmount);
+      return tokensMintedAmount;
+    }
+  } catch (error) {
+    console.error('Error fetching amount of tokens minted:', error);
   }
 }
 

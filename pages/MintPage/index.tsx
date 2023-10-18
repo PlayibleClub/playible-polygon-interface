@@ -21,8 +21,10 @@ import { SPORT_TYPES, getSportType, SPORT_NAME_LOOKUP } from 'data/constants/spo
 import ModalPortfolioContainer from 'components/containers/ModalPortfolioContainer';
 import usdcABI from 'utils/polygon/ABI/usdcABI.json';
 import { packStorageABI } from 'utils/polygon/ABI/pack_nft';
+import { packLogicABI } from 'utils/polygon/ABI/pack_nft_logic';
 import { ERC20ABI } from 'utils/polygon/ABI/usdcABI';
 import pack_nft_storage from 'utils/polygon/ABI/pack_nft.json';
+import pack_nft_logic from 'utils/polygon/ABI/pack_nft_logic.json';
 import Web3 from 'web3';
 import {
   getIsPromoRedux,
@@ -38,6 +40,7 @@ import {
   // fetchClaimSoulboundStatus,
   fetchRegularPackPrice,
   fetchAccountBalance,
+  fetchMintedTokenAmount,
 } from 'utils/polygon/ethers';
 const NANO_TO_SECONDS_DENOMINATOR = 1000000;
 const DECIMALS_USDC = 1000000;
@@ -119,7 +122,9 @@ export default function Home(props) {
   const [mintingComplete, setMintingComplete] = useState(false);
   const [approvedComplete, setApprovedComplete] = useState(false);
   const packStorageNFLContractABI = pack_nft_storage as unknown as packStorageABI;
-  const regularPackNFLStorageContractAddress = '0x00AdA1B38dFF832A8b85935B8B8BC9234024084A';
+  const packLogicNFLContractABI = pack_nft_logic as unknown as packLogicABI;
+  const regularPackNFLStorageContractAddress = '0x0B0f1766f78cf70bAcA70AF09Ac8DDd8Fce77D4F';
+  const regularPackNFLLogicContractAddress = '0xCa49D6474f59479680b8b6EC3db7b5f6f0d17b24';
 
   const changeCategoryList = (name) => {
     const tabList = [...categoryList];
@@ -230,8 +235,18 @@ export default function Home(props) {
       days: format_days,
     };
   }
-  const regularPackStorageContractAddress = '0x00AdA1B38dFF832A8b85935B8B8BC9234024084A';
   const usdcContractAddress = '0x0FA8781a83E46826621b3BC094Ea2A0212e71B23';
+
+  async function fetchUserMintedTokenAmount() {
+    try {
+      const mintedTokenAmount = await fetchMintedTokenAmount(wallet); // Assuming this function returns a BigNumber
+
+      setMinted(Number(mintedTokenAmount));
+    } catch (error) {
+      console.error('Error fetching minted token amount:', error);
+    }
+  }
+
   async function fetchUserERC20Allowance() {
     try {
       if (window.ethereum) {
@@ -244,7 +259,7 @@ export default function Home(props) {
         });
 
         const allowance = await usdcContract.methods
-          .allowance(wallet, regularPackStorageContractAddress)
+          .allowance(wallet, regularPackNFLStorageContractAddress)
           .call();
 
         setAccountERC20ApprovalAmount(Number(allowance));
@@ -260,15 +275,13 @@ export default function Home(props) {
         await window.ethereum.request({ method: 'eth_requestAccounts' });
         const web3 = new Web3(window.ethereum);
 
-        let amountToApprove = 1;
-
         const usdcERC20ContractABI = usdcABI as unknown as ERC20ABI;
         const usdcContract = new web3.eth.Contract(usdcERC20ContractABI, usdcContractAddress, {
           from: wallet,
         });
 
         const usdcGasEstimate = await usdcContract.methods
-          .approve(regularPackStorageContractAddress, amountToApprove)
+          .approve(regularPackNFLStorageContractAddress, accountBalance)
           .estimateGas();
 
         const gasPrice = await web3.eth.getGasPrice();
@@ -279,7 +292,7 @@ export default function Home(props) {
           gas: parseInt(usdcGasEstimate),
           gasPrice: gasPrice,
           data: usdcContract.methods
-            .approve(regularPackStorageContractAddress, amountToApprove)
+            .approve(regularPackNFLStorageContractAddress, accountBalance)
             .encodeABI(),
         };
 
@@ -352,25 +365,25 @@ export default function Home(props) {
         const web3 = new Web3(window.ethereum);
 
         const contract = new web3.eth.Contract(
-          packStorageNFLContractABI,
-          regularPackNFLStorageContractAddress
+          packLogicNFLContractABI,
+          regularPackNFLLogicContractAddress
         );
 
         // Estimate gas for mintPacks function
         console.log('Amount:', selectedMintAmount);
         const gasEstimate = await contract.methods
-          .mintPacks(selectedMintAmount)
+          .sendTokensForMinting(selectedMintAmount)
           .estimateGas({ from: wallet });
         console.log('Estimated Gas:', gasEstimate);
 
         const gasPrice = await web3.eth.getGasPrice();
         const tx = {
           from: wallet,
-          to: regularPackNFLStorageContractAddress,
+          to: regularPackNFLLogicContractAddress,
           //@ts-ignore
           gas: parseInt(gasEstimate),
           gasPrice: gasPrice,
-          data: contract.methods.mintPacks(selectedMintAmount).encodeABI(),
+          data: contract.methods.sendTokensForMinting(selectedMintAmount).encodeABI(),
         };
         // Call mint regular packs function
         web3.eth
@@ -479,8 +492,9 @@ export default function Home(props) {
   useEffect(() => {
     fetchUserERC20Allowance();
     fetchUserAccountBalance();
+    fetchUserMintedTokenAmount();
     console.log('Approved Amount:', accountERC20ApprovalAmount);
-  }, [currentSport, minterConfig, wallet, remountComponent, approvedComplete]);
+  }, [currentSport, minterConfig, wallet, remountComponent, approvedComplete, loading]);
 
   useEffect(() => {
     if (!isMetamaskInstalled) {

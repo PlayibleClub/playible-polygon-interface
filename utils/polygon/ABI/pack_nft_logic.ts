@@ -49,6 +49,348 @@ export type packLogicABI = [
     type: 'event';
   },
   {
+    anonymous: false;
+    inputs: [
+      {
+        indexed: false;
+        internalType: 'address';
+        name: 'receiverAddr';
+        type: 'address';
+      },
+      {
+        indexed: false;
+        internalType: 'uint256[]';
+        name: 'tokens';
+        type: 'uint256[]';
+      }
+    ];
+    name: 'TokensMinted';
+    type: 'event';
+  },
+  {
+    anonymous: false;
+    inputs: [
+      {
+        indexed: true;
+        internalType: 'address';
+        name: 'operator';
+        type: 'address';
+      },
+      {
+        indexed: true;
+        internalType: 'address';
+        name: 'from';
+        type: 'address';
+      },
+      {
+        indexed: true;
+        internalType: 'address';
+        name: 'to';
+        type: 'address';
+      },
+      {
+        indexed: false;
+        internalType: 'uint256[]';
+        name: 'ids';
+        type: 'uint256[]';
+      },
+      {
+        indexed: false;
+        internalType: 'uint256[]';
+        name: 'values';
+        type: 'uint256[]';
+      }
+    ];
+    name: 'TransferBatch';
+    type: 'event';
+  },
+  {
+    anonymous: false;
+    inputs: [
+      {
+        indexed: true;
+        internalType: 'address';
+        name: 'operator';
+        type: 'address';
+      },
+      {
+        indexed: true;
+        internalType: 'address';
+        name: 'from';
+        type: 'address';
+      },
+      {
+        indexed: true;
+        internalType: 'address';
+        name: 'to';
+        type: 'address';
+      },
+      {
+        indexed: false;
+        internalType: 'uint256';
+        name: 'id';
+        type: 'uint256';
+      },
+      {
+        indexed: false;
+        internalType: 'uint256';
+        name: 'value';
+        type: 'uint256';
+      }
+    ];
+    name: 'TransferSingle';
+    type: 'event';
+  },
+  {
+    anonymous: false;
+    inputs: [
+      {
+        indexed: false;
+        internalType: 'string';
+        name: 'value';
+        type: 'string';
+      },
+      {
+        indexed: true;
+        internalType: 'uint256';
+        name: 'id';
+        type: 'uint256';
+      }
+    ];
+    name: 'URI';
+    type: 'event';
+  },
+  {
+    inputs: [
+      {
+        internalType: 'address';
+        name: 'account';
+        type: 'address';
+      },
+      {
+        internalType: 'uint256';
+        name: '_amount';
+        type: 'uint256';
+      }
+    ];
+    name: 'adminMint';
+    outputs: [];
+    stateMutability: 'nonpayable';
+    type: 'function';
+  },
+  {
+    inputs: [
+      {
+        internalType: 'address';
+        name: 'account';
+        type: 'address';
+      },
+      {
+        internalType: 'uint256';
+        name: 'id';
+        type: 'uint256';
+      }
+    ];
+    name: 'balanceOf';
+    outputs: [
+      {
+        internalType: 'uint256';
+        name: '';
+        type: 'uint256';
+      }
+    ];
+    stateMutability: 'view';
+    type: 'function';
+  },
+  {
+    inputs: [
+      {
+        internalType: 'address[]';
+        name: 'accounts';
+        type: 'address[]';
+      },
+      {
+        internalType: 'uint256[]';
+        name: 'ids';
+        type: 'uint256[]';
+      }
+    ];
+    name: 'balanceOfBatch';
+    outputs: [
+      {
+        internalType: 'uint256[]';
+        name: '';
+        type: 'uint256[]';
+      }
+    ];
+    stateMutability: 'view';
+    type: 'function';
+  },
+  {
+    inputs: [];
+    name: 'getAndIncrementTokenId';
+    outputs: [
+      {
+        internalType: 'uint256';
+        name: '';
+        type: 'uint256';
+      }
+    ];
+    stateMutability: 'nonpayable';
+    type: 'function';
+  },
+  {
+    inputs: [];
+    name: 'getMintedTokensAmount';
+    outputs: [
+      {
+        internalType: 'uint256';
+        name: '';
+        type: 'uint256';
+      }
+    ];
+    stateMutability: 'view';
+    type: 'function';
+  },
+  {
+    inputs: [
+      {
+        internalType: 'uint256';
+        name: 'tokenId';
+        type: 'uint256';
+      }
+    ];
+    name: 'getTokenMetadataById';
+    outputs: [
+      {
+        internalType: 'string';
+        name: '';
+        type: 'string';
+      }
+    ];
+    stateMutability: 'view';
+    type: 'function';
+  },
+  {
+    inputs: [
+      {
+        internalType: 'address';
+        name: 'owner';
+        type: 'address';
+      },
+      {
+        internalType: 'uint256';
+        name: 'tokenId';
+        type: 'uint256';
+      }
+    ];
+    name: 'getTokenOwner';
+    outputs: [
+      {
+        internalType: 'uint256';
+        name: '';
+        type: 'uint256';
+      }
+    ];
+    stateMutability: 'view';
+    type: 'function';
+  },
+  {
+    inputs: [
+      {
+        internalType: 'address';
+        name: 'account';
+        type: 'address';
+      }
+    ];
+    name: 'getTokenSupplyByOwner';
+    outputs: [
+      {
+        internalType: 'uint256';
+        name: '';
+        type: 'uint256';
+      }
+    ];
+    stateMutability: 'view';
+    type: 'function';
+  },
+  {
+    inputs: [
+      {
+        internalType: 'address';
+        name: 'account';
+        type: 'address';
+      },
+      {
+        internalType: 'uint256';
+        name: 'fromIndex';
+        type: 'uint256';
+      },
+      {
+        internalType: 'uint256';
+        name: 'limit';
+        type: 'uint256';
+      }
+    ];
+    name: 'getTokensByOwner';
+    outputs: [
+      {
+        internalType: 'uint256';
+        name: '';
+        type: 'uint256';
+      },
+      {
+        internalType: 'uint256[]';
+        name: '';
+        type: 'uint256[]';
+      },
+      {
+        internalType: 'string[]';
+        name: '';
+        type: 'string[]';
+      }
+    ];
+    stateMutability: 'view';
+    type: 'function';
+  },
+  {
+    inputs: [
+      {
+        internalType: 'address';
+        name: 'account';
+        type: 'address';
+      },
+      {
+        internalType: 'address';
+        name: 'operator';
+        type: 'address';
+      }
+    ];
+    name: 'isApprovedForAll';
+    outputs: [
+      {
+        internalType: 'bool';
+        name: '';
+        type: 'bool';
+      }
+    ];
+    stateMutability: 'view';
+    type: 'function';
+  },
+  {
+    inputs: [];
+    name: 'owner';
+    outputs: [
+      {
+        internalType: 'address';
+        name: '';
+        type: 'address';
+      }
+    ];
+    stateMutability: 'view';
+    type: 'function';
+  },
+  {
     inputs: [];
     name: 'renounceOwnership';
     outputs: [];
@@ -124,6 +466,19 @@ export type packLogicABI = [
   {
     inputs: [
       {
+        internalType: 'uint256';
+        name: '_amount';
+        type: 'uint256';
+      }
+    ];
+    name: 'sendTokensForMinting';
+    outputs: [];
+    stateMutability: 'nonpayable';
+    type: 'function';
+  },
+  {
+    inputs: [
+      {
         internalType: 'address';
         name: 'operator';
         type: 'address';
@@ -140,41 +495,23 @@ export type packLogicABI = [
     type: 'function';
   },
   {
-    anonymous: false;
     inputs: [
       {
-        indexed: true;
-        internalType: 'address';
-        name: 'operator';
-        type: 'address';
-      },
-      {
-        indexed: true;
-        internalType: 'address';
-        name: 'from';
-        type: 'address';
-      },
-      {
-        indexed: true;
-        internalType: 'address';
-        name: 'to';
-        type: 'address';
-      },
-      {
-        indexed: false;
-        internalType: 'uint256[]';
-        name: 'ids';
-        type: 'uint256[]';
-      },
-      {
-        indexed: false;
-        internalType: 'uint256[]';
-        name: 'values';
-        type: 'uint256[]';
+        internalType: 'bytes4';
+        name: 'interfaceId';
+        type: 'bytes4';
       }
     ];
-    name: 'TransferBatch';
-    type: 'event';
+    name: 'supportsInterface';
+    outputs: [
+      {
+        internalType: 'bool';
+        name: '';
+        type: 'bool';
+      }
+    ];
+    stateMutability: 'view';
+    type: 'function';
   },
   {
     inputs: [
@@ -188,43 +525,6 @@ export type packLogicABI = [
     outputs: [];
     stateMutability: 'nonpayable';
     type: 'function';
-  },
-  {
-    anonymous: false;
-    inputs: [
-      {
-        indexed: true;
-        internalType: 'address';
-        name: 'operator';
-        type: 'address';
-      },
-      {
-        indexed: true;
-        internalType: 'address';
-        name: 'from';
-        type: 'address';
-      },
-      {
-        indexed: true;
-        internalType: 'address';
-        name: 'to';
-        type: 'address';
-      },
-      {
-        indexed: false;
-        internalType: 'uint256';
-        name: 'id';
-        type: 'uint256';
-      },
-      {
-        indexed: false;
-        internalType: 'uint256';
-        name: 'value';
-        type: 'uint256';
-      }
-    ];
-    name: 'TransferSingle';
-    type: 'event';
   },
   {
     inputs: [
@@ -250,230 +550,6 @@ export type packLogicABI = [
     name: 'updatePackStorageAddr';
     outputs: [];
     stateMutability: 'nonpayable';
-    type: 'function';
-  },
-  {
-    anonymous: false;
-    inputs: [
-      {
-        indexed: false;
-        internalType: 'string';
-        name: 'value';
-        type: 'string';
-      },
-      {
-        indexed: true;
-        internalType: 'uint256';
-        name: 'id';
-        type: 'uint256';
-      }
-    ];
-    name: 'URI';
-    type: 'event';
-  },
-  {
-    inputs: [
-      {
-        internalType: 'address';
-        name: 'account';
-        type: 'address';
-      },
-      {
-        internalType: 'uint256';
-        name: 'id';
-        type: 'uint256';
-      }
-    ];
-    name: 'balanceOf';
-    outputs: [
-      {
-        internalType: 'uint256';
-        name: '';
-        type: 'uint256';
-      }
-    ];
-    stateMutability: 'view';
-    type: 'function';
-  },
-  {
-    inputs: [
-      {
-        internalType: 'address[]';
-        name: 'accounts';
-        type: 'address[]';
-      },
-      {
-        internalType: 'uint256[]';
-        name: 'ids';
-        type: 'uint256[]';
-      }
-    ];
-    name: 'balanceOfBatch';
-    outputs: [
-      {
-        internalType: 'uint256[]';
-        name: '';
-        type: 'uint256[]';
-      }
-    ];
-    stateMutability: 'view';
-    type: 'function';
-  },
-  {
-    inputs: [
-      {
-        internalType: 'uint256';
-        name: 'tokenId';
-        type: 'uint256';
-      }
-    ];
-    name: 'getTokenMetadataById';
-    outputs: [
-      {
-        internalType: 'string';
-        name: '';
-        type: 'string';
-      }
-    ];
-    stateMutability: 'view';
-    type: 'function';
-  },
-  {
-    inputs: [
-      {
-        internalType: 'address';
-        name: 'owner';
-        type: 'address';
-      },
-      {
-        internalType: 'uint256';
-        name: 'tokenId';
-        type: 'uint256';
-      }
-    ];
-    name: 'getTokenOwner';
-    outputs: [
-      {
-        internalType: 'uint256';
-        name: '';
-        type: 'uint256';
-      }
-    ];
-    stateMutability: 'view';
-    type: 'function';
-  },
-  {
-    inputs: [
-      {
-        internalType: 'address';
-        name: 'account';
-        type: 'address';
-      },
-      {
-        internalType: 'uint256';
-        name: 'fromIndex';
-        type: 'uint256';
-      },
-      {
-        internalType: 'uint256';
-        name: 'limit';
-        type: 'uint256';
-      }
-    ];
-    name: 'getTokensByOwner';
-    outputs: [
-      {
-        internalType: 'uint256';
-        name: '';
-        type: 'uint256';
-      },
-      {
-        internalType: 'uint256[]';
-        name: '';
-        type: 'uint256[]';
-      },
-      {
-        internalType: 'string[]';
-        name: '';
-        type: 'string[]';
-      }
-    ];
-    stateMutability: 'view';
-    type: 'function';
-  },
-  {
-    inputs: [
-      {
-        internalType: 'address';
-        name: 'account';
-        type: 'address';
-      }
-    ];
-    name: 'getTokenSupplyByOwner';
-    outputs: [
-      {
-        internalType: 'uint256';
-        name: '';
-        type: 'uint256';
-      }
-    ];
-    stateMutability: 'view';
-    type: 'function';
-  },
-  {
-    inputs: [
-      {
-        internalType: 'address';
-        name: 'account';
-        type: 'address';
-      },
-      {
-        internalType: 'address';
-        name: 'operator';
-        type: 'address';
-      }
-    ];
-    name: 'isApprovedForAll';
-    outputs: [
-      {
-        internalType: 'bool';
-        name: '';
-        type: 'bool';
-      }
-    ];
-    stateMutability: 'view';
-    type: 'function';
-  },
-  {
-    inputs: [];
-    name: 'owner';
-    outputs: [
-      {
-        internalType: 'address';
-        name: '';
-        type: 'address';
-      }
-    ];
-    stateMutability: 'view';
-    type: 'function';
-  },
-  {
-    inputs: [
-      {
-        internalType: 'bytes4';
-        name: 'interfaceId';
-        type: 'bytes4';
-      }
-    ];
-    name: 'supportsInterface';
-    outputs: [
-      {
-        internalType: 'bool';
-        name: '';
-        type: 'bool';
-      }
-    ];
-    stateMutability: 'view';
     type: 'function';
   },
   {
