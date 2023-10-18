@@ -266,6 +266,24 @@
   {
     "inputs": [
       {
+        "internalType": "string",
+        "name": "metadataURI",
+        "type": "string"
+      },
+      {
+        "internalType": "uint256",
+        "name": "tokenId",
+        "type": "uint256"
+      }
+    ],
+    "name": "_setTokenURI",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "address",
         "name": "account",
         "type": "address"
@@ -284,9 +302,24 @@
   {
     "inputs": [
       {
+        "internalType": "uint256",
+        "name": "_amount",
+        "type": "uint256"
+      },
+      {
         "internalType": "address",
-        "name": "account",
+        "name": "receiverAddr",
         "type": "address"
+      },
+      {
+        "internalType": "uint256[]",
+        "name": "ids",
+        "type": "uint256[]"
+      },
+      {
+        "internalType": "uint256[]",
+        "name": "amount",
+        "type": "uint256[]"
       }
     ],
     "name": "adminMint",
@@ -464,6 +497,19 @@
   },
   {
     "inputs": [],
+    "name": "getTokenURI",
+    "outputs": [
+      {
+        "internalType": "string",
+        "name": "",
+        "type": "string"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "getTotalPacksMinted",
     "outputs": [
       {
@@ -486,6 +532,32 @@
       }
     ],
     "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "tokenOwner",
+        "type": "address"
+      }
+    ],
+    "name": "getUserTokensMintedAmount",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "incrementTokenId",
+    "outputs": [],
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
@@ -518,6 +590,21 @@
         "internalType": "uint256",
         "name": "_amount",
         "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "receiverAddr",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256[]",
+        "name": "ids",
+        "type": "uint256[]"
+      },
+      {
+        "internalType": "uint256[]",
+        "name": "amount",
+        "type": "uint256[]"
       }
     ],
     "name": "mintPacks",
@@ -549,6 +636,24 @@
       }
     ],
     "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "tokenOwner",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "tokenId",
+        "type": "uint256"
+      }
+    ],
+    "name": "pushToOwnerTokenArray",
+    "outputs": [],
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
@@ -795,6 +900,19 @@
       }
     ],
     "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_amount",
+        "type": "uint256"
+      }
+    ],
+    "name": "withdrawERC20Tokens",
+    "outputs": [],
+    "stateMutability": "nonpayable",
     "type": "function"
   }
 ]
