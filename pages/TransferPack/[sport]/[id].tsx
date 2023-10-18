@@ -4,20 +4,20 @@ import Container from 'components/containers/Container';
 import 'regenerator-runtime/runtime';
 import BackFunction from 'components/buttons/BackFunction';
 import { useWalletSelector } from 'contexts/WalletSelectorContext';
-import { getRPCProvider } from 'utils/near';
-import { providers } from 'near-api-js';
+// import { getRPCProvider } from 'utils/near';
+// import { providers } from 'near-api-js';
 import BigNumber from 'bignumber.js';
 import { DEFAULT_MAX_FEES, MINT_STORAGE_COST } from 'data/constants/gasFees';
 import Image from 'next/image';
 import { getSportType } from 'data/constants/sportConstants';
-import { query_nft_tokens_by_id } from 'utils/near/helper';
+// import { query_nft_tokens_by_id } from 'utils/near/helper';
 import Modal from 'components/modals/Modal';
 import PortfolioContainer from 'components/containers/PortfolioContainer';
 
 export default function PackDetails(props) {
-  const provider = new providers.JsonRpcProvider({
-    url: getRPCProvider(),
-  });
+  // const provider = new providers.JsonRpcProvider({
+  //   url: getRPCProvider(),
+  // });
   const { query } = props;
   const [accountNameInfo, setAccountNameInfo] = useState(null);
   const [confirmModal, setConfirmModal] = useState(false);
@@ -49,16 +49,16 @@ export default function PackDetails(props) {
 
   const [packDetails, setPackDetails] = useState([]);
 
-  async function get_pack_token_by_id() {
-    await query_nft_tokens_by_id(myPack.id, contract).then((data) => {
-      //@ts-ignore:next-lines
-      const result = JSON.parse(Buffer.from(data.result).toString());
-      if (result.owner_id !== wallet) {
-        router.push('/Packs');
-      }
-      setPackDetails([result]);
-    });
-  }
+  // async function get_pack_token_by_id() {
+  //   await query_nft_tokens_by_id(myPack.id, contract).then((data) => {
+  //     //@ts-ignore:next-lines
+  //     const result = JSON.parse(Buffer.from(data.result).toString());
+  //     if (result.owner_id !== wallet) {
+  //       router.push('/Packs');
+  //     }
+  //     setPackDetails([result]);
+  //   });
+  // }
 
   async function execute_transfer_pack(selector) {
     // const contract = getSportType(myPack.sport);
@@ -139,9 +139,9 @@ export default function PackDetails(props) {
     }
   };
 
-  useEffect(() => {
-    get_pack_token_by_id();
-  }, []);
+  // useEffect(() => {
+  //   get_pack_token_by_id();
+  // }, []);
 
   return (
     <Container activeName="TRANSFER PACK">
