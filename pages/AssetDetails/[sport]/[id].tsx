@@ -8,7 +8,7 @@ import {
 import BackFunction from 'components/buttons/BackFunction';
 import StatsComponent from '../components/StatsComponent';
 import Link from 'next/link';
-import { query_nft_tokens_by_id } from 'utils/near/helper';
+// import { query_nft_tokens_by_id } from 'utils/near/helper';
 import { fetchAthleteTokenMetadataAndURIById } from 'utils/polygon/ethers';
 import { getSportType } from 'data/constants/sportConstants';
 import { checkInjury } from 'utils/athlete/helper';
@@ -216,23 +216,23 @@ const AssetDetails = (props) => {
               <div className="font-bold">{athlete?.fantasy_score?.toFixed(2)}</div>
             </div>
             {currentSport === 'FOOTBALL' ? (
-              <Link href="https://paras.id/collection/athlete.nfl.playible.near">
+              // <Link href="https://paras.id/collection/athlete.nfl.playible.near">
                 <button
                   className="bg-indigo-lightblue text-indigo-buttonblue w-full md:w-80 h-10 
                 text-center font-bold text-md mt-12 self-center justify-center"
                 >
                   PLACE FOR SALE
                 </button>
-              </Link>
+              // </Link>
             ) : (
-              <Link href="https://paras.id/collection/athlete.basketball.playible.near">
+              // <Link href="https://paras.id/collection/athlete.basketball.playible.near">
                 <button
                   className="bg-indigo-lightblue text-indigo-buttonblue w-full md:w-80 h-10 
               text-center font-bold text-md mt-12 self-center justify-center"
                 >
                   PLACE FOR SALE
                 </button>
-              </Link>
+              // </Link>
             )}
           </div>
         </div>
