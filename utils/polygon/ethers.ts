@@ -30,6 +30,8 @@ const regularNFLAthleteStorageAddress = '0x32ec30629f306261a8c38658d0dc4b2e1c493
 const regularNFLAthleteLogicAddress = '0xD5Ac1637dAC23cD4b25542cee92664b7646F7e53';
 const gameNFLStorageAddress = '0x769450D2Eb8fD1F810E75131eC91A7E0E96fd497';
 const gameNFLLogicAddress = '0xfA3114b61621110458738b033B966B9813019865';
+const openPackContractAddress = '0xc5f71dd851431b4de6Ecbe4eFCa9a4ac8f3b9E72';
+const openPackLogicContractAddress = '0x3Ba67aBAFDcdEeB185F555aec3dE52889F969Ec0';
 const packStorageNFLContractABI = pack_nft_storage as unknown as packStorageABI;
 const packLogicNFLContractABI = pack_nft_logic as unknown as packLogicABI;
 
