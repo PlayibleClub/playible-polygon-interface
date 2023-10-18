@@ -379,7 +379,7 @@ export default function Home(props) {
         const gasPrice = await web3.eth.getGasPrice();
         const tx = {
           from: wallet,
-          to: regularPackNFLStorageContractAddress,
+          to: regularPackNFLLogicContractAddress,
           //@ts-ignore
           gas: parseInt(gasEstimate),
           gasPrice: gasPrice,
