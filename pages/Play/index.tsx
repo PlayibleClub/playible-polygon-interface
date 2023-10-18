@@ -9,7 +9,7 @@ import { getGameInfoById, mapGameInfo } from 'utils/game/helper';
 import { getUTCTimestampFromLocal } from 'utils/date/helper';
 import ReactPaginate from 'react-paginate';
 import { SPORT_NAME_LOOKUP, SPORT_TYPES, getSportType } from 'data/constants/sportConstants';
-import { query_games_list, query_game_supply } from 'utils/near/helper';
+// import { query_games_list, query_game_supply } from 'utils/near/helper';
 import { useWalletSelector } from 'contexts/WalletSelectorContext';
 import { fetchAllGames } from 'utils/polygon/ethers';
 const Play = (props) => {
@@ -227,41 +227,41 @@ const Play = (props) => {
 
   console.log(totalGames);
 
-  function get_games_list(totalGames) {
-    query_games_list(totalGames, getSportType(currentSport).gameContract).then(async (data) => {
-      //@ts-ignore:next-line
-      const result = JSON.parse(Buffer.from(data.result).toString());
+  // function get_games_list(totalGames) {
+  //   query_games_list(totalGames, getSportType(currentSport).gameContract).then(async (data) => {
+  //     //@ts-ignore:next-line
+  //     const result = JSON.parse(Buffer.from(data.result).toString());
 
-      const upcomingGames = await Promise.all(
-        result
-          .filter((x) => x[1].start_time > getUTCTimestampFromLocal())
-          .map((item) => getGameInfoById(wallet, item, 'new', currentSport))
-      );
+  //     const upcomingGames = await Promise.all(
+  //       result
+  //         .filter((x) => x[1].start_time > getUTCTimestampFromLocal())
+  //         .map((item) => getGameInfoById(wallet, item, 'new', currentSport))
+  //     );
 
-      const completedGames = await Promise.all(
-        result
-          .filter((x) => x[1].end_time < getUTCTimestampFromLocal())
-          .map((item) => getGameInfoById(wallet, item, 'completed', currentSport))
-      );
+  //     const completedGames = await Promise.all(
+  //       result
+  //         .filter((x) => x[1].end_time < getUTCTimestampFromLocal())
+  //         .map((item) => getGameInfoById(wallet, item, 'completed', currentSport))
+  //     );
 
-      const ongoingGames = await Promise.all(
-        result
-          .filter(
-            (x) =>
-              x[1].start_time < getUTCTimestampFromLocal() &&
-              x[1].end_time > getUTCTimestampFromLocal()
-          )
-          .map((item) => getGameInfoById(wallet, item, 'on-going', currentSport))
-      );
-      upcomingGames.sort(function (a, b) {
-        return a.start_time - b.start_time;
-      });
-      setNewGames(upcomingGames);
-      setCompletedGames(completedGames);
-      setOngoingGames(ongoingGames);
-      console.log(ongoingGames);
-    });
-  }
+  //     const ongoingGames = await Promise.all(
+  //       result
+  //         .filter(
+  //           (x) =>
+  //             x[1].start_time < getUTCTimestampFromLocal() &&
+  //             x[1].end_time > getUTCTimestampFromLocal()
+  //         )
+  //         .map((item) => getGameInfoById(wallet, item, 'on-going', currentSport))
+  //     );
+  //     upcomingGames.sort(function (a, b) {
+  //       return a.start_time - b.start_time;
+  //     });
+  //     setNewGames(upcomingGames);
+  //     setCompletedGames(completedGames);
+  //     setOngoingGames(ongoingGames);
+  //     console.log(ongoingGames);
+  //   });
+  // }
 
   function get_all_games_list(totalGames) {
     const sports = [
