@@ -2,7 +2,14 @@ import { current } from '@reduxjs/toolkit';
 import client from 'apollo-client';
 import { getSportType } from 'data/constants/sportConstants';
 import { getUTCTimestampFromLocal } from 'utils/date/helper';
-import { query_player_teams } from 'utils/near/helper';
+// import { query_player_teams } from 'utils/near/helper';
+
+async function query_player_teams(account, game_id, contract) {
+  const query = JSON.stringify({
+    account: account,
+    game_id: game_id,
+  })};
+
 
 async function getGameInfoById(accountId, item, status, currentSport) {
   // let game_id = item[0];
@@ -27,7 +34,7 @@ async function getGameInfoById(accountId, item, status, currentSport) {
     isCompleted: getUTCTimestampFromLocal() >= item[1].end_time ? true : false,
     status: status,
     user_team_count:
-      accountId === null
+      accountId === null 
         ? ''
         : status === 'on-going'
         ? await query_player_teams(accountId, item[0], getSportType(currentSport).gameContract)
