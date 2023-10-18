@@ -1,14 +1,14 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import Button from '../buttons/Button';
-import { providers } from 'near-api-js';
+//import { providers } from 'near-api-js';
 import BaseModal from '../modals/BaseModal';
 import { Account, Message } from '../../interfaces';
 
 import Header from '../headers/Header';
 import { useWalletSelector } from '../../contexts/WalletSelectorContext';
-import { AccountView } from 'near-api-js/lib/providers/provider';
-import { getRPCProvider } from 'utils/near';
+//import { AccountView } from 'near-api-js/lib/providers/provider';
+//import { getRPCProvider } from 'utils/near';
 import useViewport from 'utils/address/helper';
 
 const HeaderBase = () => {
