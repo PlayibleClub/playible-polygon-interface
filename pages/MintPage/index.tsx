@@ -1,4 +1,4 @@
-import { utils, providers } from 'near-api-js';
+// import { utils, providers } from 'near-api-js';
 import Container from '../../components/containers/Container';
 import Main from '../../components/Main';
 import React, { useCallback, useEffect, useState } from 'react';
@@ -8,14 +8,14 @@ import Select from 'react-select';
 import Usdc from '../../public/images/SVG/usdc';
 import { useWalletSelector } from '../../contexts/WalletSelectorContext';
 import BigNumber from 'bignumber.js';
-import { getRPCProvider } from '../../utils/near';
+// import { getRPCProvider } from '../../utils/near';
 import { useRouter } from 'next/router';
 import { useDispatch, useSelector } from 'react-redux';
 import Modal from 'components/modals/Modal';
 import PortfolioContainer from '../../components/containers/PortfolioContainer';
 import { POL141USDC } from '../../data/constants/polygonConstants';
 import { MINT_STORAGE_COST, DEFAULT_MAX_FEES } from 'data/constants/gasFees';
-import { execute_claim_soulbound_pack, query_claim_status } from 'utils/near/helper';
+// import { execute_claim_soulbound_pack, query_claim_status } from 'utils/near/helper';
 import Link from 'next/link';
 import { SPORT_TYPES, getSportType, SPORT_NAME_LOOKUP } from 'data/constants/sportConstants';
 import ModalPortfolioContainer from 'components/containers/ModalPortfolioContainer';
@@ -804,11 +804,11 @@ export default function Home(props) {
                           onClick={() => ''}
                         >
                           Storage deposit required{' '}
-                          {utils.format.formatNearAmount(
+                          {/* {utils.format.formatNearAmount(
                             BigInt(
                               selectedMintAmount * MINT_STORAGE_COST - storageDepositAccountBalance
                             ).toString()
-                          )}
+                          )} */}
                           N
                         </button>
                       )
