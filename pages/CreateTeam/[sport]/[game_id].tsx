@@ -23,7 +23,7 @@ import {
   setSport,
 } from 'redux/athlete/athleteSlice';
 import { query_game_data } from 'utils/near/helper';
-import { executeSubmitLineup } from 'utils/polygon/ethers';
+import { executeSubmitLineup } from 'utils/polygon/helper/gamePolygon';
 export default function CreateLineup(props) {
   const { query } = props;
   const gameId = query.game_id;
