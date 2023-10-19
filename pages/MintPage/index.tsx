@@ -41,7 +41,8 @@ import {
   fetchRegularPackPrice,
   fetchAccountBalance,
   fetchMintedTokenAmount,
-} from 'utils/polygon/ethers';
+} from 'utils/polygon/helper/packPolygon';
+import { PACK_NFL_POLYGON } from 'data/constants/polygonContracts';
 const NANO_TO_SECONDS_DENOMINATOR = 1000000;
 const DECIMALS_USDC = 1000000;
 export default function Home(props) {
@@ -123,8 +124,6 @@ export default function Home(props) {
   const [approvedComplete, setApprovedComplete] = useState(false);
   const packStorageNFLContractABI = pack_nft_storage as unknown as packStorageABI;
   const packLogicNFLContractABI = pack_nft_logic as unknown as packLogicABI;
-  const regularPackNFLStorageContractAddress = '0x0B0f1766f78cf70bAcA70AF09Ac8DDd8Fce77D4F';
-  const regularPackNFLLogicContractAddress = '0xCa49D6474f59479680b8b6EC3db7b5f6f0d17b24';
 
   const changeCategoryList = (name) => {
     const tabList = [...categoryList];
@@ -259,7 +258,7 @@ export default function Home(props) {
         });
 
         const allowance = await usdcContract.methods
-          .allowance(wallet, regularPackNFLStorageContractAddress)
+          .allowance(wallet, PACK_NFL_POLYGON.storage)
           .call();
 
         setAccountERC20ApprovalAmount(Number(allowance));
@@ -281,7 +280,7 @@ export default function Home(props) {
         });
 
         const usdcGasEstimate = await usdcContract.methods
-          .approve(regularPackNFLStorageContractAddress, accountBalance)
+          .approve(PACK_NFL_POLYGON.storage, accountBalance)
           .estimateGas();
 
         const gasPrice = await web3.eth.getGasPrice();
@@ -291,9 +290,7 @@ export default function Home(props) {
           //@ts-ignore
           gas: parseInt(usdcGasEstimate),
           gasPrice: gasPrice,
-          data: usdcContract.methods
-            .approve(regularPackNFLStorageContractAddress, accountBalance)
-            .encodeABI(),
+          data: usdcContract.methods.approve(PACK_NFL_POLYGON.storage, accountBalance).encodeABI(),
         };
 
         web3.eth
@@ -364,10 +361,7 @@ export default function Home(props) {
 
         const web3 = new Web3(window.ethereum);
 
-        const contract = new web3.eth.Contract(
-          packLogicNFLContractABI,
-          regularPackNFLLogicContractAddress
-        );
+        const contract = new web3.eth.Contract(packLogicNFLContractABI, PACK_NFL_POLYGON.logic);
 
         // Estimate gas for mintPacks function
         console.log('Amount:', selectedMintAmount);
@@ -379,7 +373,7 @@ export default function Home(props) {
         const gasPrice = await web3.eth.getGasPrice();
         const tx = {
           from: wallet,
-          to: regularPackNFLLogicContractAddress,
+          to: PACK_NFL_POLYGON.logic,
           //@ts-ignore
           gas: parseInt(gasEstimate),
           gasPrice: gasPrice,
