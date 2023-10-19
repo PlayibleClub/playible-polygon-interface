@@ -14,6 +14,7 @@ import { useWalletSelector } from 'contexts/WalletSelectorContext';
 import openPack from 'utils/polygon/ABI/openPackAbi.json';
 import openPackLogic from 'utils/polygon/ABI/openPackLogicAbi.json';
 import Web3 from 'web3';
+import Modal from 'components/modals/Modal';
 export default function PackDetails(props) {
   const {
     state: { wallet },
@@ -39,6 +40,8 @@ export default function PackDetails(props) {
   const [hasFetchedData, setHasFetchedData] = useState(false);
   const [isOwner, setIsOwner] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [loopCount, setLoopCount] = useState(0);
+  const [confirmationNumber, setConfirmationNumber] = useState(0);
 
   function setLoading(loading) {
     setIsLoading(loading);
@@ -73,9 +76,15 @@ export default function PackDetails(props) {
         };
 
         // Call mint regular packs function
-        const receipt = await web3.eth.sendTransaction(tx).on('transactionHash', function (hash) {
-          console.log('Transaction Hash:', hash);
-        });
+        const receipt = await web3.eth
+          .sendTransaction(tx)
+          .on('transactionHash', function (hash) {
+            console.log('Transaction Hash:', hash);
+          })
+          .on('confirmation', function () {
+            console.log('User confirmed the transaction');
+            setConfirmationNumber(+1);
+          });
 
         console.log('Request Successful');
 
@@ -84,13 +93,13 @@ export default function PackDetails(props) {
         const requestId = await contractStorage.methods.getRequestIdByUser(accounts[0]).call();
         console.log('Random words requested successful, requestId:', requestId);
 
-        let loopCount = 0;
+        // let loopCount = 0;
         const intervalId = setInterval(async () => {
-          loopCount++;
+          setLoopCount((prevLoopCount) => prevLoopCount + 1);
           console.log('Checking request status...', loopCount);
           if (loopCount > 30) {
-            clearInterval(intervalId);
             alert('Request timed out. Please refresh the page');
+            clearInterval(intervalId);
             return;
           }
           //@ts-ignore
@@ -120,6 +129,10 @@ export default function PackDetails(props) {
               .sendTransaction(mintTx)
               .on('transactionHash', function (hash) {
                 console.log('Mint Transaction Hash:', hash);
+              })
+              .on('confirmation', function () {
+                console.log('User confirmed the transaction');
+                setConfirmationNumber(+1);
               })
               .on('receipt', function (receipt) {
                 console.log('Minting Successful');
@@ -188,7 +201,7 @@ export default function PackDetails(props) {
       router.push('/Packs');
     }
   }, [isOwner]);
-
+  console.log(confirmationNumber);
   return (
     <Container activeName="PACKS">
       <div className="md:ml-6 mt-12">
@@ -211,12 +224,16 @@ export default function PackDetails(props) {
             </div>
             <div className="text-sm">RELEASE 1</div>
             {isLoading ? (
-              <button
-                className="bg-indigo-lightgray text-indigo-white w-5/6 md:w-80 h-10 text-center font-bold text-sm mt-4"
-                disabled
-              >
-                OPENING PACK...
-              </button>
+              <Modal title={`PACK OPENING`} visible={isLoading} isPackDetails={true}>
+                <div className="flex items-center justify-center">
+                  <div className="mx-4">
+                    Waiting for confirmations {confirmationNumber} out of 2
+                  </div>
+                  <div className="w-3 h-3 rounded-full bg-indigo-buttonblue animate-bounce mr-3"></div>
+                  <div className="w-3 h-3 rounded-full bg-indigo-buttonblue animate-bounce mr-3"></div>
+                  <div className="w-3 h-3 rounded-full bg-indigo-buttonblue animate-bounce"></div>
+                </div>
+              </Modal>
             ) : isOwner ? (
               <button
                 className="bg-indigo-buttonblue text-indigo-white w-5/6 md:w-80 h-10 text-center font-bold text-sm mt-4"

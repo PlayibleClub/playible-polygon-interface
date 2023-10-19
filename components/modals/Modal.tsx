@@ -7,7 +7,15 @@ import LoadingModal from '../loading/LoadingModal';
 // TODO: Modal Design for dark mode and light mode
 
 const Modal = (props) => {
-  const { title, children, visible, onClose = undefined, AdminGame, isEntrySummary } = props;
+  const {
+    title,
+    children,
+    visible,
+    onClose = undefined,
+    AdminGame,
+    isEntrySummary,
+    isPackDetails,
+  } = props;
 
   // TODO: Make the modal more presentable
   return (
@@ -28,7 +36,11 @@ const Modal = (props) => {
               leaveFrom="opacity-100"
               leaveTo="opacity-0"
             >
-              <Dialog.Overlay className="fixed inset-0 bg-indigo-gray bg-opacity-60" />
+              <Dialog.Overlay
+                className={`fixed inset-0 ${
+                  isPackDetails ? 'bg-indigo-gray bg-opacity-40' : 'bg-indigo-gray bg-opacity-60'
+                }`}
+              />
             </Transition.Child>
 
             {/* This element is to trick the browser into centering the modal contents. */}
