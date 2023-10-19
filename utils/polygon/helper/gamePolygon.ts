@@ -145,7 +145,7 @@ export async function executeSubmitLineup(
       const contract = new web3.eth.Contract(abi, GAME_NFL_POLYGON.logic);
 
       const gasEstimate = await contract.methods
-        .submitLineup(gameId, teamName, tokenIds, tokenPromoIds, lineup, apiIds, 0)
+        .submitLineup(gameId, teamName, tokenIds, tokenPromoIds, lineup, apiIds)
         .estimateGas({ from: accountId });
       console.log(`Estimated gas: ${gasEstimate}`);
       console.log('test');
@@ -156,7 +156,7 @@ export async function executeSubmitLineup(
         gas: Number(gasEstimate).toString(),
         gasPrice: gasPrice,
         data: contract.methods
-          .submitLineup(gameId, teamName, tokenIds, tokenPromoIds, lineup, apiIds, 0)
+          .submitLineup(gameId, teamName, tokenIds, tokenPromoIds, lineup, apiIds)
           .encodeABI(),
       };
       web3.eth.sendTransaction(tx).on('transactionHash', (hash) => {
