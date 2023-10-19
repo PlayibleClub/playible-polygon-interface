@@ -121,4 +121,22 @@ function getPrizePool(gameId: string): string {
   }
 }
 
+export type PositionsType = {
+  positions: string[];
+  amount: number;
+};
+
+export type AddGameType = {
+  gameId: number;
+  gameStartTime: number;
+  gameEndTime: number;
+  whitelist: string[];
+  usageCost: number;
+  positions: PositionsType[];
+  lineupLen: number;
+  gameDescription: string;
+  prizeDescription: string;
+  gameImage: string;
+};
+
 export { getGameInfoById, getImage, getDescription, getPrizePool, mapGameInfo };
