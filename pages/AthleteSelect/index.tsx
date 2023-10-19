@@ -26,7 +26,7 @@ import {
 import {
   fetchFilteredAthleteSupplyForOwner,
   fetchFilteredAthleteTokensForOwner,
-} from 'utils/polygon/ethers';
+} from 'utils/polygon/helper/athletePolygon';
 import { getGameStartDate, getGameEndDate } from 'redux/athlete/athleteSlice';
 import { getSportType, SPORT_NAME_LOOKUP } from 'data/constants/sportConstants';
 import NftTypeComponent from 'pages/Portfolio/components/NftTypeComponent';
