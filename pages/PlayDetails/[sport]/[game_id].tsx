@@ -12,7 +12,7 @@ import 'regenerator-runtime/runtime';
 import Router from 'next/router';
 import BaseModal from 'components/modals/BaseModal';
 import { query_game_data } from 'utils/near/helper';
-import { fetchGame } from 'utils/polygon/ethers';
+import { fetchGame } from 'utils/polygon/helper/gamePolygon';
 import { mapGameInfo } from 'utils/game/helper';
 import { getSportType } from 'data/constants/sportConstants';
 

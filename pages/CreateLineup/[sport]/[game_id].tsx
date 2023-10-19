@@ -21,7 +21,7 @@ import { formatToUTCDate } from 'utils/date/helper';
 import { getRPCProvider } from 'utils/near';
 import EntrySummaryModal from 'components/modals/EntrySummaryModal';
 import EntrySummaryPopup from 'pages/Games/components/EntrySummaryPopup';
-import { fetchGame, fetchPlayerTeams } from 'utils/polygon/ethers';
+import { fetchGame, fetchPlayerTeams } from 'utils/polygon/helper/gamePolygon';
 import { mapGameInfo } from 'utils/game/helper';
 export default function CreateLineup(props) {
   const { query } = props;

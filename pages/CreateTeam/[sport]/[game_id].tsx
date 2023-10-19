@@ -11,7 +11,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import Modal from 'components/modals/Modal';
 import { getSportType } from 'data/constants/sportConstants';
 import { DEFAULT_MAX_FEES } from 'data/constants/gasFees';
-import { fetchGame } from 'utils/polygon/ethers';
+import { fetchGame } from 'utils/polygon/helper/gamePolygon';
 import { mapGameInfo } from 'utils/game/helper';
 import { getAthleteLineup, getTeamName } from 'redux/athlete/athleteSlice';
 import {

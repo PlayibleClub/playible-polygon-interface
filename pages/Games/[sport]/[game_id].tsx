@@ -18,7 +18,7 @@ import {
   compute_scores,
 } from 'utils/near/helper';
 import { mapGameInfo } from 'utils/game/helper';
-import { fetchGame } from 'utils/polygon/ethers';
+import { fetchGame } from 'utils/polygon/helper/gamePolygon';
 import { getNflWeek, getNflSeason, formatToUTCDate } from 'utils/date/helper';
 import LoadingPageDark from 'components/loading/LoadingPageDark';
 import { setTeamName, setAccountId, setGameId, setSport2 } from 'redux/athlete/teamSlice';

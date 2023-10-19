@@ -11,7 +11,7 @@ import ReactPaginate from 'react-paginate';
 import { SPORT_NAME_LOOKUP, SPORT_TYPES, getSportType } from 'data/constants/sportConstants';
 import { query_games_list, query_game_supply } from 'utils/near/helper';
 import { useWalletSelector } from 'contexts/WalletSelectorContext';
-import { fetchAllGames } from 'utils/polygon/ethers';
+import { fetchAllGames } from 'utils/polygon/helper/gamePolygon';
 const Play = (props) => {
   const { state: wallet } = useWalletSelector();
   const [activeCategory, setCategory] = useState('NEW');
