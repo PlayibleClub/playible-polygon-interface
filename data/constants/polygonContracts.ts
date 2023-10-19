@@ -1,0 +1,4 @@
+export const ATHLETE_NFL_POLYGON = {
+  storage: '0x32ec30629f306261a8c38658d0dc4b2e1c493585',
+  logic: '0xD5Ac1637dAC23cD4b25542cee92664b7646F7e53',
+};
