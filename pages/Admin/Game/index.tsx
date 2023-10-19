@@ -2,34 +2,25 @@ import React, { useEffect, useState } from 'react';
 import Container from '../../../components/containers/Container';
 import LoadingPageDark from '../../../components/loading/LoadingPageDark';
 import Main from '../../../components/Main';
-import Distribution from './components/distribution';
-import { axiosInstance } from '../../../utils/playible';
 import BaseModal from '../../../components/modals/BaseModal';
 import TimeAgo from 'javascript-time-ago';
 import en from 'javascript-time-ago/locale/en.json';
-import ReactTimeAgo from 'react-time-ago';
 import { SPORT_TYPES, getSportType } from 'data/constants/sportConstants';
 import 'regenerator-runtime/runtime';
-import { format } from 'prettier';
-import { ADMIN } from '../../../data/constants/address';
 import { useRouter } from 'next/router';
-import { useSelector } from 'react-redux';
 import { useMutation } from '@apollo/client';
 import { CREATE_GAME } from '../../../utils/mutations';
 import { useWalletSelector } from 'contexts/WalletSelectorContext';
-import { DEFAULT_MAX_FEES, MINT_STORAGE_COST } from 'data/constants/gasFees';
-import { getGameInfoById } from 'utils/game/helper';
+import { getGameInfoById, AddGameType, PositionsType } from 'utils/game/helper';
 import AdminGameComponent from './components/AdminGameComponent';
 import moment, { utc } from 'moment';
 import { getUTCDateFromLocal, getUTCTimestampFromLocal } from 'utils/date/helper';
 import ReactPaginate from 'react-paginate';
-import { position } from 'utils/athlete/position';
 import ReactS3Client from 'react-aws-s3-typescript';
 import secretKeys from 's3config';
-import { ErrorResponse } from '@remix-run/router';
-import { current } from '@reduxjs/toolkit';
 import { getSport } from 'redux/athlete/athleteSlice';
 import Modal from 'components/modals/Modal';
+import { fetchGameCounter, executeAddGame } from 'utils/polygon/helper/gamePolygon';
 TimeAgo.addDefaultLocale(en);
 
 export default function Index(props) {
@@ -233,7 +224,11 @@ export default function Index(props) {
   const [remountPositionArea, setRemountPositionArea] = useState(0);
   const [remountDropdown, setRemountDropdown] = useState(0);
   const [positionList, setPositionList] = useState(SPORT_TYPES[0].positionList);
-  const sportObj = SPORT_TYPES.map((x) => ({ name: x.sport, isActive: false }));
+  const sportObj = SPORT_TYPES.filter((x) => x.key === 'NFL').map((x) => ({
+    name: x.sport,
+    isActive: false,
+  }));
+  console.log(sportObj);
   sportObj[0].isActive = true;
   const [sportList, setSportList] = useState([...sportObj]);
   const [currentSport, setCurrentSport] = useState(sportObj[0].name);
@@ -540,7 +535,7 @@ export default function Index(props) {
       errors.push('Start date has no value');
     }
 
-    if (dateStart < Date.now()) {
+    if (dateStart * 1000 < Date.now()) {
       errors.push('Start date is earlier than local time');
     }
 
@@ -783,15 +778,16 @@ export default function Index(props) {
   });
 
   const dateStartFormatted = moment(details.startTime).format('YYYY-MM-DD HH:mm:ss');
-  const dateStart = moment(dateStartFormatted).utc().unix() * 1000;
+  const dateStart = moment(dateStartFormatted).utc().unix();
   const dateEndFormatted = moment(details.endTime).format('YYYY-MM-DD HH:mm:ss');
-  const dateEnd = moment(dateEndFormatted).utc().unix() * 1000;
+  const dateEnd = moment(dateEndFormatted).utc().unix();
 
   const startFormattedTimestamp = moment(dateStartFormatted).toLocaleString();
   const endFormattedTimestamp = moment(dateEndFormatted).toLocaleString();
 
-  async function get_game_supply() {
-    setTotalGames(0);
+  async function getGameCurrentCounter() {
+    const result = await fetchGameCounter();
+    setTotalGames(Number(result));
   }
 
   function get_games_list(totalGames) {
@@ -841,47 +837,62 @@ export default function Index(props) {
   }
 
   async function execute_add_game() {
-    const addGameArgs = Buffer.from(
-      JSON.stringify({
-        game_id: details.gameId.toString(),
-        game_time_start: dateStart,
-        game_time_end: dateEnd,
-        whitelist: whitelistInfo,
-        positions:
-          currentSport === 'FOOTBALL'
-            ? positionsInfo
-            : currentSport === 'BASKETBALL'
-            ? positionsInfoBasketball
-            : currentSport === 'BASEBALL'
-            ? positionsInfoBaseball
-            : positionsInfoCricket,
-        lineup_len: getLineupLength(currentSport),
-        game_description: gameDescription,
-        prize_description: prizeDescription,
-        game_image: gameImage,
-      })
-    );
+    //deconstructPosition(positionsInfo);
+    const args: AddGameType = {
+      gameId: parseInt(details.gameId),
+      gameStartTime: dateStart,
+      gameEndTime: dateEnd,
+      whitelist: whitelistInfo !== null ? whitelistInfo : [],
+      usageCost: 0,
+      positions: positionsInfo,
+      lineupLen: getLineupLength(currentSport),
+      gameDescription: gameDescription,
+      prizeDescription: prizeDescription,
+      gameImage: gameImage,
+    };
+    executeAddGame(args, wallet);
+    console.log(args);
+    // const addGameArgs = Buffer.from(
+    //   JSON.stringify({
+    //     game_id: details.gameId.toString(),
+    //     game_time_start: dateStart,
+    //     game_time_end: dateEnd,
+    //     whitelist: whitelistInfo,
+    //     positions:
+    //       currentSport === 'FOOTBALL'
+    //         ? positionsInfo
+    //         : currentSport === 'BASKETBALL'
+    //         ? positionsInfoBasketball
+    //         : currentSport === 'BASEBALL'
+    //         ? positionsInfoBaseball
+    //         : positionsInfoCricket,
+    //     lineup_len: getLineupLength(currentSport),
+    //     game_description: gameDescription,
+    //     prize_description: prizeDescription,
+    //     game_image: gameImage,
+    //   })
+    // );
 
-    console.log(
-      JSON.stringify({
-        game_id: details.gameId.toString(),
-        game_time_start: dateStart,
-        game_time_end: dateEnd,
-        whitelist: whitelistInfo,
-        positions:
-          currentSport === 'FOOTBALL'
-            ? positionsInfo
-            : currentSport === 'BASKETBALL'
-            ? positionsInfoBasketball
-            : currentSport === 'BASEBALL'
-            ? positionsInfoBaseball
-            : positionsInfoCricket,
-        lineup_len: getLineupLength(currentSport),
-        game_description: gameDescription,
-        prize_description: prizeDescription,
-        game_image: gameImage,
-      })
-    );
+    // console.log(
+    //   JSON.stringify({
+    //     game_id: details.gameId.toString(),
+    //     game_time_start: dateStart,
+    //     game_time_end: dateEnd,
+    //     whitelist: whitelistInfo,
+    //     positions:
+    //       currentSport === 'FOOTBALL'
+    //         ? positionsInfo
+    //         : currentSport === 'BASKETBALL'
+    //         ? positionsInfoBasketball
+    //         : currentSport === 'BASEBALL'
+    //         ? positionsInfoBaseball
+    //         : positionsInfoCricket,
+    //     lineup_len: getLineupLength(currentSport),
+    //     game_description: gameDescription,
+    //     prize_description: prizeDescription,
+    //     game_image: gameImage,
+    //   })
+    // );
   }
 
   useEffect(() => {
@@ -903,7 +914,7 @@ export default function Index(props) {
   ]);
   useEffect(() => {
     get_games_list(totalGames);
-    get_game_supply();
+    getGameCurrentCounter();
 
     const list = SPORT_TYPES.find((x) => x.sport === currentSport);
 
