@@ -38,10 +38,16 @@ export default function PackDetails(props) {
   const [packDetails, setPackDetails] = useState([]);
   const [hasFetchedData, setHasFetchedData] = useState(false);
   const [isOwner, setIsOwner] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+
+  function setLoading(loading) {
+    setIsLoading(loading);
+  }
 
   async function requestAndMint() {
     try {
       if (window.ethereum) {
+        setLoading(true); // Set loading state to true
         await window.ethereum.request({ method: 'eth_requestAccounts' });
 
         const web3 = new Web3(window.ethereum);
@@ -124,6 +130,7 @@ export default function PackDetails(props) {
       }
     } catch (error) {
       console.error('Error Request and Mint:', error);
+      setLoading(false); // Set loading state to false on error
     }
   }
 
@@ -203,16 +210,21 @@ export default function PackDetails(props) {
               #{myPack.id}
             </div>
             <div className="text-sm">RELEASE 1</div>
-            {isOwner ? (
+            {isLoading ? (
+              <button
+                className="bg-indigo-lightgray text-indigo-white w-5/6 md:w-80 h-10 text-center font-bold text-sm mt-4"
+                disabled
+              >
+                OPENING PACK...
+              </button>
+            ) : isOwner ? (
               <button
                 className="bg-indigo-buttonblue text-indigo-white w-5/6 md:w-80 h-10 text-center font-bold text-sm mt-4"
                 onClick={() => requestAndMint()}
               >
                 OPEN PACK
               </button>
-            ) : (
-              ' '
-            )}
+            ) : null}
 
             {/* <Link
               href={`/TransferPack/${myPack.sport.toLowerCase()}/${encodeURIComponent(id)}/`}
