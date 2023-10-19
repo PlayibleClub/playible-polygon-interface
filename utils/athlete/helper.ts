@@ -7,7 +7,11 @@ import {
   GET_PLAYER_SCHEDULE,
   GET_ATHLETE_BY_API_ID,
 } from '../queries';
-import { formatToUTCDate, getUTCTimestampFromLocal } from 'utils/date/helper';
+import {
+  formatToUTCDate,
+  getUTCTimestampFromLocal,
+  getUTCTimestampSeconds,
+} from 'utils/date/helper';
 import { getSportType } from 'data/constants/sportConstants';
 import { AthleteIPFSMetadata, AthleteExtraMetadata } from 'utils/athlete/types';
 interface trait_type {
@@ -48,7 +52,7 @@ async function getAthleteInfoByApiId(item, from, to) {
     image: item.metadata.image,
     fantasy_score: getAvgSeasonFantasyScore(data.getAthleteByApiId.stats),
     stats_breakdown: data.getAthleteByApiId.stats,
-    isInGame: item.extra.restrictedUntil > getUTCTimestampFromLocal() ? true : false,
+    isInGame: item.extra.restrictedUntil > getUTCTimestampSeconds() ? true : false,
     isInjured: data.getAthleteByApiId.isInjured,
     isActive: data.getAthleteByApiId.isActive,
     playerHeadshot: data.getAthleteByApiId.playerHeadshot,
