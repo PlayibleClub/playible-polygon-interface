@@ -67,6 +67,54 @@ export async function fetchPlayerTeams(accountId, gameId: number) {
     console.log(e);
   }
 }
+export async function fetchJoinedPlayerCount(accountId, gameId: number) {
+  try {
+    if (window.ethereum) {
+      console.log(accountId);
+      await window.ethereum.request({ method: 'eth_requestAccounts' });
+      const abi = game_storage as unknown as GameStorageABI;
+      const contract = new Contract(abi, GAME_NFL_POLYGON.storage);
+      contract.setProvider(window.ethereum);
+      const result = await contract.methods.viewPlayerJoinedCounter(gameId).call();
+      console.log(result);
+      return Number(result);
+    }
+  } catch (e) {
+    console.log(e);
+  }
+}
+
+export async function fetchJoinedAddresses(accountId: string, gameId: number) {
+  try {
+    if (window.ethereum) {
+      await window.ethereum.request({ method: 'eth_requestAccounts' });
+      const abi = game_storage as unknown as GameStorageABI;
+      const contract = new Contract(abi, GAME_NFL_POLYGON.storage);
+      contract.setProvider(window.ethereum);
+      const result = await contract.methods.getAddressesJoinedInGame(gameId).call();
+      console.log(result);
+      return result;
+    }
+  } catch (e) {
+    console.log(e);
+  }
+}
+
+export async function fetchTeamsJoinedInGame(accountId: string, gameId: number) {
+  try {
+    if (window.ethereum) {
+      await window.ethereum.request({ method: 'eth_requestAccounts' });
+      const abi = game_storage as unknown as GameStorageABI;
+      const contract = new Contract(abi, GAME_NFL_POLYGON.storage);
+      contract.setProvider(window.ethereum);
+      const result = await contract.methods.getTeamsJoinedInGame(gameId).call();
+      console.log(result);
+      return result;
+    }
+  } catch (e) {
+    console.log(e);
+  }
+}
 
 export async function executeAddGame(args: AddGameType, accountId: string) {
   try {
