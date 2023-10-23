@@ -36,7 +36,6 @@ async function getAthleteInfoByApiId(item, from, to) {
       to: to,
     },
   });
-
   const returningData = {
     primary_id: item.metadata.properties.symbol,
     athlete_id: item.extra.tokenId,
@@ -282,13 +281,13 @@ function convertNftToAthlete(item) {
 }
 
 function convertPolygonNftToAthlete(item) {
-  console.log(item);
+  //console.log(item);
   const extraMetadata: AthleteExtraMetadata = {
     tokenId: Number(item[0]).toString(),
     restrictedUntil: Number(item[1]),
   };
   const ipfsMetadata: AthleteIPFSMetadata = JSON.parse(item[2]);
-  console.log(ipfsMetadata);
+  //console.log(ipfsMetadata);
   return {
     token_id: Number(extraMetadata.tokenId).toString(),
     metadata: ipfsMetadata,
