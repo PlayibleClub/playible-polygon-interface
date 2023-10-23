@@ -10,18 +10,16 @@ import Main from 'components/Main';
 import { getRPCProvider } from 'utils/near';
 import LeaderboardComponent from '../components/LeaderboardComponent';
 import ViewTeamsContainer from 'components/containers/ViewTeamsContainer';
-import {
-  query_game_data,
-  query_all_players_lineup_rposition,
-  query_player_teams,
-  query_player_lineup,
-  compute_scores,
-} from 'utils/near/helper';
+
 import { mapGameInfo } from 'utils/game/helper';
-import { fetchGame } from 'utils/polygon/helper/gamePolygon';
+import {
+  fetchGame,
+  fetchTeamsJoinedInGame,
+  computeScores,
+  fetchPlayerTeams,
+} from 'utils/polygon/helper/gamePolygon';
 import { getNflWeek, getNflSeason, formatToUTCDate } from 'utils/date/helper';
 import LoadingPageDark from 'components/loading/LoadingPageDark';
-import { setTeamName, setAccountId, setGameId, setSport2 } from 'redux/athlete/teamSlice';
 import { useDispatch } from 'react-redux';
 import { persistor } from 'redux/athlete/store';
 import { getSportType, SPORT_NAME_LOOKUP } from 'data/constants/sportConstants';
@@ -40,7 +38,9 @@ const Games = (props) => {
   const dispatch = useDispatch();
   const [playerLineups, setPlayerLineups] = useState([]);
   const provider = new providers.JsonRpcProvider({ url: getRPCProvider() });
-  const { state: wallet } = useWalletSelector();
+  const {
+    state: { wallet },
+  } = useWalletSelector();
   const [playerTeams, setPlayerTeams] = useState([]);
   const [playerTeamSorted, setPlayerTeamSorted] = useState([]);
   const [gameInfo, setGameInfo] = useState({});
@@ -59,45 +59,7 @@ const Games = (props) => {
     //setGameInfo(await fetchGame(gameId));
     //setGameData(await query_game_data(game_id, getSportType(currentSport).gameContract));
   }
-  // async function get_all_players_lineup_chunks(joined_team_counter) {
-  //   const startTimeFormatted = formatToUTCDate(gameData.start_time);
-  //   const endTimeFormatted = formatToUTCDate(gameData.end_time);
-  //   console.log('    TEST start date: ' + startTimeFormatted);
-  //   console.log('    TEST end date: ' + endTimeFormatted);
-  //   let loopCount = Math.ceil(joined_team_counter / 1);
-  //   console.log('Loop count: ' + loopCount);
-  //   let playerLineup = [];
-  //   for (let i = 0; i < joined_team_counter; i++) {
-  //     console.log(playerLineup);
-  //     await query_all_players_lineup_chunk(
-  //       gameId,
-  //       currentSport,
-  //       startTimeFormatted,
-  //       endTimeFormatted,
-  //       i,
-  //       1
-  //     ).then(async (result) => {
-  //       if (playerLineup.length === 0) {
-  //         playerLineup = result;
-  //       } else {
-  //         playerLineup = playerLineup.concat(result);
-  //       }
-  //     });
-  //   }
-  //   let computedLineup = await compute_scores(
-  //     playerLineup,
-  //     currentSport,
-  //     startTimeFormatted,
-  //     endTimeFormatted
-  //   );
-  //   computedLineup.sort(function (a, b) {
-  //     return b.sumScore - a.sumScore;
-  //   });
-  //   setPlayerLineups(computedLineup);
-  //   // setPlayerLineups(
-  //   //   await query_all_players_lineup(gameId, currentSport, startTimeFormatted, endTimeFormatted)
-  //   // );
-  // }
+
   const togglePopup = (item) => {
     console.log(item);
     setViewModal(false);
@@ -114,34 +76,23 @@ const Games = (props) => {
     setCurrentIndex(currentIndex);
   };
 
-  async function get_all_players_lineup_with_index() {
+  async function getTeamsJoinedInGame() {
     const startTimeFormatted = formatToUTCDate(gameData.start_time);
     const endTimeFormatted = formatToUTCDate(gameData.end_time);
-    // console.log('    TEST start date: ' + startTimeFormatted);
-    // console.log('    TEST end date: ' + endTimeFormatted);
+    const playerLineups = await fetchTeamsJoinedInGame(gameId);
+    console.log(playerLineups);
+    let computedLineup = await computeScores(
+      playerLineups,
+      currentSport,
+      startTimeFormatted,
+      endTimeFormatted
+    );
+    setPlayerLineups(computedLineup);
+    //console.log(computedLineup);
+  }
 
-    await get_all_player_keys().then(async (result) => {
-      let filteredResult = result.filter((data) => data[1] === gameId);
-      //console.log(filteredResult);
-      let lineups = [];
-
-      for (const entry of filteredResult) {
-        await query_player_lineup(currentSport, entry[0], entry[1], entry[2]).then((lineup) => {
-          if (lineups.length === 0) {
-            lineups = [lineup];
-          } else {
-            lineups = lineups.concat([lineup]);
-          }
-        });
-      }
-      let computedLineup = await compute_scores(
-        lineups,
-        currentSport,
-        startTimeFormatted,
-        endTimeFormatted
-      );
-      setPlayerLineups(computedLineup);
-    });
+  async function getPlayerTeams() {
+    setPlayerTeams(await fetchPlayerTeams(wallet, gameId));
   }
 
   function getAccountScore(accountId, teamName) {
@@ -150,7 +101,11 @@ const Games = (props) => {
   }
 
   function getAccountPlacement(accountId, teamName) {
-    return playerLineups.findIndex((x) => x.accountId === accountId && x.teamName === teamName) + 1;
+    return (
+      playerLineups.findIndex(
+        (x) => x.accountId.toLowerCase() === accountId && x.teamName === teamName
+      ) + 1
+    );
   }
   async function get_all_player_keys() {
     const query = JSON.stringify({});
@@ -170,8 +125,7 @@ const Games = (props) => {
       });
   }
   function sortPlayerTeamScores(accountId) {
-    const x = playerLineups.filter((x) => x.accountId === accountId);
-    // console.log(x);
+    const x = playerLineups.filter((x) => x.accountId.toLowerCase() === accountId);
     if (x !== undefined) {
       setPlayerTeamSorted(
         x.sort(function (a, b) {
@@ -180,12 +134,7 @@ const Games = (props) => {
       );
     }
   }
-  async function get_total_joined(game_id) {}
-  async function get_player_teams(account, game_id) {
-    setPlayerTeams(
-      await query_player_teams(account, game_id, getSportType(currentSport).gameContract)
-    );
-  }
+
   const handleButtonClick = (item) => {
     setIsExtendedLeaderboard(isExtendedLeaderboard + 1);
     setEntryModal(true);
@@ -193,6 +142,8 @@ const Games = (props) => {
   };
   useEffect(() => {
     if (gameData !== undefined && gameData !== null) {
+      getPlayerTeams();
+      getTeamsJoinedInGame();
       // console.log('Joined team counter: ' + gameData.joined_team_counter);
       //get_player_teams(wallet, gameId);
       //get_all_players_lineup_with_index();
@@ -236,31 +187,28 @@ const Games = (props) => {
                     : '$100 + 2 Championship Tickets'}
                 </div>
                 <ModalPortfolioContainer title="VIEW TEAMS" textcolor="text-indigo-black mb-5" />
-                {
-                  /* @ts-expect-error */
-                  playerTeams.team_names == undefined ? (
-                    'No Teams Assigned'
-                  ) : (
-                    <div>
-                      {playerTeamSorted.map((data, index) => {
-                        return (
-                          <ViewTeamsContainer
-                            teamNames={data.teamName}
-                            gameId={gameId}
-                            accountId={wallet}
-                            accountScore={getAccountScore(wallet, data.teamName)}
-                            accountPlacement={getAccountPlacement(wallet, data.teamName)}
-                            fromGames={true}
-                            onClickFn={() => {
-                              viewPopup(wallet, data.teamName);
-                              setIsExtendedLeaderboard(1);
-                            }}
-                          />
-                        );
-                      })}
-                    </div>
-                  )
-                }
+                {playerTeams == undefined ? (
+                  'No Teams Assigned'
+                ) : (
+                  <div>
+                    {playerTeamSorted.map((data, index) => {
+                      return (
+                        <ViewTeamsContainer
+                          teamNames={data.teamName}
+                          gameId={gameId}
+                          accountId={wallet}
+                          accountScore={getAccountScore(wallet, data.teamName)}
+                          accountPlacement={getAccountPlacement(wallet, data.teamName)}
+                          fromGames={true}
+                          onClickFn={() => {
+                            viewPopup(wallet, data.teamName);
+                            setIsExtendedLeaderboard(1);
+                          }}
+                        />
+                      );
+                    })}
+                  </div>
+                )}
               </div>
             </div>
 

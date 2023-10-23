@@ -21,8 +21,14 @@ import { formatToUTCDate } from 'utils/date/helper';
 import { getRPCProvider } from 'utils/near';
 import EntrySummaryModal from 'components/modals/EntrySummaryModal';
 import EntrySummaryPopup from 'pages/Games/components/EntrySummaryPopup';
-import { fetchGame, fetchPlayerTeams } from 'utils/polygon/helper/gamePolygon';
+import {
+  fetchGame,
+  fetchPlayerTeams,
+  fetchPlayerLineup,
+  computeScores,
+} from 'utils/polygon/helper/gamePolygon';
 import { mapGameInfo } from 'utils/game/helper';
+import { PolygonLineup } from 'utils/athlete/types';
 export default function CreateLineup(props) {
   const { query } = props;
   const provider = new providers.JsonRpcProvider({ url: getRPCProvider() });
@@ -45,7 +51,7 @@ export default function CreateLineup(props) {
   const playGameImage = '/images/game.png';
 
   async function get_player_teams(account, game_id) {
-    await fetchPlayerTeams(wallet, game_id);
+    setPlayerTeams(await fetchPlayerTeams(wallet, game_id));
     // setPlayerTeams(
     //   await query_player_teams(account, game_id, getSportType(currentSport).gameContract)
     // );
@@ -103,6 +109,28 @@ export default function CreateLineup(props) {
     });
   }
 
+  async function getPlayerLineups() {
+    const startTimeFormatted = formatToUTCDate(gameData.start_time);
+    const endTimeFormatted = formatToUTCDate(gameData.end_time);
+    let lineups: PolygonLineup[] = [];
+    for (let teamName of playerTeams) {
+      const lineup = await fetchPlayerLineup(wallet, gameId, teamName);
+      if (lineups.length === 0) {
+        lineups = [{ playerAddr: wallet, teamName: teamName, lineup: lineup }];
+      } else {
+        lineups = lineups.concat([{ playerAddr: wallet, teamName: teamName, lineup: lineup }]);
+      }
+    }
+    console.log(lineups);
+    let computedLineup = await computeScores(
+      lineups,
+      currentSport,
+      startTimeFormatted,
+      endTimeFormatted
+    );
+    setPlayerLineups(computedLineup);
+  }
+
   function sortPlayerTeamScores(accountId) {
     const x = playerLineups.filter((x) => x.accountId === accountId);
     // console.log(x);
@@ -141,6 +169,11 @@ export default function CreateLineup(props) {
     get_game_data(gameId);
   }, []);
   useEffect(() => {
+    if (playerTeams.length > 0) {
+      getPlayerLineups();
+    }
+  }, [playerTeams]);
+  useEffect(() => {
     if (playerLineups !== undefined) {
       //sortPlayerTeamScores(wallet);
     }
@@ -153,7 +186,6 @@ export default function CreateLineup(props) {
       //get_all_players_lineup_rposition(gameData.joined_team_counter);
     }
   }, [gameData]);
-  console.log(playerTeamSorted, 'team');
   return (
     <Provider store={store}>
       <Container activeName="PLAY">
