@@ -7,3 +7,8 @@ export const PACK_NFL_POLYGON = {
   storage: '0x0B0f1766f78cf70bAcA70AF09Ac8DDd8Fce77D4F',
   logic: '0xCa49D6474f59479680b8b6EC3db7b5f6f0d17b24',
 };
+
+export const OPENPACK_NFL_POLYGON = {
+  storage: '0xc5f71dd851431b4de6Ecbe4eFCa9a4ac8f3b9E72',
+  logic: '0x3Ba67aBAFDcdEeB185F555aec3dE52889F969Ec0',
+};
