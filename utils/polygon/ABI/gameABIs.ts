@@ -111,6 +111,16 @@ export type GameStorageABI = [
         type: 'uint256';
       },
       {
+        internalType: 'address[]';
+        name: 'whitelist';
+        type: 'address[]';
+      },
+      {
+        internalType: 'uint16';
+        name: 'usageCost';
+        type: 'uint16';
+      },
+      {
         components: [
           {
             internalType: 'string[]';
@@ -350,9 +360,51 @@ export type GameStorageABI = [
     type: 'function';
   },
   {
+    inputs: [
+      {
+        internalType: 'uint256';
+        name: 'gameId';
+        type: 'uint256';
+      },
+      {
+        internalType: 'address[]';
+        name: 'addresses';
+        type: 'address[]';
+      }
+    ];
+    name: 'updateGameWhitelist';
+    outputs: [];
+    stateMutability: 'nonpayable';
+    type: 'function';
+  },
+  {
     inputs: [];
     stateMutability: 'nonpayable';
     type: 'constructor';
+  },
+  {
+    inputs: [
+      {
+        internalType: 'uint256';
+        name: 'gameId';
+        type: 'uint256';
+      },
+      {
+        internalType: 'address';
+        name: 'playerAddr';
+        type: 'address';
+      }
+    ];
+    name: 'checkAddressExistInWhitelist';
+    outputs: [
+      {
+        internalType: 'bool';
+        name: '';
+        type: 'bool';
+      }
+    ];
+    stateMutability: 'view';
+    type: 'function';
   },
   {
     inputs: [
@@ -833,6 +885,16 @@ export type GameLogicABI = [
         type: 'uint256';
       },
       {
+        internalType: 'address[]';
+        name: 'whitelist';
+        type: 'address[]';
+      },
+      {
+        internalType: 'uint16';
+        name: 'usageCost';
+        type: 'uint16';
+      },
+      {
         components: [
           {
             internalType: 'string[]';
@@ -1039,6 +1101,24 @@ export type GameLogicABI = [
       }
     ];
     name: 'updateGameStorageAddr';
+    outputs: [];
+    stateMutability: 'nonpayable';
+    type: 'function';
+  },
+  {
+    inputs: [
+      {
+        internalType: 'uint256';
+        name: 'gameId';
+        type: 'uint256';
+      },
+      {
+        internalType: 'address[]';
+        name: 'addresses';
+        type: 'address[]';
+      }
+    ];
+    name: 'updateGameWhitelistOnStorage';
     outputs: [];
     stateMutability: 'nonpayable';
     type: 'function';

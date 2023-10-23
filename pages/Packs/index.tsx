@@ -8,7 +8,7 @@ import {
   fetchRegularPackTokenMetadata,
   fetchRegularPackTokenSupplyByOwner,
   fetchRegularPackTokensByOwner,
-} from 'utils/polygon/ethers';
+} from 'utils/polygon/helper/packPolygon';
 import PortfolioContainer from '../../components/containers/PortfolioContainer';
 import Container from '../../components/containers/Container';
 import Main from '../../components/Main';

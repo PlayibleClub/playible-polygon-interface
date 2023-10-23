@@ -19,7 +19,7 @@ import {
 import {
   fetchFilteredAthleteTokensForOwner,
   fetchFilteredAthleteSupplyForOwner,
-} from 'utils/polygon/ethers';
+} from 'utils/polygon/helper/athletePolygon';
 import { SPORT_NAME_LOOKUP, getSportType } from 'data/constants/sportConstants';
 import ReactPaginate from 'react-paginate';
 import NftTypeComponent from './components/NftTypeComponent';

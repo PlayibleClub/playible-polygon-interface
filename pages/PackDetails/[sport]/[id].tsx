@@ -4,7 +4,7 @@ import {
   // fetchPromoPackTokenMetadata,
   fetchRegularPackTokenMetadata,
   checkTokenOwner,
-} from 'utils/polygon/ethers';
+} from 'utils/polygon/helper/packPolygon';
 import Container from 'components/containers/Container';
 import 'regenerator-runtime/runtime';
 import BackFunction from 'components/buttons/BackFunction';
