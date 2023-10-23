@@ -16,3 +16,9 @@ export type AthleteExtraMetadata = {
   tokenId: string;
   restrictedUntil: number;
 };
+
+export type PolygonLineup = {
+  playerAddr: string;
+  teamName: string;
+  lineup: number[];
+};
