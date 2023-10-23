@@ -15,6 +15,8 @@ import openPack from 'utils/polygon/ABI/openPackAbi.json';
 import openPackLogic from 'utils/polygon/ABI/openPackLogicAbi.json';
 import Web3 from 'web3';
 import Modal from 'components/modals/Modal';
+import { OPENPACK_NFL_POLYGON } from 'data/constants/polygonContracts';
+
 export default function PackDetails(props) {
   const {
     state: { wallet },
@@ -34,8 +36,7 @@ export default function PackDetails(props) {
     id: id,
     sport: query.sport.toString().toUpperCase(),
   };
-  const openPackContractAddress = '0xc5f71dd851431b4de6Ecbe4eFCa9a4ac8f3b9E72';
-  const openPackLogicContractAddress = '0x3Ba67aBAFDcdEeB185F555aec3dE52889F969Ec0';
+
   const [packDetails, setPackDetails] = useState([]);
   const [hasFetchedData, setHasFetchedData] = useState(false);
   const [isOwner, setIsOwner] = useState(null);
@@ -55,8 +56,8 @@ export default function PackDetails(props) {
 
         const web3 = new Web3(window.ethereum);
 
-        const contractStorage = new web3.eth.Contract(openPack, openPackContractAddress);
-        const contractLogic = new web3.eth.Contract(openPackLogic, openPackLogicContractAddress);
+        const contractStorage = new web3.eth.Contract(openPack, OPENPACK_NFL_POLYGON.storage);
+        const contractLogic = new web3.eth.Contract(openPackLogic, OPENPACK_NFL_POLYGON.logic);
         const accounts = await web3.eth.getAccounts();
 
         // Estimate gas for mintPacks function
@@ -68,7 +69,7 @@ export default function PackDetails(props) {
         const gasPrice = await web3.eth.getGasPrice();
         const tx = {
           from: accounts[0],
-          to: openPackContractAddress,
+          to: OPENPACK_NFL_POLYGON.storage,
           //@ts-ignore
           gas: parseInt(gasEstimate),
           gasPrice: gasPrice,
@@ -117,7 +118,7 @@ export default function PackDetails(props) {
 
             const mintTx = {
               from: accounts[0],
-              to: openPackLogicContractAddress,
+              to: OPENPACK_NFL_POLYGON.logic,
               //@ts-ignore
               gas: parseInt(gasEstimate),
               gasPrice: gasPrice,
@@ -137,6 +138,10 @@ export default function PackDetails(props) {
               .on('receipt', function (receipt) {
                 console.log('Minting Successful');
                 router.push(`/TokenDrawPage/${receipt.transactionHash}`);
+              })
+              .on('error', function (error) {
+                console.log('error', error);
+                alert('Request timed out. Please refresh the page');
               });
           }
         }, 5000); // Check every 5 seconds
