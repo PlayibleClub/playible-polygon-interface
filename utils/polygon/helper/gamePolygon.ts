@@ -5,6 +5,8 @@ import game_logic from '../ABI/gamelogic_abi.json';
 import { GameStorageABI, GameLogicABI } from '../ABI/gameABIs';
 import { GAME_NFL_POLYGON } from 'data/constants/polygonContracts';
 import { AddGameType } from 'utils/game/helper';
+import { fetchAthleteTokenMetadataAndURIById } from './athletePolygon';
+import { SPORT_NAME_LOOKUP } from 'data/constants/sportConstants';
 export async function fetchAllGames() {
   try {
     if (window.ethereum) {
@@ -62,6 +64,28 @@ export async function fetchPlayerTeams(accountId, gameId: number) {
         .getPlayerTeam(accountId, gameId)
         .call({ gas: '30000000', from: accountId });
       console.log(result);
+      return result.teamNames;
+    }
+  } catch (e) {
+    console.log(e);
+  }
+}
+
+export async function fetchPlayerLineup(accountId: string, gameId: number, teamName: string) {
+  try {
+    if (window.ethereum) {
+      await window.ethereum.request({ method: 'eth_requestAccounts' });
+      const abi = game_storage as unknown as GameStorageABI;
+      const contract = new Contract(abi, GAME_NFL_POLYGON.storage);
+      contract.setProvider(window.ethereum);
+      let result = await contract.methods
+        .getPlayerLineup(accountId, gameId, teamName)
+        .call({ gas: '30000000', from: accountId });
+      //console.log(result.lineup);
+      const returnLineup = result.lineup.map((x) => {
+        return Number(x);
+      });
+      return returnLineup;
     }
   } catch (e) {
     console.log(e);
@@ -100,7 +124,7 @@ export async function fetchJoinedAddresses(accountId: string, gameId: number) {
   }
 }
 
-export async function fetchTeamsJoinedInGame(accountId: string, gameId: number) {
+export async function fetchTeamsJoinedInGame(gameId: number) {
   try {
     if (window.ethereum) {
       await window.ethereum.request({ method: 'eth_requestAccounts' });
@@ -108,12 +132,54 @@ export async function fetchTeamsJoinedInGame(accountId: string, gameId: number) 
       const contract = new Contract(abi, GAME_NFL_POLYGON.storage);
       contract.setProvider(window.ethereum);
       const result = await contract.methods.getTeamsJoinedInGame(gameId).call();
-      console.log(result);
+
       return result;
     }
   } catch (e) {
     console.log(e);
   }
+}
+
+export async function computeScores(lineup, currentSport, startTime, endTime) {
+  const arrayToReturn = await Promise.all(
+    lineup.map(async (item) => {
+      let itemToReturn = {
+        accountId: item.playerAddr,
+        teamName: item.teamName,
+        lineup: item.lineup,
+        sumScore: 0,
+      };
+
+      itemToReturn.lineup = await Promise.all(
+        itemToReturn.lineup.map((item) => {
+          return fetchAthleteTokenMetadataAndURIById(item, startTime, endTime);
+        })
+      );
+      itemToReturn.lineup = itemToReturn.lineup.map((item) => {
+        return {
+          ...item,
+          stats_breakdown: item.fantasy_score,
+          // item.stats_breakdown
+          //   .filter((type) =>
+          //     currentSport === SPORT_NAME_LOOKUP.football
+          //       ? type.type === 'season' && type.played === 1
+          //       : ''
+          //   )
+          //   .reduce((accumulator, item) => {
+          //     return accumulator + item.fantasyScore;
+          //   }, 0) || 0,
+        };
+      });
+      itemToReturn.sumScore = itemToReturn.lineup.reduce((accumulator, object) => {
+        return accumulator + object.stats_breakdown;
+      }, 0);
+      return itemToReturn;
+    })
+  );
+  arrayToReturn.sort(function (a, b) {
+    return b.sumScore - a.sumScore;
+  });
+  return arrayToReturn;
 }
 
 export async function executeAddGame(args: AddGameType, accountId: string) {
