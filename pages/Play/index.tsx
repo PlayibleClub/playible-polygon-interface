@@ -457,7 +457,7 @@ const Play = (props) => {
                                     href={`/PlayDetails/${
                                       sportList[0].isActive
                                         ? allNew[currentSportIndex].sport.toLowerCase()
-                                        : currentSport
+                                        : currentSport.toLowerCase()
                                     }/${data.game_id}`}
                                     passHref
                                   >
