@@ -69,7 +69,7 @@ const Games = (props) => {
 
   const viewPopup = (accountId, teamName) => {
     const currentIndex = playerLineups.findIndex(
-      (item) => item.accountId === accountId && item.teamName === teamName
+      (item) => item.accountId.toLowerCase() === accountId && item.teamName === teamName
     );
     setViewModal(false);
     setEntryModal(true);
