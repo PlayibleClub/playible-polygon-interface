@@ -11,7 +11,7 @@ import { useRouter } from 'next/router';
 import { useMutation } from '@apollo/client';
 import { CREATE_GAME } from '../../../utils/mutations';
 import { useWalletSelector } from 'contexts/WalletSelectorContext';
-import { getGameInfoById, AddGameType, PositionsType } from 'utils/game/helper';
+import { getGameInfoById, AddGameType, PositionsType, mapGameInfo } from 'utils/game/helper';
 import AdminGameComponent from './components/AdminGameComponent';
 import moment, { utc } from 'moment';
 import { getUTCDateFromLocal, getUTCTimestampFromLocal } from 'utils/date/helper';
@@ -20,7 +20,7 @@ import ReactS3Client from 'react-aws-s3-typescript';
 import secretKeys from 's3config';
 import { getSport } from 'redux/athlete/athleteSlice';
 import Modal from 'components/modals/Modal';
-import { fetchGameCounter, executeAddGame } from 'utils/polygon/helper/gamePolygon';
+import { fetchGameCounter, executeAddGame, fetchAllGames } from 'utils/polygon/helper/gamePolygon';
 TimeAgo.addDefaultLocale(en);
 
 export default function Index(props) {
@@ -790,7 +790,7 @@ export default function Index(props) {
     setTotalGames(Number(result));
   }
 
-  function get_games_list(totalGames) {
+  async function get_games_list(totalGames) {
     // query_games_list(totalGames, getSportType(currentSport).gameContract).then(async (data) => {
     //   //@ts-ignore:next-line
     //   const result = JSON.parse(Buffer.from(data.result).toString());
@@ -818,6 +818,36 @@ export default function Index(props) {
     //   setCompletedGames(completedGames);
     //   setOngoingGames(ongoingGames);
     // });
+    const result = await fetchAllGames(); //only gets NFL games for now
+    console.log(result);
+    setTotalGames(result.length);
+    console.log(getUTCTimestampFromLocal());
+    console.log(`Compare: ${Number(result[0].startTime) * 1000}`);
+    const upcoming = await Promise.all(
+      result
+        .filter((x) => Number(x.startTime) * 1000 > getUTCTimestampFromLocal())
+        .map((item) => mapGameInfo(item, 'new', currentSport))
+    );
+    const completed = await Promise.all(
+      result
+        .filter((x) => Number(x.endTime) * 1000 < getUTCTimestampFromLocal())
+        .map((item) => mapGameInfo(item, 'completed', currentSport))
+    );
+    const ongoing = await Promise.all(
+      result
+        .filter(
+          (x) =>
+            Number(x.startTime) * 1000 < getUTCTimestampFromLocal() &&
+            Number(x.endTime) * 1000 > getUTCTimestampFromLocal()
+        )
+        .map((item) => mapGameInfo(item, 'on-going', currentSport))
+    );
+    console.log(upcoming);
+    console.log(completed);
+    console.log(ongoing);
+    setNewGames(upcoming);
+    setCompletedGames(completed);
+    setOngoingGames(ongoing);
   }
 
   function getLineupLength(currentSport) {
