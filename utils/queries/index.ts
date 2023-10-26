@@ -483,3 +483,28 @@ export const GET_CRICKET_SCHEDULE = gql`
     }
   }
 `;
+export const MERGE_INTO_LEADERBOARD = gql`
+  mutation Mutation($sport: String!, $polygonGameId: Float!, $nearGameId: Float!) {
+    mergeIntoLeaderboard(sport: $sport, polygonGameId: $polygonGameId, nearGameId: $nearGameId) {
+      id
+      nearGame {
+        id
+        gameId
+      }
+      polygonGame {
+        id
+        gameId
+      }
+      sport
+    }
+  }
+`;
+
+export const GET_GAME = gql`
+  query GetGameById($getGameByIdId: Float!) {
+    getGameById(id: $getGameByIdId) {
+      id
+      gameId
+    }
+  }
+`;

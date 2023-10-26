@@ -3,6 +3,7 @@ import Container from '../../../components/containers/Container';
 import LoadingPageDark from '../../../components/loading/LoadingPageDark';
 import Main from '../../../components/Main';
 import BaseModal from '../../../components/modals/BaseModal';
+import client from 'apollo-client';
 import TimeAgo from 'javascript-time-ago';
 import en from 'javascript-time-ago/locale/en.json';
 import { SPORT_TYPES, getSportType } from 'data/constants/sportConstants';
@@ -15,12 +16,14 @@ import { getGameInfoById, AddGameType, PositionsType, mapGameInfo } from 'utils/
 import AdminGameComponent from './components/AdminGameComponent';
 import moment, { utc } from 'moment';
 import { getUTCDateFromLocal, getUTCTimestampFromLocal } from 'utils/date/helper';
+import { MERGE_INTO_LEADERBOARD, GET_GAME } from 'utils/queries';
 import ReactPaginate from 'react-paginate';
 import ReactS3Client from 'react-aws-s3-typescript';
 import secretKeys from 's3config';
 import { getSport } from 'redux/athlete/athleteSlice';
 import Modal from 'components/modals/Modal';
 import { fetchGameCounter, executeAddGame, fetchAllGames } from 'utils/polygon/helper/gamePolygon';
+import { ens } from 'web3/lib/commonjs/eth.exports';
 TimeAgo.addDefaultLocale(en);
 
 export default function Index(props) {
@@ -59,6 +62,10 @@ export default function Index(props) {
     },
     {
       name: 'CREATE',
+      isActive: false,
+    },
+    {
+      name: 'MERGE',
       isActive: false,
     },
   ]);
@@ -228,6 +235,12 @@ export default function Index(props) {
     name: x.sport,
     isActive: false,
   }));
+  const [mergeGameInfo, setMergeGameInfo] = useState({
+    nearGameId: 1,
+    polygonGameId: 1,
+    sport: 'nfl', //default
+    auth: '',
+  });
   console.log(sportObj);
   sportObj[0].isActive = true;
   const [sportList, setSportList] = useState([...sportObj]);
@@ -925,6 +938,60 @@ export default function Index(props) {
     // );
   }
 
+  const onNearGameIdChange = (e) => {
+    if (e.target.value !== 0) {
+      const nearGameId = e.target.value;
+      setMergeGameInfo({ ...mergeGameInfo, [e.target.name]: e.target.value });
+    }
+  };
+  const onPolygonGameIdChange = (e) => {
+    if (e.target.value !== 0) {
+      const polygonGameId = e.target.value;
+      setMergeGameInfo({ ...mergeGameInfo, [e.target.name]: e.target.value });
+    }
+  };
+
+  const submitMerge = async () => {
+    //add checking for gameIds if they exist
+    // console.log({
+    //   nearGameId: mergeGameInfo.nearGameId,
+    //   polygonGameId: mergeGameInfo.polygonGameId,
+    //   auth: mergeGameInfo.auth,
+    // });
+    console.log(mergeGameInfo.polygonGameId);
+    try {
+      const { data, errors } = await client.mutate({
+        mutation: MERGE_INTO_LEADERBOARD,
+        variables: {
+          sport: 'nfl',
+          polygonGameId: parseFloat(mergeGameInfo.polygonGameId.toString()),
+          nearGameId: parseFloat(mergeGameInfo.nearGameId.toString()),
+        },
+        context: {
+          headers: {
+            Authorization: mergeGameInfo.auth,
+          },
+        },
+      });
+      console.log(errors);
+      console.log(data);
+    } catch (e) {
+      console.error(e);
+    }
+    // const { data } = await client.query({
+    //   query: GET_GAME,
+    //   variables: {
+    //     getGameByIdId: 8,
+    //   },
+    // });
+    // console.log(data);
+  };
+
+  const onAuthChange = (e) => {
+    const auth = e.target.value;
+    setMergeGameInfo({ ...mergeGameInfo, [e.target.name]: e.target.value });
+  };
+
   useEffect(() => {
     getTotalPercent();
   }, [distribution]);
@@ -1119,7 +1186,7 @@ export default function Index(props) {
                     </div>
                   </div>
                 </div>
-              ) : (
+              ) : tabs[1].isActive ? (
                 <>
                   <div>
                     {/* GAME ID */}
@@ -1438,6 +1505,58 @@ export default function Index(props) {
                     >
                       CREATE GAME
                     </button>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="flex mt-8">
+                    <div className="flex flex-col lg:w-1/4">
+                      <label className="font-monument">NEAR GAME ID</label>
+                      <input
+                        className="border outline-none rounded-lg px-3 p-2 w-5/6"
+                        id="nearGameId"
+                        type="number"
+                        min="1"
+                        name="nearGameId"
+                        onChange={(e) => onNearGameIdChange(e)}
+                        value={mergeGameInfo.nearGameId}
+                      ></input>
+                    </div>
+                    <div className="flex flex-col lg:w-1/4 ml-10">
+                      <label className="font-monument">POLYGON GAME ID</label>
+                      <input
+                        className="border outline-none rounded-lg px-3 p-2 w-5/6"
+                        id="polygonGameId"
+                        type="number"
+                        min="1"
+                        name="polygonGameId"
+                        onChange={(e) => onPolygonGameIdChange(e)}
+                        value={mergeGameInfo.polygonGameId}
+                      ></input>
+                    </div>
+                  </div>
+                  <div className="flex mt-8">
+                    <div className="flex flex-col lg:w-1/4">
+                      <label className="font-monument">AUTHORIZATION</label>
+                      <input
+                        className="border outline-none rounded-lg px-3 p-2 w-5/6"
+                        id="auth"
+                        type="text"
+                        name="auth"
+                        onChange={(e) => onAuthChange(e)}
+                        value={mergeGameInfo.auth}
+                      ></input>
+                    </div>
+                    <div className="flex flex-col ml-10 lg:w-1/4">
+                      <button
+                        className="mt-6 bg-indigo-buttonblue h-10 w-48 text-indigo-white"
+                        id="image"
+                        name="image"
+                        onClick={submitMerge}
+                      >
+                        CONFIRM
+                      </button>
+                    </div>
                   </div>
                 </>
               )}
