@@ -8,6 +8,11 @@ export const PACK_NFL_POLYGON = {
   logic: '0xCa49D6474f59479680b8b6EC3db7b5f6f0d17b24',
 };
 
+export const PROMO_PACK_NFL_POLYGON = {
+  storage: '0xcEec8e68D1CBd85c96Fd68dE1d9A21C35CC1166B',
+  logic: '0xEa2E083E6Db397627fE878B725704e90Fa2e4E2f',
+};
+
 export const OPENPACK_NFL_POLYGON = {
   storage: '0xc5f71dd851431b4de6Ecbe4eFCa9a4ac8f3b9E72',
   logic: '0x3Ba67aBAFDcdEeB185F555aec3dE52889F969Ec0',
