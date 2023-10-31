@@ -72,7 +72,7 @@ export async function fetchClaimSoulboundStatus(account) {
 
       await window.ethereum.request({ method: 'eth_requestAccounts' });
       const contract = new Contract(promoPackLogicNFLContractABI, PROMO_PACK_NFL_POLYGON.logic);
-
+      contract.setProvider(window.ethereum);
       // Call the checkClaimStatus function
       const isClaimed = await contract.methods.checkClaimStatus(account).call({ from: account });
 
@@ -118,17 +118,14 @@ export async function claimSoulboundPack(account) {
         .sendTransaction(tx)
         .on('transactionHash', function (hash) {
           console.log('Transaction Hash:', hash);
-          setLoading(true);
         })
         //@ts-ignore
         .on('confirmation', function (confirmationNumber, receipt) {
           console.log('Confirmation Number:', confirmationNumber);
           console.log('Receipt:', receipt);
-          console.log('Regular Pack minted successfully');
-          setMintingComplete(true);
+          console.log('Soulbound Pack minted successfully');
         })
         .on('error', function (error) {
-          setLoading(false);
           console.error('Error:', error);
         });
       //   await window.ethereum.request({ method: 'eth_requestAccounts' });
@@ -139,6 +136,7 @@ export async function claimSoulboundPack(account) {
       //   console.log('Soulbound Pack claimed successfully');
 
       //   return transaction;
+      return true;
     }
   } catch (error) {
     console.error('Error claiming Soulbound Pack:', error);
