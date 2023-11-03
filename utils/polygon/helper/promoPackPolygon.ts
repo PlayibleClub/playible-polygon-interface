@@ -54,13 +54,14 @@ export async function fetchPromoPackTokenMetadata(tokenId) {
 
       await window.ethereum.request({ method: 'eth_requestAccounts' });
       const contract = new Contract(promoPackLogicNFLContractABI, PROMO_PACK_NFL_POLYGON.logic);
+      contract.setProvider(window.ethereum);
       // Call the getTokenMetadataById function
-      const metadata = await contract.methods.getTokenMetadataById(tokenId);
-
+      const metadata = await contract.methods.getTokenMetadataById(tokenId).call();
+      console.log('Promo pack token metadata fetched successfully');
       return metadata;
     }
   } catch (error) {
-    console.error('Error fetching token metadata:', error);
+    console.error('Error fetching promo pack token metadata:', error);
     return null;
   }
 }
@@ -131,5 +132,27 @@ export async function claimSoulboundPack(account) {
     }
   } catch (error) {
     console.error('Error claiming Soulbound Pack:', error);
+  }
+}
+
+export async function checkPromoTokenOwner(account, id) {
+  try {
+    if (window.ethereum) {
+      console.log('Fetch check token owner called');
+      await window.ethereum.request({ method: 'eth_requestAccounts' });
+      const contract = new Contract(promoPackLogicNFLContractABI, PROMO_PACK_NFL_POLYGON.logic);
+      contract.setProvider(window.ethereum);
+
+      // Call the getTokenOwner function
+      const isToken = await contract.methods
+        .getPromoTokenOwner(account, id)
+        .call({ from: account });
+      console.log('Token:', isToken);
+      console.log('Token owner fetched successfully');
+
+      return isToken;
+    }
+  } catch (error) {
+    console.error('Error fetching check token owner:', error);
   }
 }
