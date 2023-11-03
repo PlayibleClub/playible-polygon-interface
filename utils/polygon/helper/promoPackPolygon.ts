@@ -128,15 +128,6 @@ export async function claimSoulboundPack(account) {
         .on('error', function (error) {
           console.error('Error:', error);
         });
-      //   await window.ethereum.request({ method: 'eth_requestAccounts' });
-      //   const contract = new Contract(promoPackLogicNFLContractABI, PROMO_PACK_NFL_POLYGON.logic);
-
-      //   // Call the claimSoulboundPack function
-      //   const transaction = await contract.methods.claimSoulboundPack();
-      //   console.log('Soulbound Pack claimed successfully');
-
-      //   return transaction;
-      return true;
     }
   } catch (error) {
     console.error('Error claiming Soulbound Pack:', error);
