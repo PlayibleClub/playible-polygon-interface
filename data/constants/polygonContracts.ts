@@ -17,3 +17,8 @@ export const OPENPACK_NFL_POLYGON = {
   storage: '0xc5f71dd851431b4de6Ecbe4eFCa9a4ac8f3b9E72',
   logic: '0x3Ba67aBAFDcdEeB185F555aec3dE52889F969Ec0',
 };
+
+export const PROMO_OPENPACK_NFL_POLYGON = {
+  storage: '0x7ED5baaB9FcA2E441522d8f7a5d8C3f73B9Fbb27',
+  logic: '0xb65FD5b9D8474694f2fa7f5952C2E6BFc99437E0 ',
+};
