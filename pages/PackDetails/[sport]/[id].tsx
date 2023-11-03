@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
+import { fetchRegularPackTokenMetadata, checkTokenOwner } from 'utils/polygon/helper/packPolygon';
 import {
-  // fetchPromoPackTokenMetadata,
-  fetchRegularPackTokenMetadata,
-  checkTokenOwner,
-} from 'utils/polygon/helper/packPolygon';
+  fetchPromoPackTokenMetadata,
+  checkPromoTokenOwner,
+} from 'utils/polygon/helper/promoPackPolygon';
 import Container from 'components/containers/Container';
 import 'regenerator-runtime/runtime';
 import BackFunction from 'components/buttons/BackFunction';
@@ -27,14 +27,12 @@ export default function PackDetails(props) {
   const router = useRouter();
   const { query } = props;
   const id = query.id.toString();
-  const packType = id % 100000;
+  const packType = id.length === 6 ? id[0] : '0';
+
+  console.log(packType);
   const myPack = {
     packName:
-      id.length === 6 || packType === 2
-        ? 'SOULBOUND PACK'
-        : packType === 1
-        ? 'PROMO PACK'
-        : 'STARTER PACK',
+      packType === '2' ? 'SOULBOUND PACK' : packType === '1' ? 'PROMO PACK' : 'STARTER PACK',
     id: id,
     sport: query.sport.toString().toUpperCase(),
   };
@@ -266,7 +264,10 @@ export default function PackDetails(props) {
 
   async function fetchData() {
     try {
-      const metadataResponse = await fetchRegularPackTokenMetadata(id);
+      const metadataResponse =
+        packType === '1' || packType === '2'
+          ? await fetchPromoPackTokenMetadata(id)
+          : await fetchRegularPackTokenMetadata(id);
       const metadataObject = JSON.parse(metadataResponse);
 
       const metadataUrl = metadataObject.metadata;
@@ -295,7 +296,10 @@ export default function PackDetails(props) {
 
   async function isTokenOwner() {
     try {
-      const owner = await checkTokenOwner(wallet, id);
+      const owner =
+        packType === '1' || packType === '2'
+          ? await checkPromoTokenOwner(wallet, id)
+          : await checkTokenOwner(wallet, id);
 
       console.log(Number(owner));
       setIsOwner(Number(owner));
