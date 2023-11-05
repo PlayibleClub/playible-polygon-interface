@@ -11,7 +11,7 @@ import BackFunction from 'components/buttons/BackFunction';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useWalletSelector } from 'contexts/WalletSelectorContext';
-import openPack from 'utils/polygon/ABI/openPackAbi.json';
+import openPackStorage from 'utils/polygon/ABI/openPackAbi.json';
 import openPackLogic from 'utils/polygon/ABI/openPackLogicAbi.json';
 import promoOpenPackStorage from 'utils/polygon/ABI/promoOpenPackStorageAbi.json';
 import promoOpenPackLogic from 'utils/polygon/ABI/promoOpenPackLogicAbi.json';
@@ -56,7 +56,10 @@ export default function PackDetails(props) {
 
         const web3 = new Web3(window.ethereum);
 
-        const contractStorage = new web3.eth.Contract(openPack, OPENPACK_NFL_POLYGON.storage);
+        const contractStorage = new web3.eth.Contract(
+          openPackStorage,
+          OPENPACK_NFL_POLYGON.storage
+        );
         const contractLogic = new web3.eth.Contract(openPackLogic, OPENPACK_NFL_POLYGON.logic);
         const accounts = await web3.eth.getAccounts();
 
@@ -168,6 +171,7 @@ export default function PackDetails(props) {
           promoOpenPackLogic,
           PROMO_OPENPACK_NFL_POLYGON.logic
         );
+
         const accounts = await web3.eth.getAccounts();
 
         // Estimate gas for mintPacks function
@@ -179,14 +183,14 @@ export default function PackDetails(props) {
         const gasPrice = await web3.eth.getGasPrice();
         const tx = {
           from: accounts[0],
-          to: OPENPACK_NFL_POLYGON.storage,
+          to: PROMO_OPENPACK_NFL_POLYGON.storage,
           //@ts-ignore
           gas: parseInt(gasEstimate),
           gasPrice: gasPrice,
           data: contractStorage.methods.requestRandomWords().encodeABI(),
         };
 
-        // Call mint regular packs function
+        // Call the mint function
         const receipt = await web3.eth
           .sendTransaction(tx)
           .on('transactionHash', function (hash) {
@@ -194,19 +198,20 @@ export default function PackDetails(props) {
           })
           .on('confirmation', function () {
             console.log('User confirmed the transaction');
-            setConfirmationNumber(+1);
+            setConfirmationNumber((prev) => prev + 1);
           });
 
         console.log('Request Successful');
 
         // Get requestId by user
-        //@ts-ignore
-        const requestId = await contractStorage.methods.getRequestIdByUser(accounts[0]).call();
-        console.log('Random words requested successful, requestId:', requestId);
+        const requestId = await contractStorage.methods
+          //@ts-ignore
+          .getRequestIdByUser(accounts[0])
+          .call();
+        console.log('Random words requested successfully, requestId:', requestId);
 
-        // let loopCount = 0;
         const intervalId = setInterval(async () => {
-          setLoopCount((prevLoopCount) => prevLoopCount + 1);
+          setLoopCount((prev) => prev + 1);
           console.log('Checking request status...', loopCount);
           if (loopCount > 30) {
             alert('Request timed out. Please refresh the page');
@@ -214,26 +219,33 @@ export default function PackDetails(props) {
             return;
           }
           //@ts-ignore
-          let fulfilled = await contractStorage.methods.getRequestStatus(requestId).call();
+
+          let fulfilled = await contractStorage.methods
+            //@ts-ignore
+            .getRequestStatus(requestId)
+            .call();
 
           //@ts-ignore
           if (fulfilled.fulfilled) {
             clearInterval(intervalId);
+
             // Estimate gas for mintPacks function
-            const gasEstimate = await contractLogic.methods
+            const mintGasEstimate = await contractLogic.methods
               //@ts-ignore
-              .mintBatch(requestId, accounts[0], query.id)
+              .mintBatch(requestId, accounts[0], query.id, parseInt(packType) + 1)
               .estimateGas({ from: accounts[0] });
-            console.log('Estimated Gas:', gasEstimate);
 
             const mintTx = {
               from: accounts[0],
-              to: OPENPACK_NFL_POLYGON.logic,
+              to: PROMO_OPENPACK_NFL_POLYGON.logic,
               //@ts-ignore
-              gas: parseInt(gasEstimate),
+              gas: parseInt(mintGasEstimate),
               gasPrice: gasPrice,
               //@ts-ignore
-              data: contractLogic.methods.mintBatch(requestId, accounts[0], query.id).encodeABI(),
+              data: contractLogic.methods
+                //@ts-ignore
+                .mintBatch(requestId, accounts[0], query.id, parseInt(packType) + 1)
+                .encodeABI(),
             };
 
             const mintReceipt = await web3.eth
@@ -243,7 +255,7 @@ export default function PackDetails(props) {
               })
               .on('confirmation', function () {
                 console.log('User confirmed the transaction');
-                setConfirmationNumber(+1);
+                setConfirmationNumber((prev) => prev + 1);
               })
               .on('receipt', function (receipt) {
                 console.log('Minting Successful');
@@ -322,7 +334,7 @@ export default function PackDetails(props) {
       router.push('/Packs');
     }
   }, [isOwner]);
-  console.log(confirmationNumber);
+  console.log(parseInt(packType) + 1);
   return (
     <Container activeName="PACKS">
       <div className="md:ml-6 mt-12">
@@ -358,9 +370,15 @@ export default function PackDetails(props) {
             ) : isOwner ? (
               <button
                 className="bg-indigo-buttonblue text-indigo-white w-5/6 md:w-80 h-10 text-center font-bold text-sm mt-4"
-                onClick={() =>
-                  packDetails[0].properties.type === 0 ? requestAndMint() : requestAndMintPromo()
-                }
+                onClick={() => {
+                  if (packType === '0') {
+                    console.log('Calling requestAndMint');
+                    requestAndMint();
+                  } else {
+                    console.log('Calling requestAndMintPromo');
+                    requestAndMintPromo();
+                  }
+                }}
               >
                 OPEN PACK
               </button>
