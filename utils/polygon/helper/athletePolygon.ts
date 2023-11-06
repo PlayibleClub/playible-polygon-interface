@@ -12,9 +12,9 @@ import {
   PromoAthleteLogicABI,
   PromoAthleteStorageABI,
 } from '../ABI/athleteABIs';
-import { ATHLETE_NFL_POLYGON } from 'data/constants/polygonContracts';
+import { ATHLETE_NFL_POLYGON, PROMO_ATHLETE_NFL_POLYGON } from 'data/constants/polygonContracts';
 
-export async function fetchFilteredAthleteSupplyForOwner(accountId, position, team, name) {
+export async function fetchFilteredAthleteSupplyForOwner(accountId, position, team, name, type) {
   try {
     if (window.ethereum) {
       if (!/\S/.test(name)) {
@@ -26,7 +26,13 @@ export async function fetchFilteredAthleteSupplyForOwner(accountId, position, te
       // console.log(`Name ${name}`);
       // console.log(`Address: ${accountId}`);
       //const provider = new Web3(window.ethereum);
-      const abi = promo_athlete_logic as unknown as PromoAthleteLogicABI;
+      let abi: RegularAthleteLogicABI | PromoAthleteLogicABI;
+      if (type === 'regular') {
+        abi = regular_athlete_logic as unknown as RegularAthleteLogicABI;
+      } else if (type === 'promo') {
+        abi = promo_athlete_logic as unknown as PromoAthleteLogicABI;
+      }
+      //const abi = promo_athlete_logic as unknown as PromoAthleteLogicABI;
       await window.ethereum.request({ method: 'eth_requestAccounts' });
       const contract = new Contract(abi, ATHLETE_NFL_POLYGON.logic);
       contract.setProvider(window.ethereum);
@@ -48,7 +54,8 @@ export async function fetchFilteredAthleteTokensForOwner(
   position,
   team,
   name,
-  supply
+  supply,
+  type
 ) {
   try {
     console.log(`Athlete offset: ${athleteOffset}`);
@@ -66,7 +73,13 @@ export async function fetchFilteredAthleteTokensForOwner(
         athleteLimit = supply % athleteLimit;
       }
 
-      const abi = promo_athlete_logic as unknown as PromoAthleteLogicABI;
+      let abi: RegularAthleteLogicABI | PromoAthleteLogicABI;
+      if (type === 'regular') {
+        abi = regular_athlete_logic as unknown as RegularAthleteLogicABI;
+      } else if (type === 'promo') {
+        abi = promo_athlete_logic as unknown as PromoAthleteLogicABI;
+      }
+
       console.log(position);
       console.log(`Supply check: ${supply}`);
       console.log(`Athlete limit : ${athleteLimit}`);
@@ -99,6 +112,50 @@ export async function fetchFilteredAthleteTokensForOwner(
   } catch (error) {
     console.log(error);
   }
+}
+export async function fetchFilteredMixedTokensForOwner(
+  accountId,
+  isPromoPage,
+  athleteOffset,
+  promoOffset,
+  totalRegularSupply,
+  totalPromoSupply,
+  athleteLimit,
+  position,
+  team,
+  name,
+  currentSport
+) {
+  return await fetchFilteredAthleteTokensForOwner(
+    accountId,
+    isPromoPage ? athleteOffset + promoOffset : athleteOffset,
+    athleteLimit,
+    position,
+    team,
+    name,
+    isPromoPage ? totalPromoSupply : totalRegularSupply,
+    isPromoPage ? 'promo' : 'regular'
+  ).then(async (result) => {
+    if (result.length < athleteLimit && !isPromoPage && totalPromoSupply !== 0) {
+      let sbLimit = athleteLimit - result.length;
+      let arrayToReturn = await fetchFilteredAthleteTokensForOwner(
+        accountId,
+        0,
+        sbLimit,
+        position,
+        team,
+        name,
+        totalPromoSupply,
+        'promo'
+      ).then((result2) => {
+        result2.map((obj) => result.push(obj));
+        return result;
+      });
+      return arrayToReturn;
+    } else {
+      return result;
+    }
+  });
 }
 export async function fetchAthleteTokenMetadataAndURIById(tokenId: number, startTime, endTime) {
   try {

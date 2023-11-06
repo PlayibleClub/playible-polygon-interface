@@ -19,6 +19,7 @@ import {
 import {
   fetchFilteredAthleteTokensForOwner,
   fetchFilteredAthleteSupplyForOwner,
+  fetchFilteredMixedTokensForOwner,
 } from 'utils/polygon/helper/athletePolygon';
 import { SPORT_NAME_LOOKUP, getSportType } from 'data/constants/sportConstants';
 import ReactPaginate from 'react-paginate';
@@ -139,7 +140,7 @@ const Portfolio = () => {
       setAthleteLimit(30);
     }
   }
-  async function getFilterTokensForOwner() {
+  async function getFilterTokensForOwner(type) {
     //fetchFilteredAthleteTokensForOwner();
     setAthletes(
       await fetchFilteredAthleteTokensForOwner(
@@ -149,12 +150,22 @@ const Portfolio = () => {
         position,
         team,
         name,
-        totalRegularSupply
+        totalRegularSupply,
+        type
       )
     );
   }
-  async function getFilteredTokenSupplyForOwner() {
-    setTotalRegularSupply(await fetchFilteredAthleteSupplyForOwner(wallet, position, team, name));
+  async function getFilteredTokenSupplyForOwner(type) {
+    if (type === 'regular') {
+      console.log('Test3');
+      setTotalRegularSupply(
+        await fetchFilteredAthleteSupplyForOwner(wallet, position, team, name, type)
+      );
+    } else if (type === 'promo') {
+      setTotalPromoSupply(
+        await fetchFilteredAthleteSupplyForOwner(wallet, position, team, name, type)
+      );
+    }
   }
   // async function get_filter_soulbound_supply_for_owner() {
   //   setTotalPromoSupply(
@@ -186,22 +197,38 @@ const Portfolio = () => {
     setRemountComponent(Math.random());
   }
 
-  // async function get_mixed_tokens_for_pagination() {
-  //   await query_mixed_tokens_pagination(
-  //     accountId,
-  //     isPromoPage,
-  //     athleteOffset,
-  //     promoOffset,
-  //     totalPromoSupply,
-  //     athleteLimit,
-  //     position,
-  //     team,
-  //     name,
-  //     currentSport
-  //   ).then((result) => {
-  //     setAthletes(result);
-  //   });
-  // }
+  async function get_mixed_tokens_for_pagination() {
+    await query_mixed_tokens_pagination(
+      wallet,
+      isPromoPage,
+      athleteOffset,
+      promoOffset,
+      totalPromoSupply,
+      athleteLimit,
+      position,
+      team,
+      name,
+      currentSport
+    ).then((result) => {
+      setAthletes(result);
+    });
+
+    await fetchFilteredMixedTokensForOwner(
+      wallet,
+      isPromoPage,
+      athleteOffset,
+      promoOffset,
+      totalRegularSupply,
+      totalPromoSupply,
+      athleteLimit,
+      position,
+      team,
+      name,
+      currentSport
+    ).then((result) => {
+      setAthletes(result);
+    });
+  }
 
   // async function get_filter_tokens_for_owner(contract) {
   //   setAthletes(
@@ -240,18 +267,18 @@ const Portfolio = () => {
     setCurrentPage(e.selected);
   };
 
-  // useEffect(() => {
-  //   //if regular and soulbound radio buttons are enabled
-  //   if (selectedRegular !== false && selectedPromo === false) {
-  //     get_filter_tokens_for_owner(getSportType(currentSport).regContract);
-  //   } else if (selectedRegular === false && selectedPromo !== false) {
-  //     get_filter_tokens_for_owner(getSportType(currentSport).promoContract);
-  //   } else if (selectedRegular !== false && selectedPromo !== false) {
-  //     get_mixed_tokens_for_pagination();
-  //   } else {
-  //     setAthletes([]);
-  //   }
-  // }, [totalRegularSupply, totalPromoSupply, athleteOffset, currentPage, team, position]);
+  useEffect(() => {
+    //if regular and soulbound radio buttons are enabled
+    if (selectedRegular !== false && selectedPromo === false) {
+      getFilterTokensForOwner('regular');
+    } else if (selectedRegular === false && selectedPromo !== false) {
+      getFilterTokensForOwner('promo');
+    } else if (selectedRegular !== false && selectedPromo !== false) {
+      get_mixed_tokens_for_pagination();
+    } else {
+      setAthletes([]);
+    }
+  }, [totalRegularSupply, totalPromoSupply, athleteOffset, currentPage, team, position]);
 
   const handleSearchDynamic = (value) => {
     setName(value);
@@ -277,12 +304,12 @@ const Portfolio = () => {
     setRemountComponent(Math.random());
   }, [selectedRegular, selectedPromo, currentSport]);
 
-  useEffect(() => {
-    getFilterTokensForOwner();
-  }, [totalRegularSupply, currentPage, pageCount]); //athleteOffset, currentPage, currentSport
-  useEffect(() => {
-    console.log(athletes);
-  }, [athletes]);
+  // useEffect(() => {
+  //   getFilterTokensForOwner();
+  // }, [totalRegularSupply, currentPage, pageCount]); //athleteOffset, currentPage, currentSport
+  // useEffect(() => {
+  //   console.log(athletes);
+  // }, [athletes]);
 
   useEffect(() => {
     setIsPromoPage(false);
@@ -290,49 +317,51 @@ const Portfolio = () => {
     setPosition(['allPos']);
   }, [currentSport]);
 
-  useEffect(() => {
-    setIsPromoPage(false);
-    //add checking for promo checkbox
-    if (selectedRegular !== false) {
-      getFilteredTokenSupplyForOwner();
-      setTotalPromoSupply(0);
-    }
-    //console.log(totalRegularSupply);
-    //setRegPageCount(Math.ceil(totalRegularSupply / athleteLimit));
-    setPageCount(Math.ceil((totalRegularSupply + totalPromoSupply) / athleteLimit));
-  }, [position, team, totalRegularSupply, selectedRegular, currentSport]);
-
-  // useEffect(() => {
-  //   setRemountAthlete(Math.random() + 1);
-  // }, [athletes]);
   // useEffect(() => {
   //   setIsPromoPage(false);
-  //   if (selectedRegular !== false && selectedPromo === false) {
-  //     get_filter_supply_for_owner();
-  //     setTotalPromoSupply(0);
-  //   } else if (selectedRegular === false && selectedPromo !== false) {
-  //     get_filter_soulbound_supply_for_owner();
-  //     setTotalRegularSupply(0);
-  //   } else if (selectedRegular !== false && selectedPromo !== false) {
-  //     get_filter_supply_for_owner();
-  //     get_filter_soulbound_supply_for_owner();
-  //   } else {
-  //     setTotalRegularSupply(0);
+  //   //add checking for promo checkbox
+  //   if (selectedRegular !== false) {
+  //     getFilteredTokenSupplyForOwner();
   //     setTotalPromoSupply(0);
   //   }
-  //   setRegPageCount(Math.ceil(totalRegularSupply / athleteLimit));
+  //   //console.log(totalRegularSupply);
+  //   //setRegPageCount(Math.ceil(totalRegularSupply / athleteLimit));
   //   setPageCount(Math.ceil((totalRegularSupply + totalPromoSupply) / athleteLimit));
-  //   //setup regular_offset, soulbound_offset
-  // }, [
-  //   position,
-  //   team,
-  //   name,
-  //   totalRegularSupply,
-  //   totalPromoSupply,
-  //   selectedRegular,
-  //   selectedPromo,
-  //   currentSport,
-  // ]);
+  // }, [position, team, totalRegularSupply, selectedRegular, currentSport]);
+
+  useEffect(() => {
+    setRemountAthlete(Math.random() + 1);
+  }, [athletes]);
+  useEffect(() => {
+    setIsPromoPage(false);
+    console.log('test');
+    if (selectedRegular !== false && selectedPromo === false) {
+      console.log('test2');
+      getFilteredTokenSupplyForOwner('regular');
+      setTotalPromoSupply(0);
+    } else if (selectedRegular === false && selectedPromo !== false) {
+      getFilteredTokenSupplyForOwner('promo');
+      setTotalRegularSupply(0);
+    } else if (selectedRegular !== false && selectedPromo !== false) {
+      getFilteredTokenSupplyForOwner('regular');
+      getFilteredTokenSupplyForOwner('promo');
+    } else {
+      setTotalRegularSupply(0);
+      setTotalPromoSupply(0);
+    }
+    setRegPageCount(Math.ceil(totalRegularSupply / athleteLimit));
+    setPageCount(Math.ceil((totalRegularSupply + totalPromoSupply) / athleteLimit));
+    //setup regular_offset, soulbound_offset
+  }, [
+    position,
+    team,
+    name,
+    totalRegularSupply,
+    totalPromoSupply,
+    selectedRegular,
+    selectedPromo,
+    currentSport,
+  ]);
 
   // useEffect(() => {
   //   console.log('total reg sply: ' + totalRegularSupply);
@@ -547,10 +576,9 @@ const Portfolio = () => {
                   breakLabel="..."
                   nextLabel=">"
                   onPageChange={
-                    // selectedRegular !== false && selectedPromo !== false
-                    //   ? mixedPaginationHandling
-                    //   : handlePageClick
-                    handlePageClick
+                    selectedRegular !== false && selectedPromo !== false
+                      ? mixedPaginationHandling
+                      : handlePageClick
                   }
                   pageRangeDisplayed={5}
                   pageCount={pageCount}
