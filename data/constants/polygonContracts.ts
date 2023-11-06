@@ -1,5 +1,5 @@
 export const ATHLETE_NFL_POLYGON = {
-  storage: '0x596a454CE43Dde5a19B5Bd817dcde5b0Cc39E656',
+  storage: '0x8B612cED4AAe060Dec79Bd52240773bfBA294aF3',
   logic: '0xF5bA457F438A4Ef7BC156e9127247598532ae9Df', //currently using promotional addresses in game-frontend branch
 };
 
