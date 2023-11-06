@@ -1,10 +1,5 @@
 export type GameStorageABI = [
   {
-    inputs: [];
-    stateMutability: 'nonpayable';
-    type: 'constructor';
-  },
-  {
     anonymous: false;
     inputs: [
       {
@@ -121,6 +116,11 @@ export type GameStorageABI = [
         type: 'address[]';
       },
       {
+        internalType: 'uint8[]';
+        name: 'tokenTypeWhitelist';
+        type: 'uint8[]';
+      },
+      {
         internalType: 'uint16';
         name: 'usageCost';
         type: 'uint16';
@@ -167,6 +167,187 @@ export type GameStorageABI = [
     outputs: [];
     stateMutability: 'nonpayable';
     type: 'function';
+  },
+  {
+    inputs: [
+      {
+        internalType: 'uint256';
+        name: 'gameId';
+        type: 'uint256';
+      }
+    ];
+    name: 'removeGameWhitelist';
+    outputs: [];
+    stateMutability: 'nonpayable';
+    type: 'function';
+  },
+  {
+    inputs: [];
+    name: 'renounceOwnership';
+    outputs: [];
+    stateMutability: 'nonpayable';
+    type: 'function';
+  },
+  {
+    inputs: [
+      {
+        internalType: 'address';
+        name: 'playerAddr';
+        type: 'address';
+      },
+      {
+        internalType: 'uint256';
+        name: 'gameId';
+        type: 'uint256';
+      },
+      {
+        internalType: 'string';
+        name: 'teamName';
+        type: 'string';
+      },
+      {
+        internalType: 'uint256[]';
+        name: 'lineup';
+        type: 'uint256[]';
+      },
+      {
+        internalType: 'uint256[]';
+        name: 'apiIds';
+        type: 'uint256[]';
+      }
+    ];
+    name: 'submitTeamLineupToGame';
+    outputs: [];
+    stateMutability: 'nonpayable';
+    type: 'function';
+  },
+  {
+    inputs: [
+      {
+        internalType: 'address';
+        name: 'newOwner';
+        type: 'address';
+      }
+    ];
+    name: 'transferOwnership';
+    outputs: [];
+    stateMutability: 'nonpayable';
+    type: 'function';
+  },
+  {
+    inputs: [
+      {
+        internalType: 'address';
+        name: '_athleteAddr';
+        type: 'address';
+      }
+    ];
+    name: 'updateAthleteAddr';
+    outputs: [];
+    stateMutability: 'nonpayable';
+    type: 'function';
+  },
+  {
+    inputs: [
+      {
+        internalType: 'address';
+        name: '_athletePromoAddr';
+        type: 'address';
+      }
+    ];
+    name: 'updateAthletePromoAddr';
+    outputs: [];
+    stateMutability: 'nonpayable';
+    type: 'function';
+  },
+  {
+    inputs: [
+      {
+        internalType: 'uint256';
+        name: 'gameId';
+        type: 'uint256';
+      },
+      {
+        internalType: 'uint256';
+        name: 'gameStartTime';
+        type: 'uint256';
+      },
+      {
+        internalType: 'uint256';
+        name: 'gameEndTime';
+        type: 'uint256';
+      }
+    ];
+    name: 'updateGameDates';
+    outputs: [];
+    stateMutability: 'nonpayable';
+    type: 'function';
+  },
+  {
+    inputs: [
+      {
+        internalType: 'address';
+        name: '_gameLogicAddr';
+        type: 'address';
+      }
+    ];
+    name: 'updateGameLogicAddr';
+    outputs: [];
+    stateMutability: 'nonpayable';
+    type: 'function';
+  },
+  {
+    inputs: [
+      {
+        internalType: 'uint256';
+        name: 'gameId';
+        type: 'uint256';
+      },
+      {
+        components: [
+          {
+            internalType: 'string[]';
+            name: 'positions';
+            type: 'string[]';
+          },
+          {
+            internalType: 'uint8';
+            name: 'amount';
+            type: 'uint8';
+          }
+        ];
+        internalType: 'struct Game.PositionsInfo[]';
+        name: 'positions';
+        type: 'tuple[]';
+      }
+    ];
+    name: 'updateGamePositionInfo';
+    outputs: [];
+    stateMutability: 'nonpayable';
+    type: 'function';
+  },
+  {
+    inputs: [
+      {
+        internalType: 'uint256';
+        name: 'gameId';
+        type: 'uint256';
+      },
+      {
+        internalType: 'address[]';
+        name: 'addresses';
+        type: 'address[]';
+      }
+    ];
+    name: 'updateGameWhitelist';
+    outputs: [];
+    stateMutability: 'nonpayable';
+    type: 'function';
+  },
+  {
+    inputs: [];
+    stateMutability: 'nonpayable';
+    type: 'constructor';
   },
   {
     inputs: [
@@ -270,6 +451,11 @@ export type GameStorageABI = [
             type: 'address[]';
           },
           {
+            internalType: 'uint8[]';
+            name: 'tokenTypeWhitelist';
+            type: 'uint8[]';
+          },
+          {
             internalType: 'uint16';
             name: 'usageCost';
             type: 'uint16';
@@ -366,6 +552,11 @@ export type GameStorageABI = [
             internalType: 'address[]';
             name: 'whitelist';
             type: 'address[]';
+          },
+          {
+            internalType: 'uint8[]';
+            name: 'tokenTypeWhitelist';
+            type: 'uint8[]';
           },
           {
             internalType: 'uint16';
@@ -588,169 +779,6 @@ export type GameStorageABI = [
     type: 'function';
   },
   {
-    inputs: [];
-    name: 'renounceOwnership';
-    outputs: [];
-    stateMutability: 'nonpayable';
-    type: 'function';
-  },
-  {
-    inputs: [
-      {
-        internalType: 'address';
-        name: 'playerAddr';
-        type: 'address';
-      },
-      {
-        internalType: 'uint256';
-        name: 'gameId';
-        type: 'uint256';
-      },
-      {
-        internalType: 'string';
-        name: 'teamName';
-        type: 'string';
-      },
-      {
-        internalType: 'uint256[]';
-        name: 'lineup';
-        type: 'uint256[]';
-      },
-      {
-        internalType: 'uint256[]';
-        name: 'apiIds';
-        type: 'uint256[]';
-      }
-    ];
-    name: 'submitTeamLineupToGame';
-    outputs: [];
-    stateMutability: 'nonpayable';
-    type: 'function';
-  },
-  {
-    inputs: [
-      {
-        internalType: 'address';
-        name: 'newOwner';
-        type: 'address';
-      }
-    ];
-    name: 'transferOwnership';
-    outputs: [];
-    stateMutability: 'nonpayable';
-    type: 'function';
-  },
-  {
-    inputs: [
-      {
-        internalType: 'address';
-        name: '_athleteAddr';
-        type: 'address';
-      }
-    ];
-    name: 'updateAthleteAddr';
-    outputs: [];
-    stateMutability: 'nonpayable';
-    type: 'function';
-  },
-  {
-    inputs: [
-      {
-        internalType: 'address';
-        name: '_athletePromoAddr';
-        type: 'address';
-      }
-    ];
-    name: 'updateAthletePromoAddr';
-    outputs: [];
-    stateMutability: 'nonpayable';
-    type: 'function';
-  },
-  {
-    inputs: [
-      {
-        internalType: 'uint256';
-        name: 'gameId';
-        type: 'uint256';
-      },
-      {
-        internalType: 'uint256';
-        name: 'gameStartTime';
-        type: 'uint256';
-      },
-      {
-        internalType: 'uint256';
-        name: 'gameEndTime';
-        type: 'uint256';
-      }
-    ];
-    name: 'updateGameDates';
-    outputs: [];
-    stateMutability: 'nonpayable';
-    type: 'function';
-  },
-  {
-    inputs: [
-      {
-        internalType: 'address';
-        name: '_gameLogicAddr';
-        type: 'address';
-      }
-    ];
-    name: 'updateGameLogicAddr';
-    outputs: [];
-    stateMutability: 'nonpayable';
-    type: 'function';
-  },
-  {
-    inputs: [
-      {
-        internalType: 'uint256';
-        name: 'gameId';
-        type: 'uint256';
-      },
-      {
-        components: [
-          {
-            internalType: 'string[]';
-            name: 'positions';
-            type: 'string[]';
-          },
-          {
-            internalType: 'uint8';
-            name: 'amount';
-            type: 'uint8';
-          }
-        ];
-        internalType: 'struct Game.PositionsInfo[]';
-        name: 'positions';
-        type: 'tuple[]';
-      }
-    ];
-    name: 'updateGamePositionInfo';
-    outputs: [];
-    stateMutability: 'nonpayable';
-    type: 'function';
-  },
-  {
-    inputs: [
-      {
-        internalType: 'uint256';
-        name: 'gameId';
-        type: 'uint256';
-      },
-      {
-        internalType: 'address[]';
-        name: 'addresses';
-        type: 'address[]';
-      }
-    ];
-    name: 'updateGameWhitelist';
-    outputs: [];
-    stateMutability: 'nonpayable';
-    type: 'function';
-  },
-  {
     inputs: [
       {
         internalType: 'uint256';
@@ -803,11 +831,6 @@ export type GameStorageABI = [
 ];
 
 export type GameLogicABI = [
-  {
-    inputs: [];
-    stateMutability: 'nonpayable';
-    type: 'constructor';
-  },
   {
     anonymous: false;
     inputs: [
@@ -863,6 +886,11 @@ export type GameLogicABI = [
         type: 'address[]';
       },
       {
+        internalType: 'uint8[]';
+        name: 'tokenTypeWhitelist';
+        type: 'uint8[]';
+      },
+      {
         internalType: 'uint16';
         name: 'usageCost';
         type: 'uint16';
@@ -913,30 +941,6 @@ export type GameLogicABI = [
   {
     inputs: [
       {
-        internalType: 'string';
-        name: 'a';
-        type: 'string';
-      },
-      {
-        internalType: 'string';
-        name: 'b';
-        type: 'string';
-      }
-    ];
-    name: 'compareStrings';
-    outputs: [
-      {
-        internalType: 'bool';
-        name: '';
-        type: 'bool';
-      }
-    ];
-    stateMutability: 'pure';
-    type: 'function';
-  },
-  {
-    inputs: [
-      {
         internalType: 'address';
         name: 'accountAddr';
         type: 'address';
@@ -945,130 +949,6 @@ export type GameLogicABI = [
     name: 'deleteAdmin';
     outputs: [];
     stateMutability: 'nonpayable';
-    type: 'function';
-  },
-  {
-    inputs: [
-      {
-        internalType: 'uint256';
-        name: 'gameId';
-        type: 'uint256';
-      }
-    ];
-    name: 'getGameInfo';
-    outputs: [
-      {
-        components: [
-          {
-            internalType: 'uint256';
-            name: 'gameId';
-            type: 'uint256';
-          },
-          {
-            internalType: 'address[]';
-            name: 'whitelist';
-            type: 'address[]';
-          },
-          {
-            internalType: 'uint16';
-            name: 'usageCost';
-            type: 'uint16';
-          },
-          {
-            components: [
-              {
-                internalType: 'string[]';
-                name: 'positions';
-                type: 'string[]';
-              },
-              {
-                internalType: 'uint8';
-                name: 'amount';
-                type: 'uint8';
-              }
-            ];
-            internalType: 'struct IGame.PositionsInfo[]';
-            name: 'positions';
-            type: 'tuple[]';
-          },
-          {
-            internalType: 'uint8';
-            name: 'lineupLen';
-            type: 'uint8';
-          },
-          {
-            internalType: 'uint64';
-            name: 'joinedPlayerCounter';
-            type: 'uint64';
-          },
-          {
-            internalType: 'uint64';
-            name: 'joinedTeamCounter';
-            type: 'uint64';
-          },
-          {
-            internalType: 'string';
-            name: 'gameDescription';
-            type: 'string';
-          },
-          {
-            internalType: 'string';
-            name: 'prizeDescription';
-            type: 'string';
-          },
-          {
-            internalType: 'string';
-            name: 'gameImage';
-            type: 'string';
-          },
-          {
-            internalType: 'uint256';
-            name: 'startTime';
-            type: 'uint256';
-          },
-          {
-            internalType: 'uint256';
-            name: 'endTime';
-            type: 'uint256';
-          },
-          {
-            internalType: 'bool';
-            name: 'valid';
-            type: 'bool';
-          }
-        ];
-        internalType: 'struct IGame.GameInfo';
-        name: '';
-        type: 'tuple';
-      }
-    ];
-    stateMutability: 'view';
-    type: 'function';
-  },
-  {
-    inputs: [];
-    name: 'getTotalGames';
-    outputs: [
-      {
-        internalType: 'uint256';
-        name: '';
-        type: 'uint256';
-      }
-    ];
-    stateMutability: 'view';
-    type: 'function';
-  },
-  {
-    inputs: [];
-    name: 'owner';
-    outputs: [
-      {
-        internalType: 'address';
-        name: '';
-        type: 'address';
-      }
-    ];
-    stateMutability: 'view';
     type: 'function';
   },
   {
@@ -1237,6 +1117,164 @@ export type GameLogicABI = [
     name: 'updateGameWhitelistOnStorage';
     outputs: [];
     stateMutability: 'nonpayable';
+    type: 'function';
+  },
+  {
+    inputs: [];
+    stateMutability: 'nonpayable';
+    type: 'constructor';
+  },
+  {
+    inputs: [
+      {
+        internalType: 'string';
+        name: 'a';
+        type: 'string';
+      },
+      {
+        internalType: 'string';
+        name: 'b';
+        type: 'string';
+      }
+    ];
+    name: 'compareStrings';
+    outputs: [
+      {
+        internalType: 'bool';
+        name: '';
+        type: 'bool';
+      }
+    ];
+    stateMutability: 'pure';
+    type: 'function';
+  },
+  {
+    inputs: [
+      {
+        internalType: 'uint256';
+        name: 'gameId';
+        type: 'uint256';
+      }
+    ];
+    name: 'getGameInfo';
+    outputs: [
+      {
+        components: [
+          {
+            internalType: 'uint256';
+            name: 'gameId';
+            type: 'uint256';
+          },
+          {
+            internalType: 'address[]';
+            name: 'whitelist';
+            type: 'address[]';
+          },
+          {
+            internalType: 'uint8[]';
+            name: 'tokenTypeWhitelist';
+            type: 'uint8[]';
+          },
+          {
+            internalType: 'uint16';
+            name: 'usageCost';
+            type: 'uint16';
+          },
+          {
+            components: [
+              {
+                internalType: 'string[]';
+                name: 'positions';
+                type: 'string[]';
+              },
+              {
+                internalType: 'uint8';
+                name: 'amount';
+                type: 'uint8';
+              }
+            ];
+            internalType: 'struct IGame.PositionsInfo[]';
+            name: 'positions';
+            type: 'tuple[]';
+          },
+          {
+            internalType: 'uint8';
+            name: 'lineupLen';
+            type: 'uint8';
+          },
+          {
+            internalType: 'uint64';
+            name: 'joinedPlayerCounter';
+            type: 'uint64';
+          },
+          {
+            internalType: 'uint64';
+            name: 'joinedTeamCounter';
+            type: 'uint64';
+          },
+          {
+            internalType: 'string';
+            name: 'gameDescription';
+            type: 'string';
+          },
+          {
+            internalType: 'string';
+            name: 'prizeDescription';
+            type: 'string';
+          },
+          {
+            internalType: 'string';
+            name: 'gameImage';
+            type: 'string';
+          },
+          {
+            internalType: 'uint256';
+            name: 'startTime';
+            type: 'uint256';
+          },
+          {
+            internalType: 'uint256';
+            name: 'endTime';
+            type: 'uint256';
+          },
+          {
+            internalType: 'bool';
+            name: 'valid';
+            type: 'bool';
+          }
+        ];
+        internalType: 'struct IGame.GameInfo';
+        name: '';
+        type: 'tuple';
+      }
+    ];
+    stateMutability: 'view';
+    type: 'function';
+  },
+  {
+    inputs: [];
+    name: 'getTotalGames';
+    outputs: [
+      {
+        internalType: 'uint256';
+        name: '';
+        type: 'uint256';
+      }
+    ];
+    stateMutability: 'view';
+    type: 'function';
+  },
+  {
+    inputs: [];
+    name: 'owner';
+    outputs: [
+      {
+        internalType: 'address';
+        name: '';
+        type: 'address';
+      }
+    ];
+    stateMutability: 'view';
     type: 'function';
   }
 ];
