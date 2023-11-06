@@ -355,12 +355,21 @@ export default function Packs() {
   const handleClaimButton = async () => {
     try {
       setLoading(true);
-      const successfulClaim = await claimSoulboundPack(wallet);
-      if (successfulClaim === true) {
+
+      const claimed = await claimSoulboundPack(wallet);
+      if (claimed) {
+        console.log('Soulbound Pack claimed successfully');
+        // Handle the successful claim (e.g., display a success message)
         setClaimingComplete(true);
+      } else {
+        console.error('Error claiming Soulbound Pack');
+        // Handle the case where claiming was not successful
       }
     } catch (error) {
       console.error('Error claiming Soulbound Pack:', error);
+      // Handle the error (e.g., display an error message on the UI)
+    } finally {
+      setLoading(false);
     }
   };
 
