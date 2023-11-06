@@ -2,9 +2,16 @@ import { Contract } from 'web3-eth-contract';
 
 import { convertPolygonNftToAthlete, getAthleteInfoByApiId } from 'utils/athlete/helper';
 import Web3 from 'web3';
-import athlete_logic from '../ABI/athletelogic_abi.json';
-import athlete_storage from '../ABI/athletestorage_abi.json';
-import { AthleteStorageABI, AthleteLogicABI } from '../ABI/athleteABIs';
+import regular_athlete_logic from '../ABI/regular_athlete_logic.json';
+import regular_athlete_storage from '../ABI/regular_athlete_storage.json';
+import promo_athlete_logic from '../ABI/promo_athlete_logic.json';
+import promo_athlete_storage from '../ABI/promo_athlete_storage.json';
+import {
+  RegularAthleteStorageABI,
+  RegularAthleteLogicABI,
+  PromoAthleteLogicABI,
+  PromoAthleteStorageABI,
+} from '../ABI/athleteABIs';
 import { ATHLETE_NFL_POLYGON } from 'data/constants/polygonContracts';
 
 export async function fetchFilteredAthleteSupplyForOwner(accountId, position, team, name) {
@@ -19,7 +26,7 @@ export async function fetchFilteredAthleteSupplyForOwner(accountId, position, te
       // console.log(`Name ${name}`);
       // console.log(`Address: ${accountId}`);
       //const provider = new Web3(window.ethereum);
-      const abi = athlete_logic as unknown as AthleteLogicABI;
+      const abi = promo_athlete_logic as unknown as PromoAthleteLogicABI;
       await window.ethereum.request({ method: 'eth_requestAccounts' });
       const contract = new Contract(abi, ATHLETE_NFL_POLYGON.logic);
       contract.setProvider(window.ethereum);
@@ -59,7 +66,7 @@ export async function fetchFilteredAthleteTokensForOwner(
         athleteLimit = supply % athleteLimit;
       }
 
-      const abi = athlete_logic as unknown as AthleteLogicABI;
+      const abi = promo_athlete_logic as unknown as PromoAthleteLogicABI;
       console.log(position);
       console.log(`Supply check: ${supply}`);
       console.log(`Athlete limit : ${athleteLimit}`);
@@ -96,7 +103,7 @@ export async function fetchAthleteTokenMetadataAndURIById(tokenId: number, start
   try {
     if (window.ethereum) {
       await window.ethereum.request({ method: 'eth_requestAccounts' });
-      const abi = athlete_logic as unknown as AthleteLogicABI;
+      const abi = promo_athlete_logic as unknown as PromoAthleteLogicABI;
       const contract = new Contract(abi, ATHLETE_NFL_POLYGON.logic);
       contract.setProvider(window.ethereum);
       const result = await contract.methods.getExtraMetadataAndUri(tokenId).call();
