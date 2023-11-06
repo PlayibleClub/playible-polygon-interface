@@ -354,6 +354,7 @@ export default function Packs() {
 
   const handleClaimButton = async () => {
     try {
+      setClaimingComplete(false);
       setLoading(true);
 
       const claimed = await claimSoulboundPack(wallet);
