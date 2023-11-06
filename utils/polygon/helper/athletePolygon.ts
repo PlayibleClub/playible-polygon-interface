@@ -85,9 +85,10 @@ export async function fetchFilteredAthleteTokensForOwner(
         )
         .call({ gas: '30000000' })
         .then((result) => {
+          console.log(result);
           return Promise.all(
             result
-              .filter((item) => Number(item[0] !== 0 && item[2].length > 0))
+              .filter((item) => Number(item[0] !== 0 && item[3].length > 0))
               .map(convertPolygonNftToAthlete)
               .map((item) => getAthleteInfoByApiId(item, undefined, undefined)) //for portfolio, assetdetails, and athleteselect
           );

@@ -14,6 +14,7 @@ export type AthleteIPFSMetadata = {
 
 export type AthleteExtraMetadata = {
   tokenId: string;
+  tokenType: number;
   restrictedUntil: number;
 };
 
