@@ -1,6 +1,6 @@
 export const ATHLETE_NFL_POLYGON = {
-  storage: '0x9f40Ba4A4A104fC20bB48B4470a5fd2D2Ab80e7b',
-  logic: '0x28E2B504D1FDa6b5F41E947e5086eC2F5e27fd21', //currently using promotional addresses in game-frontend branch
+  storage: '0x2C54E2C32dF94df4Ef873A1DAf040E53B7937189',
+  logic: '0x00d2Ca086C8f7884D6727aCB311149666F89F0A0', //currently using promotional addresses in game-frontend branch
 };
 
 export const PACK_NFL_POLYGON = {
