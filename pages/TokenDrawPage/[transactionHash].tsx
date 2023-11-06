@@ -156,6 +156,60 @@ const TokenDrawPage = (props) => {
       setAthletes(athleteInfos);
 
       setLoading(false);
+    } else {
+      console.log(logs[0]);
+      let success = receipt.status;
+      if (success === BigInt('1')) {
+        const footballFile = fileList.find((file) => file.name === SPORT_NAME_LOOKUP.football);
+        setVideoFile(footballFile.base);
+        setRemountComponent(Math.random());
+      }
+
+      const athleteDataArray = logs.slice(0, 8).map((log) => {
+        // Extract the data field
+        let data = log.data;
+
+        // Check if data is a string
+        if (typeof data === 'string') {
+          // Remove the '0x' from the start
+          let cleanHexString = data.slice(2);
+          let topicHex = log.topics[1].toString().slice(2);
+          // Convert the hex string to ASCII
+          let asciiString = '';
+          for (let j = 0; j < cleanHexString.length; j += 2) {
+            asciiString += String.fromCharCode(parseInt(cleanHexString.substr(j, 2), 16));
+          }
+
+          // Remove non-ASCII characters
+          asciiString = asciiString.replace(/[^\x20-\x7E]/g, '');
+          // Trim leading and trailing whitespaces
+          asciiString = asciiString.trim();
+          try {
+            return JSON.parse(
+              JSON.stringify({
+                tokenId: parseInt(topicHex, 16),
+                metadata: JSON.parse(asciiString),
+              })
+            ); //JSON.parse(asciiString);
+          } catch (error) {
+            console.error('Error parsing JSON:', error);
+            return null;
+          }
+        }
+      });
+
+      console.log(athleteDataArray);
+      // const athleteInfoPromises = athletes.map((item) => getAthleteInfoByApiId(item, null, null));
+      // const athleteInfo = await Promise.all(athleteInfoPromises);
+      const athleteInfos = await Promise.all(
+        athleteDataArray.map((item) => getAthleteInfoByApiIdTokenDraw(item))
+      );
+
+      console.log('Athletes infos');
+      console.log(athleteInfos);
+      setAthletes(athleteInfos);
+
+      setLoading(false);
     }
   }, [length]);
 

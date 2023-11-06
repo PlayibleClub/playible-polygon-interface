@@ -65,6 +65,7 @@ async function getAthleteInfoByApiIdTokenDraw(item) {
       to: null,
     },
   });
+  const firstDigit = parseInt(item.tokenId, 10).toString()[0];
   const returningData = {
     primary_id: item.metadata.properties.symbol,
     athlete_id: item.tokenId,
@@ -77,7 +78,12 @@ async function getAthleteInfoByApiIdTokenDraw(item) {
     isPromo: false,
     isOpen: false,
     animation: data.getAthleteByApiId.nftAnimation,
-    image: item.metadata.image,
+    image:
+      firstDigit === '2'
+        ? data.getAthleteByApiId.nftImagePromo
+        : firstDigit === '3'
+        ? data.getAthleteByApiId.nftImageLocked
+        : item.metadata.image,
   };
   console.log(returningData);
   return returningData;

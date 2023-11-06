@@ -71,6 +71,8 @@ export const GET_ATHLETE_BY_API_ID = gql`
     getAthleteByApiId(id: $getAthleteByApiId, to: $to, from: $from) {
       nftAnimation
       nftImage
+      nftImageLocked
+      nftImagePromo
       isInjured
       isActive
       playerHeadshot
