@@ -41,7 +41,6 @@ export default function PackDetails(props) {
   const [hasFetchedData, setHasFetchedData] = useState(false);
   const [isOwner, setIsOwner] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [loopCount, setLoopCount] = useState(0);
   const [confirmationNumber, setConfirmationNumber] = useState(0);
 
   function setLoading(loading) {
@@ -97,11 +96,11 @@ export default function PackDetails(props) {
         const requestId = await contractStorage.methods.getRequestIdByUser(accounts[0]).call();
         console.log('Random words requested successful, requestId:', requestId);
 
-        // let loopCount = 0;
+        let count = 0;
         const intervalId = setInterval(async () => {
-          setLoopCount((prevLoopCount) => prevLoopCount + 1);
-          console.log('Checking request status...', loopCount);
-          if (loopCount > 30) {
+          count++;
+          console.log('Checking request status...', count);
+          if (count >= 30) {
             alert('Request timed out. Please refresh the page');
             clearInterval(intervalId);
             return;
@@ -210,10 +209,11 @@ export default function PackDetails(props) {
           .call();
         console.log('Random words requested successfully, requestId:', requestId);
 
+        let count = 0;
         const intervalId = setInterval(async () => {
-          setLoopCount((prev) => prev + 1);
-          console.log('Checking request status...', loopCount);
-          if (loopCount > 30) {
+          count++;
+          console.log('Checking request status...', count);
+          if (count >= 30) {
             alert('Request timed out. Please refresh the page');
             clearInterval(intervalId);
             return;
