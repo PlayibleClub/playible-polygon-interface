@@ -27,14 +27,17 @@ export async function fetchFilteredAthleteSupplyForOwner(accountId, position, te
       // console.log(`Address: ${accountId}`);
       //const provider = new Web3(window.ethereum);
       let abi: RegularAthleteLogicABI | PromoAthleteLogicABI;
+      let address = '';
       if (type === 'regular') {
         abi = regular_athlete_logic as unknown as RegularAthleteLogicABI;
+        address = ATHLETE_NFL_POLYGON.logic;
       } else if (type === 'promo') {
         abi = promo_athlete_logic as unknown as PromoAthleteLogicABI;
+        address = PROMO_ATHLETE_NFL_POLYGON.logic;
       }
       //const abi = promo_athlete_logic as unknown as PromoAthleteLogicABI;
       await window.ethereum.request({ method: 'eth_requestAccounts' });
-      const contract = new Contract(abi, ATHLETE_NFL_POLYGON.logic);
+      const contract = new Contract(abi, address);
       contract.setProvider(window.ethereum);
       const result = await contract.methods
         .getFilteredTokenSupplyForOwner(accountId, position, team, name)
@@ -72,12 +75,16 @@ export async function fetchFilteredAthleteTokensForOwner(
       } else if (supply - athleteOffset < athleteLimit) {
         athleteLimit = supply % athleteLimit;
       }
-
       let abi: RegularAthleteLogicABI | PromoAthleteLogicABI;
+      let address = '';
+      console.log(type);
       if (type === 'regular') {
         abi = regular_athlete_logic as unknown as RegularAthleteLogicABI;
+        address = ATHLETE_NFL_POLYGON.logic;
       } else if (type === 'promo') {
+        console.log('promo query 23');
         abi = promo_athlete_logic as unknown as PromoAthleteLogicABI;
+        address = PROMO_ATHLETE_NFL_POLYGON.logic;
       }
 
       console.log(position);
@@ -85,7 +92,7 @@ export async function fetchFilteredAthleteTokensForOwner(
       console.log(`Athlete limit : ${athleteLimit}`);
       console.log(`Name: ${name}`);
       await window.ethereum.request({ method: 'eth_requestAccounts' });
-      const contract = new Contract(abi, ATHLETE_NFL_POLYGON.logic);
+      const contract = new Contract(abi, address);
       contract.setProvider(window.ethereum);
       result = await contract.methods
         .getFilteredTokensForOwnerPagination(

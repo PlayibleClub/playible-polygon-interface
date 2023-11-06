@@ -150,7 +150,7 @@ const Portfolio = () => {
         position,
         team,
         name,
-        totalRegularSupply,
+        type === 'regular' ? totalRegularSupply : totalPromoSupply,
         type
       )
     );
@@ -198,21 +198,6 @@ const Portfolio = () => {
   }
 
   async function get_mixed_tokens_for_pagination() {
-    await query_mixed_tokens_pagination(
-      wallet,
-      isPromoPage,
-      athleteOffset,
-      promoOffset,
-      totalPromoSupply,
-      athleteLimit,
-      position,
-      team,
-      name,
-      currentSport
-    ).then((result) => {
-      setAthletes(result);
-    });
-
     await fetchFilteredMixedTokensForOwner(
       wallet,
       isPromoPage,
@@ -272,6 +257,7 @@ const Portfolio = () => {
     if (selectedRegular !== false && selectedPromo === false) {
       getFilterTokensForOwner('regular');
     } else if (selectedRegular === false && selectedPromo !== false) {
+      console.log('promo query');
       getFilterTokensForOwner('promo');
     } else if (selectedRegular !== false && selectedPromo !== false) {
       get_mixed_tokens_for_pagination();
