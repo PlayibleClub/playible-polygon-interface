@@ -33,6 +33,7 @@ import { query_nft_tokens_for_owner } from 'utils/near/helper';
 import { query_nft_tokens_by_id } from 'utils/near/helper';
 import Web3 from 'web3';
 import { GET_ATHLETE_BY_ID } from 'utils/queries';
+import { ATHLETE_NFL_POLYGON } from 'data/constants/polygonContracts';
 interface responseExperimentalTxStatus {
   receipts: Array<receipt>;
 }
@@ -53,7 +54,7 @@ const TokenDrawPage = (props) => {
   const { query, result } = props;
 
   const dispatch = useDispatch();
-  const footballContract = '0xd5ac1637dac23cd4b25542cee92664b7646f7e53';
+  const footballContract = ATHLETE_NFL_POLYGON.logic;
   const [videoPlaying, setVideoPlaying] = useState(true);
   const [sport, setSport] = useState('');
   const [loading, setLoading] = useState(true);
