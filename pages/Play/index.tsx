@@ -201,7 +201,6 @@ const Play = (props) => {
     console.log(result);
     setTotalGames(result.length);
     console.log(getUTCTimestampFromLocal());
-    console.log(`Compare: ${Number(result[0].startTime) * 1000}`);
     const upcoming = await Promise.all(
       result
         .filter((x) => Number(x.startTime) * 1000 > getUTCTimestampFromLocal())
