@@ -42,6 +42,10 @@ import {
   fetchAccountBalance,
   fetchMintedTokenAmount,
 } from 'utils/polygon/helper/packPolygon';
+import {
+  claimSoulboundPack,
+  fetchClaimSoulboundStatus,
+} from 'utils/polygon/helper/promoPackPolygon';
 import { PACK_NFL_POLYGON } from 'data/constants/polygonContracts';
 const NANO_TO_SECONDS_DENOMINATOR = 1000000;
 const DECIMALS_USDC = 1000000;
@@ -121,6 +125,7 @@ export default function Home(props) {
   const [modalImage, setModalImage] = useState(nflSbImage);
 
   const [mintingComplete, setMintingComplete] = useState(false);
+  const [claimingComplete, setClaimingComplete] = useState(false);
   const [approvedComplete, setApprovedComplete] = useState(false);
   const packStorageNFLContractABI = pack_nft_storage as unknown as packStorageABI;
   const packLogicNFLContractABI = pack_nft_logic as unknown as packLogicABI;
@@ -403,26 +408,33 @@ export default function Home(props) {
     }
   }
 
-  // async function fetchClaimStatus(accountId) {
-  //   const isClaimed = await fetchClaimSoulboundStatus(accountId);
-  //   setIsClaimedFootball(isClaimed);
-  // }
+  async function fetchClaimStatus(accountId) {
+    const isClaimed = await fetchClaimSoulboundStatus(accountId);
+    setIsClaimedFootball(isClaimed);
+  }
 
-  // const handleClaimButton = async () => {
-  //   try {
-  //     await claimSoulboundPack()
-  //       .then((txHash) => {
-  //         console.log('Transaction Hash:', txHash);
-  //         // Handle the transaction hash as needed (e.g., display it on the UI)
-  //       })
-  //       .catch((error) => {
-  //         console.error('Error:', error);
-  //         // Handle the error (e.g., display an error message on the UI)
-  //       });
-  //   } catch (error) {
-  //     console.error('Error claiming Soulbound Pack:', error);
-  //   }
-  // };
+  const handleClaimButton = async () => {
+    try {
+      console.log(currentSport);
+      reduxDispatch(setSportTypeRedux(currentSport));
+      setClaimingComplete(false);
+      setLoading(true);
+
+      const claimed = await claimSoulboundPack(wallet);
+      if (claimed) {
+        console.log('Soulbound Pack claimed successfully');
+        // Handle the successful claim (e.g., display a success message)
+        setClaimingComplete(true);
+      } else {
+        console.error('Error claiming Soulbound Pack');
+        setLoading(false);
+        // Handle the case where claiming was not successful
+      }
+    } catch (error) {
+      console.error('Error claiming Soulbound Pack:', error);
+      // Handle the error (e.g., display an error message on the UI)
+    }
+  };
 
   async function fetchPackPrice() {
     try {
@@ -452,6 +464,11 @@ export default function Home(props) {
   }
 
   useEffect(() => {
+    fetchClaimStatus(wallet);
+    console.log('SFR:', sportFromRedux);
+  }, [currentSport, categoryList, isSignedIn]);
+
+  useEffect(() => {
     if (mintingComplete) {
       sportFromRedux === SPORT_NAME_LOOKUP.basketball
         ? setModalImage(nbaRegImage)
@@ -465,7 +482,22 @@ export default function Home(props) {
       setLoading(false);
       setEditModal(true);
     }
-  }, [mintingComplete, sportFromRedux, loading]);
+    if (claimingComplete) {
+      {
+        //add checking here, use sportFromRedux variable
+        sportFromRedux === SPORT_NAME_LOOKUP.basketball
+          ? setModalImage(nbaSbImage)
+          : sportFromRedux === SPORT_NAME_LOOKUP.football
+          ? setModalImage(nflSbImage)
+          : sportFromRedux === SPORT_NAME_LOOKUP.baseball
+          ? setModalImage(mlbSbImage)
+          : setModalImage(cricketSbImage);
+      }
+      console.log(claimingComplete);
+      setLoading(false);
+      setEditModal(true);
+    }
+  }, [mintingComplete, loading, claimingComplete]);
 
   useEffect(() => {
     fetchPackPrice();
@@ -551,7 +583,7 @@ export default function Home(props) {
               <div className="ml-8">
                 <ModalPortfolioContainer title="MINT PACKS" textcolor="text-indigo-black" />
               </div>
-              {/* {accountId ? (
+              {isSignedIn ? (
                 <div className="ml-12 mt-4 md:flex md:flex-row md:ml-8">
                   {isClaimedFootball ? (
                     ''
@@ -566,18 +598,14 @@ export default function Home(props) {
                 </div>
               ) : (
                 <div className="ml-12 mt-4 md:flex md:flex-row md:ml-8">
-                  {isClaimedFootball ? (
-                    ''
-                  ) : (
-                    <button
-                      className="w-60 flex text-center justify-center items-center iphone5:w-64 bg-indigo-buttonblue font-montserrat text-indigo-white p-3 mb-4 md:mr-4 text-xs "
-                      // onClick={logIn}
-                    >
-                      CLAIM FOOTBALL PACK
-                    </button>
-                  )}
+                  <button
+                    className="w-60 flex text-center justify-center items-center iphone5:w-64 bg-indigo-buttonblue font-montserrat text-indigo-white p-3 mb-4 md:mr-4 text-xs "
+                    // onClick={logIn}
+                  >
+                    CONNECT WALLET TO CLAIM FOOTBALL PACK
+                  </button>
                 </div>
-              )} */}
+              )}
 
               <div className="md:mr- md:mt-0 ml-6 mt-4">
                 <form>
