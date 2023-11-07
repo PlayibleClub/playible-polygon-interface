@@ -164,12 +164,26 @@ export async function fetchFilteredMixedTokensForOwner(
     }
   });
 }
-export async function fetchAthleteTokenMetadataAndURIById(tokenId: number, startTime, endTime) {
+export async function fetchAthleteTokenMetadataAndURIById(
+  tokenId: number,
+  startTime,
+  endTime,
+  type
+) {
   try {
     if (window.ethereum) {
       await window.ethereum.request({ method: 'eth_requestAccounts' });
-      const abi = promo_athlete_logic as unknown as PromoAthleteLogicABI;
-      const contract = new Contract(abi, ATHLETE_NFL_POLYGON.logic);
+      let abi: RegularAthleteLogicABI | PromoAthleteLogicABI;
+      let address = '';
+      if (type === 'regular') {
+        abi = regular_athlete_logic as unknown as RegularAthleteLogicABI;
+        address = ATHLETE_NFL_POLYGON.logic;
+      } else if (type === 'promo') {
+        console.log('promo query 23');
+        abi = promo_athlete_logic as unknown as PromoAthleteLogicABI;
+        address = PROMO_ATHLETE_NFL_POLYGON.logic;
+      }
+      const contract = new Contract(abi, address);
       contract.setProvider(window.ethereum);
       const result = await contract.methods.getExtraMetadataAndUri(tokenId).call();
 

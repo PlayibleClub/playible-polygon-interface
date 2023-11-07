@@ -142,13 +142,7 @@ export default function CreateLineup(props) {
       );
     }
   }
-  const handleButtonClick = (teamName, accountId, gameId) => {
-    dispatch(setTeamName(teamName));
-    dispatch(setAccountId(accountId));
-    dispatch(setGameId(gameId));
-    dispatch(setSport2(currentSport));
-    router.push('/EntrySummary');
-  };
+
   const viewPopup = (accountId, teamName) => {
     const currentIndex = playerLineups.findIndex(
       (item) => item.accountId === accountId && item.teamName === teamName
@@ -169,13 +163,14 @@ export default function CreateLineup(props) {
     get_game_data(gameId);
   }, []);
   useEffect(() => {
+    console.log(playerTeams);
     if (playerTeams.length > 0) {
       getPlayerLineups();
     }
   }, [playerTeams]);
   useEffect(() => {
     if (playerLineups !== undefined) {
-      //sortPlayerTeamScores(wallet);
+      sortPlayerTeamScores(wallet);
     }
   }, [playerLineups]);
   useEffect(() => {
@@ -230,28 +225,25 @@ export default function CreateLineup(props) {
             <div className="mt-7 ml-6 w-3/5 md:w-1/3 md:ml-12 md:mt-2">
               <ModalPortfolioContainer title="VIEW TEAMS" textcolor="text-indigo-black mb-5" />
 
-              {
-                /* @ts-expect-error */
-                playerTeams.team_names === undefined || playerTeams.team_names.length === 0 ? (
-                  <p>No teams assigned</p>
-                ) : (
-                  <div>
-                    {playerTeamSorted.map((data, index) => {
-                      return (
-                        <ViewTeamsContainer
-                          teamNames={data.teamName}
-                          gameId={gameId}
-                          accountId={wallet}
-                          fromGames={false}
-                          onClickFn={() => {
-                            viewPopup(wallet, data.teamName);
-                          }}
-                        />
-                      );
-                    })}
-                  </div>
-                )
-              }
+              {playerTeams.length === 0 ? (
+                <p>No teams assigned</p>
+              ) : (
+                <div>
+                  {playerTeamSorted.map((data, index) => {
+                    return (
+                      <ViewTeamsContainer
+                        teamNames={data.teamName}
+                        gameId={gameId}
+                        accountId={wallet}
+                        fromGames={false}
+                        onClickFn={() => {
+                          viewPopup(wallet, data.teamName);
+                        }}
+                      />
+                    );
+                  })}
+                </div>
+              )}
             </div>
             <EntrySummaryModal title={'ENTRY SUMMARY'} visible={entryModal}>
               <div className=" transform iphone5:scale-55 md:scale-85 md:-mt-6 iphoneX:fixed iphoneX:-mt-6 iphone5:-ml-12 md:static">

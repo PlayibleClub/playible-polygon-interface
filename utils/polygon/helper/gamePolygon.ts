@@ -100,7 +100,7 @@ export async function fetchJoinedPlayerCount(accountId, gameId: number) {
       const contract = new Contract(abi, GAME_NFL_POLYGON.storage);
       contract.setProvider(window.ethereum);
       const result = await contract.methods.viewPlayerJoinedCounter(gameId).call();
-      console.log(result);
+      //console.log(result);
       return Number(result);
     }
   } catch (e) {
@@ -116,7 +116,7 @@ export async function fetchJoinedAddresses(accountId: string, gameId: number) {
       const contract = new Contract(abi, GAME_NFL_POLYGON.storage);
       contract.setProvider(window.ethereum);
       const result = await contract.methods.getAddressesJoinedInGame(gameId).call();
-      console.log(result);
+      // console.log(result);
       return result;
     }
   } catch (e) {
@@ -152,10 +152,12 @@ export async function computeScores(lineup, currentSport, startTime, endTime) {
 
       itemToReturn.lineup = await Promise.all(
         itemToReturn.lineup.map((item) => {
-          return fetchAthleteTokenMetadataAndURIById(item, startTime, endTime);
+          let type = item.toString()[0] === '1' ? 'regular' : 'promo';
+          return fetchAthleteTokenMetadataAndURIById(item, startTime, endTime, type);
         })
       );
       itemToReturn.lineup = itemToReturn.lineup.map((item) => {
+        //console.log(item);
         return {
           ...item,
           stats_breakdown: item.fantasy_score,
