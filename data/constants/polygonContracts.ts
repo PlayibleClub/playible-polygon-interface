@@ -1,11 +1,11 @@
 export const ATHLETE_NFL_POLYGON = {
-  storage: '0x9f40Ba4A4A104fC20bB48B4470a5fd2D2Ab80e7b',
-  logic: '0xEb76e484Ddba292598b7287A2c54c1F28D558672', //currently using promotional addresses in game-frontend branch
+  storage: '0x087cc23E5aAC9c1C6DE94bf0CC2310c7b0E9399F',
+  logic: '0x6F2501fEC1E0470a58AF79B30c5Ca74d2a8DEc88', //currently using promotional addresses in game-frontend branch
 };
 
 export const PROMO_ATHLETE_NFL_POLYGON = {
-  storage: 'x7395413e505324319C84e03A3A0BB7E7Ae3DA1EB',
-  logic: '0x962f0C199A5C77ADCAAc6D695554Bd4F5C7cF787',
+  storage: '0x882Ae675D1501e7F5F4d005f33A3f3ac99F5D808',
+  logic: '0x1Bb33843Ab6E4f71cE1d432adC9262e9A9d91044',
 };
 
 export const PACK_NFL_POLYGON = {
@@ -14,6 +14,6 @@ export const PACK_NFL_POLYGON = {
 };
 
 export const GAME_NFL_POLYGON = {
-  storage: '0x0C875127d783eEA3f6a80DeAD19Bd5E6E42089A7',
-  logic: '0xf4A5E93Bc1A4Baa06b0F61F18da3a5B7017bb55F',
+  storage: '0x98109F4F5BFfAC8F4048F340A5dF041c760A5f5b',
+  logic: '0xa9c20d0D28A31Af12719EF794097Efb6F3a0FdB0',
 };
