@@ -1,7 +1,7 @@
 import { Contract } from 'web3-eth-contract';
 import Web3 from 'web3';
-import game_storage from '../ABI/gamestorage_abi.json';
-import game_logic from '../ABI/gamelogic_abi.json';
+import game_storage from '../ABI/game_storage.json';
+import game_logic from '../ABI/game_logic.json';
 import { GameStorageABI, GameLogicABI } from '../ABI/gameABIs';
 import { GAME_NFL_POLYGON } from 'data/constants/polygonContracts';
 import { AddGameType } from 'utils/game/helper';
@@ -196,6 +196,7 @@ export async function executeAddGame(args: AddGameType, accountId: string) {
           args.gameStartTime,
           args.gameEndTime,
           args.whitelist,
+          args.tokenTypeWhitelist,
           args.usageCost,
           args.positions,
           args.lineupLen,
@@ -217,6 +218,7 @@ export async function executeAddGame(args: AddGameType, accountId: string) {
             args.gameStartTime,
             args.gameEndTime,
             args.whitelist,
+            args.tokenTypeWhitelist,
             args.usageCost,
             args.positions,
             args.lineupLen,

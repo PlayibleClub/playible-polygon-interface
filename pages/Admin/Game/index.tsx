@@ -835,7 +835,6 @@ export default function Index(props) {
     console.log(result);
     setTotalGames(result.length);
     console.log(getUTCTimestampFromLocal());
-    console.log(`Compare: ${Number(result[0].startTime) * 1000}`);
     const upcoming = await Promise.all(
       result
         .filter((x) => Number(x.startTime) * 1000 > getUTCTimestampFromLocal())
@@ -886,6 +885,7 @@ export default function Index(props) {
       gameStartTime: dateStart,
       gameEndTime: dateEnd,
       whitelist: whitelistInfo !== null ? whitelistInfo : [],
+      tokenTypeWhitelist: [1, 2, 3], //hardcoded token type whitelist
       usageCost: 0,
       positions: positionsInfo,
       lineupLen: getLineupLength(currentSport),

@@ -131,6 +131,7 @@ export type AddGameType = {
   gameStartTime: number;
   gameEndTime: number;
   whitelist: string[];
+  tokenTypeWhitelist: number[];
   usageCost: number;
   positions: PositionsType[];
   lineupLen: number;
