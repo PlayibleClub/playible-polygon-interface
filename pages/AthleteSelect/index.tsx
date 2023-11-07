@@ -26,6 +26,7 @@ import {
 import {
   fetchFilteredAthleteSupplyForOwner,
   fetchFilteredAthleteTokensForOwner,
+  fetchFilteredMixedTokensForOwner,
 } from 'utils/polygon/helper/athletePolygon';
 import { getGameStartDate, getGameEndDate } from 'redux/athlete/athleteSlice';
 import { getSportType, SPORT_NAME_LOOKUP } from 'data/constants/sportConstants';
@@ -71,31 +72,6 @@ const AthleteSelect = (props) => {
   const [getCricketTeams] = useLazyQuery(GET_CRICKET_TEAMS);
   const [teams, setTeams] = useState([]);
 
-  async function get_filter_supply_for_owner() {
-    setTotalRegularSupply(await fetchFilteredAthleteSupplyForOwner(wallet, position, team, name));
-    // setTotalRegularSupply(
-    //   await query_filter_supply_for_owner(
-    //     wallet,
-    //     position,
-    //     team,
-    //     name,
-    //     getSportType(currentSport).regContract
-    //   )
-    // );
-  }
-
-  async function get_filter_soulbound_supply_for_owner() {
-    setTotalPromoSupply(
-      await query_filter_supply_for_owner(
-        wallet,
-        position,
-        team,
-        name,
-        getSportType(currentSport).promoContract
-      )
-    );
-  }
-
   //TODO: might encounter error w/ loading duplicate athlete
   function setAthleteRadio(radioIndex) {
     passedLineup.splice(index, 1, {
@@ -127,7 +103,7 @@ const AthleteSelect = (props) => {
     }
     return false;
   }
-  async function get_filter_tokens_for_owner(contract) {
+  async function getFilterTokensForOwner(type) {
     const result = await fetchFilteredAthleteTokensForOwner(
       wallet,
       athleteOffset,
@@ -135,7 +111,8 @@ const AthleteSelect = (props) => {
       position,
       team,
       name,
-      totalRegularSupply
+      type === 'regular' ? totalRegularSupply : totalPromoSupply,
+      type
     );
     console.log(result);
     setAthletes(result);
@@ -179,36 +156,62 @@ const AthleteSelect = (props) => {
     //     )
     //   );
   }
+  async function getFilteredTokenSupplyForOwner(type) {
+    if (type === 'regular') {
+      setTotalRegularSupply(
+        await fetchFilteredAthleteSupplyForOwner(wallet, position, team, name, type)
+      );
+    } else if (type === 'promo') {
+      setTotalPromoSupply(
+        await fetchFilteredAthleteSupplyForOwner(wallet, position, team, name, type)
+      );
+    }
+  }
   async function get_mixed_tokens_for_pagination() {
-    await query_mixed_tokens_pagination(
+    // await query_mixed_tokens_pagination(
+    //   wallet,
+    //   isPromoPage,
+    //   athleteOffset,
+    //   promoOffset,
+    //   totalPromoSupply,
+    //   athleteLimit,
+    //   position,
+    //   team,
+    //   name,
+    //   currentSport
+    // ).then(async (result) => {
+    //   let athletes = result;
+    //   if (currentSport === SPORT_NAME_LOOKUP.basketball) {
+    //     athletes = await Promise.all(
+    //       result.map((x) => getAthleteSchedule(x, startDate, endDate, 'nba'))
+    //     );
+    //   } else if (currentSport === SPORT_NAME_LOOKUP.baseball) {
+    //     athletes = await Promise.all(
+    //       result.map((x) => getAthleteSchedule(x, startDate, endDate, 'mlb'))
+    //     );
+    //   } else if (currentSport === SPORT_NAME_LOOKUP.cricket) {
+    //     athletes = await Promise.all(
+    //       result
+    //         .filter((x) => x.status !== 'not_started')
+    //         .map((x) => getCricketSchedule(x, startDate, endDate))
+    //     );
+    //   }
+    //   setAthletes(athletes);
+    // });
+    await fetchFilteredMixedTokensForOwner(
       wallet,
       isPromoPage,
       athleteOffset,
       promoOffset,
+      totalRegularSupply,
       totalPromoSupply,
       athleteLimit,
       position,
       team,
       name,
       currentSport
-    ).then(async (result) => {
-      let athletes = result;
-      if (currentSport === SPORT_NAME_LOOKUP.basketball) {
-        athletes = await Promise.all(
-          result.map((x) => getAthleteSchedule(x, startDate, endDate, 'nba'))
-        );
-      } else if (currentSport === SPORT_NAME_LOOKUP.baseball) {
-        athletes = await Promise.all(
-          result.map((x) => getAthleteSchedule(x, startDate, endDate, 'mlb'))
-        );
-      } else if (currentSport === SPORT_NAME_LOOKUP.cricket) {
-        athletes = await Promise.all(
-          result
-            .filter((x) => x.status !== 'not_started')
-            .map((x) => getCricketSchedule(x, startDate, endDate))
-        );
-      }
-      setAthletes(athletes);
+    ).then((result) => {
+      setAthletes(result);
     });
   }
   const mixedPaginationHandling = (e) => {
@@ -291,11 +294,11 @@ const AthleteSelect = (props) => {
   useEffect(() => {
     //if regular and soulbound radio buttons are enabled
     if (selectedRegular !== false && selectedPromo === false) {
-      get_filter_tokens_for_owner(getSportType(currentSport).regContract);
+      getFilterTokensForOwner('regular');
     } else if (selectedRegular === false && selectedPromo !== false) {
-      //get_filter_tokens_for_owner(getSportType(currentSport).promoContract);
+      getFilterTokensForOwner('promo');
     } else if (selectedRegular !== false && selectedPromo !== false) {
-      //get_mixed_tokens_for_pagination();
+      get_mixed_tokens_for_pagination();
     } else {
       setAthletes([]);
     }
@@ -313,14 +316,14 @@ const AthleteSelect = (props) => {
   }, [athletes]);
   useEffect(() => {
     if (selectedRegular !== false && selectedPromo === false) {
-      get_filter_supply_for_owner();
-      //setTotalPromoSupply(0);
+      getFilteredTokenSupplyForOwner('regular');
+      setTotalPromoSupply(0);
     } else if (selectedRegular === false && selectedPromo !== false) {
-      //get_filter_soulbound_supply_for_owner();
-      //setTotalRegularSupply(0);
+      getFilteredTokenSupplyForOwner('promo');
+      setTotalRegularSupply(0);
     } else if (selectedRegular !== false && selectedPromo !== false) {
-      //get_filter_supply_for_owner();
-      //get_filter_soulbound_supply_for_owner();
+      getFilteredTokenSupplyForOwner('regular');
+      getFilteredTokenSupplyForOwner('promo');
     } else {
       setTotalRegularSupply(0);
       setTotalPromoSupply(0);
