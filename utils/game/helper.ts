@@ -44,6 +44,7 @@ async function mapGameInfo(item, status, currentSport) {
     start_time: Number(item.startTime),
     end_time: Number(item.endTime),
     whitelist: item.whitelist,
+    token_type_whitelist: item.tokenTypeWhitelist,
     usage_cost: Number(item.usageCost),
     positions: item.positions,
     lineup_len: Number(item.lineupLen),
