@@ -58,7 +58,8 @@ export async function fetchFilteredAthleteTokensForOwner(
   team,
   name,
   supply,
-  type
+  type,
+  whitelist
 ) {
   try {
     console.log(`Athlete offset: ${athleteOffset}`);
@@ -110,7 +111,7 @@ export async function fetchFilteredAthleteTokensForOwner(
             result
               .filter((item) => Number(item[0] !== 0 && item[3].length > 0))
               .map(convertPolygonNftToAthlete)
-              .map((item) => getAthleteInfoByApiId(item, undefined, undefined)) //for portfolio, assetdetails, and athleteselect
+              .map((item) => getAthleteInfoByApiId(item, undefined, undefined, whitelist)) //for portfolio, assetdetails, and athleteselect
           );
         });
       console.log(result);
@@ -131,7 +132,8 @@ export async function fetchFilteredMixedTokensForOwner(
   position,
   team,
   name,
-  currentSport
+  currentSport,
+  whitelist
 ) {
   return await fetchFilteredAthleteTokensForOwner(
     accountId,
@@ -141,7 +143,8 @@ export async function fetchFilteredMixedTokensForOwner(
     team,
     name,
     isPromoPage ? totalPromoSupply : totalRegularSupply,
-    isPromoPage ? 'promo' : 'regular'
+    isPromoPage ? 'promo' : 'regular',
+    whitelist
   ).then(async (result) => {
     if (result.length < athleteLimit && !isPromoPage && totalPromoSupply !== 0) {
       let sbLimit = athleteLimit - result.length;
@@ -153,7 +156,8 @@ export async function fetchFilteredMixedTokensForOwner(
         team,
         name,
         totalPromoSupply,
-        'promo'
+        'promo',
+        whitelist
       ).then((result2) => {
         result2.map((obj) => result.push(obj));
         return result;
@@ -190,7 +194,8 @@ export async function fetchAthleteTokenMetadataAndURIById(
       const token = await getAthleteInfoByApiId(
         await convertPolygonNftToAthlete(result),
         startTime,
-        endTime
+        endTime,
+        [1, 2, 3] //whitelist, only used for AssetDetails so allow everything
       );
 
       return token;

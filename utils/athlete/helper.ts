@@ -27,7 +27,7 @@ interface trait_type {
 
 // pull from graphQL and append the nft animation
 // return assembled Athlete
-async function getAthleteInfoByApiId(item, from, to) {
+async function getAthleteInfoByApiId(item, from, to, whitelist) {
   const { data } = await client.query({
     query: GET_ATHLETE_BY_API_ID,
     variables: {
@@ -36,6 +36,16 @@ async function getAthleteInfoByApiId(item, from, to) {
       to: to,
     },
   });
+  const isPromo = item.extra.tokenType === 2 ? true : false;
+  const isSoul = item.extra.tokenType === 3 ? true : false;
+  let isAllowed = false;
+  if (whitelist.includes(1) && !isPromo && !isSoul) {
+    isAllowed = true;
+  } else if (whitelist.includes(2) && isPromo) {
+    isAllowed = true;
+  } else if (whitelist.includes(3) && isSoul) {
+    isAllowed = true;
+  }
   const returningData = {
     primary_id: item.metadata.properties.symbol,
     athlete_id: item.extra.tokenId,
@@ -45,9 +55,10 @@ async function getAthleteInfoByApiId(item, from, to) {
     team: item.metadata.properties.team,
     position: item.metadata.properties.position,
     release: 'test',
-    isPromo: item.extra.tokenType === 3 ? true : false,
-    isSoul: item.extra.tokenType === 2 ? true : false,
+    isPromo: isPromo,
+    isSoul: isSoul,
     isOpen: false,
+    isAllowed: isAllowed,
     animation: data.getAthleteByApiId.nftAnimation,
     image: item.metadata.image,
     fantasy_score: getAvgSeasonFantasyScore(data.getAthleteByApiId.stats),
