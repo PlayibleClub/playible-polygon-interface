@@ -28,7 +28,7 @@ import {
   fetchFilteredAthleteTokensForOwner,
   fetchFilteredMixedTokensForOwner,
 } from 'utils/polygon/helper/athletePolygon';
-import { getGameStartDate, getGameEndDate } from 'redux/athlete/athleteSlice';
+import { getGameStartDate, getGameEndDate, getTokenWhitelist } from 'redux/athlete/athleteSlice';
 import { getSportType, SPORT_NAME_LOOKUP } from 'data/constants/sportConstants';
 import NftTypeComponent from 'pages/Portfolio/components/NftTypeComponent';
 import { getAthleteSchedule, getCricketSchedule, getPositionDisplay } from 'utils/athlete/helper';
@@ -42,6 +42,7 @@ const AthleteSelect = (props) => {
   const startDate = useSelector(getGameStartDate);
   const endDate = useSelector(getGameEndDate);
   const position = useSelector(getPosition);
+  const whitelist = useSelector(getTokenWhitelist);
   console.log(position);
   const index = useSelector(getIndex);
   const reduxLineup = useSelector(getAthleteLineup);
@@ -112,7 +113,8 @@ const AthleteSelect = (props) => {
       team,
       name,
       type === 'regular' ? totalRegularSupply : totalPromoSupply,
-      type
+      type,
+      whitelist
     );
     console.log(result);
     setAthletes(result);
@@ -209,7 +211,8 @@ const AthleteSelect = (props) => {
       position,
       team,
       name,
-      currentSport
+      currentSport,
+      whitelist
     ).then((result) => {
       setAthletes(result);
     });
@@ -386,7 +389,9 @@ const AthleteSelect = (props) => {
             const accountAthleteIndex = athletes.indexOf(item, 0) + athleteOffset;
             return (
               <>
-                {checkIfAthleteExists(item.athlete_id, item.primary_id) || item.isInGame ? (
+                {checkIfAthleteExists(item.athlete_id, item.primary_id) ||
+                item.isInGame ||
+                !item.isAllowed ? (
                   <div className="w-4/5 h-5/6 border-transparent pointer-events-none">
                     <div className="mt-1.5 w-full h-14px mb-1"></div>
                     <PerformerContainer
