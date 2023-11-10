@@ -248,8 +248,21 @@ const AthleteSelect = (props) => {
   function handleDropdownChange() {
     setAthleteOffset(0);
     setAthleteLimit(7);
+    setTotalRegularSupply(0);
+    setTotalPromoSupply(0);
     setRemountComponent(Math.random());
   }
+
+  const handleSearchDynamic = (value) => {
+    setAthleteOffset(0);
+    setTotalRegularSupply(0);
+    setTotalPromoSupply(0);
+    setName(value);
+  };
+  const handleSearchSubmit = (value) => {
+    handleDropdownChange();
+    setName(value);
+  };
 
   async function query_teams_graphql(currentSport) {
     let query;
@@ -379,8 +392,8 @@ const AthleteSelect = (props) => {
 
       <div className="h-8 flex absolute ml-6 top-32 mr-8 md:top-24 md:right-20 md:-mt-5 ">
         <SearchComponent
-          onChangeFn={(search) => setName(search)}
-          onSubmitFn={(search) => setName(search)}
+          onChangeFn={(search) => handleSearchDynamic(search)}
+          onSubmitFn={(search) => handleSearchSubmit(search)}
         />
       </div>
 
