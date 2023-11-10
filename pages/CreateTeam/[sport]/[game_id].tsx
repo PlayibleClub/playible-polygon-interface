@@ -72,6 +72,11 @@ export default function CreateLineup(props) {
     const result = await fetchGame(game_id);
     const game = await mapGameInfo(result, 'createlineup', currentSport);
     console.log(game);
+    let whitelist = game.token_type_whitelist.map((item) => {
+      return Number(item);
+    });
+    console.log(whitelist);
+    setTokenTypeWhitelist(whitelist);
     setGameData(game);
   }
 
@@ -174,7 +179,8 @@ export default function CreateLineup(props) {
     if (gameData !== undefined) {
       //@ts-ignore:next-line
       populateLineup(gameData.positions);
-      setTokenTypeWhitelist(gameData.token_type_whitelist);
+      // console.log(gameData);
+      // setTokenTypeWhitelist(gameData.token_type_whitelist);
     }
   }, [gameData]);
   useEffect(() => {
