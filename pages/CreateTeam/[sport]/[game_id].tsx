@@ -13,7 +13,7 @@ import { getSportType } from 'data/constants/sportConstants';
 import { DEFAULT_MAX_FEES } from 'data/constants/gasFees';
 import { fetchGame } from 'utils/polygon/helper/gamePolygon';
 import { mapGameInfo } from 'utils/game/helper';
-import { getAthleteLineup, getTeamName } from 'redux/athlete/athleteSlice';
+import { getAthleteLineup, getTeamName, getTokenWhitelist } from 'redux/athlete/athleteSlice';
 import {
   setAthleteLineup,
   setGameId,
@@ -33,6 +33,7 @@ export default function CreateLineup(props) {
   const dispatch = useDispatch();
   const router = useRouter();
   const reduxLineup = useSelector(getAthleteLineup);
+  const reduxWhitelist = useSelector(getTokenWhitelist);
   const {
     state: { wallet },
   } = useWalletSelector();
@@ -40,7 +41,7 @@ export default function CreateLineup(props) {
   // @ts-ignore:next-line
   const [teamName, setTeamName] = useState('Team 1');
   const [gameData, setGameData] = useState(undefined);
-  const [tokenTypeWhitelist, setTokenTypeWhitelist] = useState([]);
+
   const [submitModal, setSubmitModal] = useState(false);
   const [editModal, setEditModal] = useState(false);
   const [editInput, setEditInput] = useState(teamName);
@@ -52,6 +53,10 @@ export default function CreateLineup(props) {
 
   // @ts-ignore:next-line
   const initialState = reduxLineup ? reduxLineup : [];
+  const initialWhitelist = reduxWhitelist ? reduxWhitelist : [];
+  const [tokenTypeWhitelist, setTokenTypeWhitelist] = initialWhitelist
+    ? useState(initialWhitelist)
+    : useState([]);
   const [lineup, setLineup] = initialState ? useState(initialState) : useState([]);
 
   function setArray(position, lineup, index) {

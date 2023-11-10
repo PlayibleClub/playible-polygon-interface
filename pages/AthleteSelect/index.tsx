@@ -17,7 +17,7 @@ import {
   getPosition,
   getSport,
 } from 'redux/athlete/athleteSlice';
-import { setAthleteLineup, setGameId } from 'redux/athlete/athleteSlice';
+import { setAthleteLineup, setGameId, setTokenWhitelist } from 'redux/athlete/athleteSlice';
 import {
   query_filter_supply_for_owner,
   query_filter_tokens_for_owner,
@@ -275,6 +275,7 @@ const AthleteSelect = (props) => {
   const handleProceedClick = (game_id, lineup) => {
     dispatch(setGameId(game_id));
     dispatch(setAthleteLineup(lineup));
+    dispatch(setTokenWhitelist(whitelist));
     router.push({
       pathname: '/CreateTeam/[sport]/[game_id]',
       query: { sport: currentSport, game_id: game_id },
