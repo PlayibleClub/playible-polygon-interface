@@ -54,6 +54,7 @@ export default function PackDetails(props) {
         await window.ethereum.request({ method: 'eth_requestAccounts' });
 
         const web3 = new Web3(window.ethereum);
+
         const contractStorage = new web3.eth.Contract(
           openPackStorage,
           OPENPACK_NFL_POLYGON.storage
@@ -61,23 +62,32 @@ export default function PackDetails(props) {
         const contractLogic = new web3.eth.Contract(openPackLogic, OPENPACK_NFL_POLYGON.logic);
         const accounts = await web3.eth.getAccounts();
 
-        // Estimate gas for requestRandomWords function
-        const gasEstimateRequest = await contractStorage.methods
+        // Estimate gas for mintPacks function
+        const gasEstimate = await contractStorage.methods
           .requestRandomWords()
           .estimateGas({ from: accounts[0] });
+        console.log('Estimated Gas:', gasEstimate);
 
         const gasPrice = await web3.eth.getGasPrice();
-        const txRequest = {
+        const tx = {
           from: accounts[0],
           to: OPENPACK_NFL_POLYGON.storage,
           //@ts-ignore
-          gas: parseInt(gasEstimateRequest),
+          gas: parseInt(gasEstimate),
           gasPrice: gasPrice,
           data: contractStorage.methods.requestRandomWords().encodeABI(),
         };
 
-        // Call requestRandomWords function
-        const receiptRequest = await web3.eth.sendTransaction(txRequest);
+        // Call mint regular packs function
+        const receipt = await web3.eth
+          .sendTransaction(tx)
+          .on('transactionHash', function (hash) {
+            console.log('Transaction Hash:', hash);
+          })
+          .on('confirmation', function () {
+            console.log('User confirmed the transaction');
+            setConfirmationNumber(+1);
+          });
 
         console.log('Request Successful');
 
@@ -95,43 +105,52 @@ export default function PackDetails(props) {
             clearInterval(intervalId);
             return;
           }
-
-          // Check the request status
           //@ts-ignore
-          const fulfilled = await contractStorage.methods.getRequestStatus(requestId).call();
+          let fulfilled = await contractStorage.methods.getRequestStatus(requestId).call();
+
           //@ts-ignore
           if (fulfilled.fulfilled) {
             clearInterval(intervalId);
-            setConfirmationNumber(0); // Reset confirmation number when the request is fulfilled
-
-            // Estimate gas for mintBatch function
-            const gasEstimateMint = await contractLogic.methods
+            // Estimate gas for mintPacks function
+            const gasEstimate = await contractLogic.methods
               //@ts-ignore
               .mintBatch(requestId, accounts[0], query.id)
               .estimateGas({ from: accounts[0] });
+            console.log('Estimated Gas:', gasEstimate);
 
-            const txMint = {
+            const mintTx = {
               from: accounts[0],
               to: OPENPACK_NFL_POLYGON.logic,
               //@ts-ignore
-              gas: parseInt(gasEstimateMint),
+              gas: parseInt(gasEstimate),
               gasPrice: gasPrice,
               //@ts-ignore
               data: contractLogic.methods.mintBatch(requestId, accounts[0], query.id).encodeABI(),
             };
 
-            // Call mintBatch function
-            const receiptMint = await web3.eth.sendTransaction(txMint);
-
-            console.log('Minting Successful');
-            router.push(`/TokenDrawPage/${receiptMint.transactionHash}`);
+            const mintReceipt = await web3.eth
+              .sendTransaction(mintTx)
+              .on('transactionHash', function (hash) {
+                console.log('Mint Transaction Hash:', hash);
+              })
+              .on('confirmation', function () {
+                console.log('User confirmed the transaction');
+                setConfirmationNumber(+1);
+              })
+              .on('receipt', function (receipt) {
+                console.log('Minting Successful');
+                router.push(`/TokenDrawPage/${receipt.transactionHash}`);
+              })
+              .on('error', function (error) {
+                console.log('error', error);
+                alert('Request timed out. Please refresh the page');
+              });
           }
         }, 5000); // Check every 5 seconds
       }
     } catch (error) {
       console.error('Error Request and Mint:', error);
-    } finally {
-      setLoading(false); // Set loading state to false, regardless of success or error
+      setLoading(false); // Set loading state to false on error
     }
   }
 
@@ -142,6 +161,7 @@ export default function PackDetails(props) {
         await window.ethereum.request({ method: 'eth_requestAccounts' });
 
         const web3 = new Web3(window.ethereum);
+
         const contractStorage = new web3.eth.Contract(
           promoOpenPackStorage,
           PROMO_OPENPACK_NFL_POLYGON.storage
@@ -150,32 +170,43 @@ export default function PackDetails(props) {
           promoOpenPackLogic,
           PROMO_OPENPACK_NFL_POLYGON.logic
         );
+
         const accounts = await web3.eth.getAccounts();
 
-        // Estimate gas for requestRandomWords function
-        const gasEstimateRequest = await contractStorage.methods
+        // Estimate gas for mintPacks function
+        const gasEstimate = await contractStorage.methods
           .requestRandomWords()
           .estimateGas({ from: accounts[0] });
-        console.log('Estimated Gas:', gasEstimateRequest);
+        console.log('Estimated Gas:', gasEstimate);
 
         const gasPrice = await web3.eth.getGasPrice();
-        const txRequest = {
+        const tx = {
           from: accounts[0],
           to: PROMO_OPENPACK_NFL_POLYGON.storage,
           //@ts-ignore
-          gas: parseInt(gasEstimateRequest),
+          gas: parseInt(gasEstimate),
           gasPrice: gasPrice,
           data: contractStorage.methods.requestRandomWords().encodeABI(),
         };
 
-        // Call requestRandomWords function
-        const receiptRequest = await web3.eth.sendTransaction(txRequest);
+        // Call the mint function
+        const receipt = await web3.eth
+          .sendTransaction(tx)
+          .on('transactionHash', function (hash) {
+            console.log('Transaction Hash:', hash);
+          })
+          .on('confirmation', function () {
+            console.log('User confirmed the transaction');
+            setConfirmationNumber((prev) => prev + 1);
+          });
 
         console.log('Request Successful');
 
         // Get requestId by user
-        //@ts-ignore
-        const requestId = await contractStorage.methods.getRequestIdByUser(accounts[0]).call();
+        const requestId = await contractStorage.methods
+          //@ts-ignore
+          .getRequestIdByUser(accounts[0])
+          .call();
         console.log('Random words requested successfully, requestId:', requestId);
 
         let count = 0;
@@ -187,45 +218,59 @@ export default function PackDetails(props) {
             clearInterval(intervalId);
             return;
           }
-
-          // Check the request status
           //@ts-ignore
-          const fulfilled = await contractStorage.methods.getRequestStatus(requestId).call();
+
+          let fulfilled = await contractStorage.methods
+            //@ts-ignore
+            .getRequestStatus(requestId)
+            .call();
+
           //@ts-ignore
           if (fulfilled.fulfilled) {
             clearInterval(intervalId);
-            setConfirmationNumber(0); // Reset confirmation number when the request is fulfilled
 
-            // Estimate gas for mintBatch function
-            const gasEstimateMint = await contractLogic.methods
+            // Estimate gas for mintPacks function
+            const mintGasEstimate = await contractLogic.methods
               //@ts-ignore
-              .mintBatch(requestId, accounts[0], query.id, parseInt(packType))
+              .mintBatch(requestId, accounts[0], query.id, parseInt(packType) + 1)
               .estimateGas({ from: accounts[0] });
 
-            const txMint = {
+            const mintTx = {
               from: accounts[0],
               to: PROMO_OPENPACK_NFL_POLYGON.logic,
               //@ts-ignore
-              gas: parseInt(gasEstimateMint),
+              gas: parseInt(mintGasEstimate),
               gasPrice: gasPrice,
+              //@ts-ignore
               data: contractLogic.methods
                 //@ts-ignore
-                .mintBatch(requestId, accounts[0], query.id, parseInt(packType))
+                .mintBatch(requestId, accounts[0], query.id, parseInt(packType) + 1)
                 .encodeABI(),
             };
 
-            // Call mintBatch function
-            const receiptMint = await web3.eth.sendTransaction(txMint);
-
-            console.log('Minting Successful');
-            router.push(`/TokenDrawPage/${receiptMint.transactionHash}`);
+            const mintReceipt = await web3.eth
+              .sendTransaction(mintTx)
+              .on('transactionHash', function (hash) {
+                console.log('Mint Transaction Hash:', hash);
+              })
+              .on('confirmation', function () {
+                console.log('User confirmed the transaction');
+                setConfirmationNumber((prev) => prev + 1);
+              })
+              .on('receipt', function (receipt) {
+                console.log('Minting Successful');
+                router.push(`/TokenDrawPage/${receipt.transactionHash}`);
+              })
+              .on('error', function (error) {
+                console.log('error', error);
+                alert('Request timed out. Please refresh the page');
+              });
           }
         }, 5000); // Check every 5 seconds
       }
     } catch (error) {
       console.error('Error Request and Mint:', error);
-    } finally {
-      setLoading(false); // Set loading state to false, regardless of success or error
+      setLoading(false); // Set loading state to false on error
     }
   }
 
