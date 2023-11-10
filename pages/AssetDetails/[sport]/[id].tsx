@@ -24,6 +24,12 @@ const AssetDetails = (props) => {
   const athleteIndex = query.id;
   const currentSport = query.sport.toString().toUpperCase();
   const isSoulbound = athleteIndex.includes('SB') || athleteIndex.includes('PR') ? true : false;
+  const type =
+    athleteIndex.toString()[0] === '1'
+      ? 'regular'
+      : athleteIndex.toString()[0] === '2'
+      ? 'promo'
+      : 'soulbound';
   const [athlete, setAthlete] = useState(null);
   const [sortedGames, setSortedGames] = useState([]);
   const athleteImage = athlete?.image;
@@ -52,7 +58,7 @@ const AssetDetails = (props) => {
   }
 
   async function getAthleteTokenById(athleteId) {
-    let result = await fetchAthleteTokenMetadataAndURIById(athleteId, null, null);
+    let result = await fetchAthleteTokenMetadataAndURIById(athleteId, null, null, type);
     let games = result.stats_breakdown.slice();
     console.log(result);
     console.log(games);
