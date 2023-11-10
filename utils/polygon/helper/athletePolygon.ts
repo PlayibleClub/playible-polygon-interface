@@ -31,7 +31,7 @@ export async function fetchFilteredAthleteSupplyForOwner(accountId, position, te
       if (type === 'regular') {
         abi = regular_athlete_logic as unknown as RegularAthleteLogicABI;
         address = ATHLETE_NFL_POLYGON.logic;
-      } else if (type === 'promo') {
+      } else if (type === 'promo' || type === 'soulbound') {
         abi = promo_athlete_logic as unknown as PromoAthleteLogicABI;
         address = PROMO_ATHLETE_NFL_POLYGON.logic;
       }
@@ -82,7 +82,7 @@ export async function fetchFilteredAthleteTokensForOwner(
       if (type === 'regular') {
         abi = regular_athlete_logic as unknown as RegularAthleteLogicABI;
         address = ATHLETE_NFL_POLYGON.logic;
-      } else if (type === 'promo') {
+      } else if (type === 'promo' || type === 'soulbound') {
         console.log('promo query 23');
         abi = promo_athlete_logic as unknown as PromoAthleteLogicABI;
         address = PROMO_ATHLETE_NFL_POLYGON.logic;
@@ -182,7 +182,7 @@ export async function fetchAthleteTokenMetadataAndURIById(
       if (type === 'regular') {
         abi = regular_athlete_logic as unknown as RegularAthleteLogicABI;
         address = ATHLETE_NFL_POLYGON.logic;
-      } else if (type === 'promo') {
+      } else if (type === 'promo' || type === 'soulbound') {
         console.log('promo query 23');
         abi = promo_athlete_logic as unknown as PromoAthleteLogicABI;
         address = PROMO_ATHLETE_NFL_POLYGON.logic;
