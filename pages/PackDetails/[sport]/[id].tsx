@@ -264,7 +264,7 @@ export default function PackDetails(props) {
   async function isTokenOwner() {
     try {
       const owner =
-        packType === '1' || packType === '2'
+        packType === '2' || packType === '3'
           ? await checkPromoTokenOwner(wallet, id)
           : await checkTokenOwner(wallet, id);
 
