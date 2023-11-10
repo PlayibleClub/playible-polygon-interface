@@ -199,7 +199,7 @@ export default function PackDetails(props) {
             // Estimate gas for mintBatch function
             const gasEstimateMint = await contractLogic.methods
               //@ts-ignore
-              .mintBatch(requestId, accounts[0], query.id, parseInt(packType) + 1)
+              .mintBatch(requestId, accounts[0], query.id, parseInt(packType))
               .estimateGas({ from: accounts[0] });
 
             const txMint = {
@@ -210,7 +210,7 @@ export default function PackDetails(props) {
               gasPrice: gasPrice,
               data: contractLogic.methods
                 //@ts-ignore
-                .mintBatch(requestId, accounts[0], query.id, parseInt(packType) + 1)
+                .mintBatch(requestId, accounts[0], query.id, parseInt(packType))
                 .encodeABI(),
             };
 
@@ -232,7 +232,7 @@ export default function PackDetails(props) {
   async function fetchData() {
     try {
       const metadataResponse =
-        packType === '1' || packType === '2'
+        packType === '2' || packType === '3'
           ? await fetchPromoPackTokenMetadata(id)
           : await fetchRegularPackTokenMetadata(id);
       const metadataObject = JSON.parse(metadataResponse);
@@ -264,7 +264,7 @@ export default function PackDetails(props) {
   async function isTokenOwner() {
     try {
       const owner =
-        packType === '1' || packType === '2'
+        packType === '2' || packType === '3'
           ? await checkPromoTokenOwner(wallet, id)
           : await checkTokenOwner(wallet, id);
 
@@ -289,7 +289,7 @@ export default function PackDetails(props) {
       router.push('/Packs');
     }
   }, [isOwner]);
-  console.log(parseInt(packType) + 1);
+  console.log(parseInt(packType));
   return (
     <Container activeName="PACKS">
       <div className="md:ml-6 mt-12">
