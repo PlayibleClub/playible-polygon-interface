@@ -158,7 +158,6 @@ const Portfolio = () => {
   }
   async function getFilteredTokenSupplyForOwner(type) {
     if (type === 'regular') {
-      console.log('Test3');
       setTotalRegularSupply(
         await fetchFilteredAthleteSupplyForOwner(wallet, position, team, name, type)
       );
@@ -194,6 +193,8 @@ const Portfolio = () => {
 
   function handleDropdownChange() {
     setAthleteOffset(0);
+    setTotalPromoSupply(0);
+    setTotalRegularSupply(0);
     setAthleteLimit(10);
     setRemountComponent(Math.random());
   }
@@ -266,9 +267,12 @@ const Portfolio = () => {
     } else {
       setAthletes([]);
     }
-  }, [totalRegularSupply, totalPromoSupply, athleteOffset, currentPage, team, position, name]);
+  }, [totalRegularSupply, totalPromoSupply, currentPage]);
 
   const handleSearchDynamic = (value) => {
+    setAthleteOffset(0);
+    setTotalRegularSupply(0);
+    setTotalPromoSupply(0);
     setName(value);
   };
   const handleSearchSubmit = (value) => {
@@ -322,9 +326,7 @@ const Portfolio = () => {
   }, [athletes]);
   useEffect(() => {
     setIsPromoPage(false);
-    console.log('test');
     if (selectedRegular !== false && selectedPromo === false) {
-      console.log('test2');
       getFilteredTokenSupplyForOwner('regular');
       setTotalPromoSupply(0);
     } else if (selectedRegular === false && selectedPromo !== false) {

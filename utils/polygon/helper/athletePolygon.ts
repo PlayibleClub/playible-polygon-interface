@@ -62,7 +62,7 @@ export async function fetchFilteredAthleteTokensForOwner(
   whitelist
 ) {
   try {
-    console.log(`Athlete offset: ${athleteOffset}`);
+    //console.log(`Athlete offset: ${athleteOffset}`);
     if (window.ethereum) {
       let result = [];
       if (supply === 0) {
@@ -78,7 +78,11 @@ export async function fetchFilteredAthleteTokensForOwner(
       }
       let abi: RegularAthleteLogicABI | PromoAthleteLogicABI;
       let address = '';
-      console.log(type);
+      console.log({
+        type: type,
+        supply: supply,
+        offset: athleteOffset,
+      });
       if (type === 'regular') {
         abi = regular_athlete_logic as unknown as RegularAthleteLogicABI;
         address = ATHLETE_NFL_POLYGON.logic;
@@ -87,11 +91,12 @@ export async function fetchFilteredAthleteTokensForOwner(
         abi = promo_athlete_logic as unknown as PromoAthleteLogicABI;
         address = PROMO_ATHLETE_NFL_POLYGON.logic;
       }
-
-      console.log(position);
-      console.log(`Supply check: ${supply}`);
-      console.log(`Athlete limit : ${athleteLimit}`);
-      console.log(`Name: ${name}`);
+      console.log(type);
+      //console.log(position);
+      // console.log(`Offset: ${athleteOffset}`);
+      // console.log(`Supply check: ${supply}`);
+      // console.log(`Athlete limit : ${athleteLimit}`);
+      // console.log(`Name: ${name}`);
       await window.ethereum.request({ method: 'eth_requestAccounts' });
       const contract = new Contract(abi, address);
       contract.setProvider(window.ethereum);
@@ -135,6 +140,10 @@ export async function fetchFilteredMixedTokensForOwner(
   currentSport,
   whitelist
 ) {
+  console.log({
+    regular: totalRegularSupply,
+    promo: totalPromoSupply,
+  });
   return await fetchFilteredAthleteTokensForOwner(
     accountId,
     isPromoPage ? athleteOffset + promoOffset : athleteOffset,
