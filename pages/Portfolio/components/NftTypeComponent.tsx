@@ -5,7 +5,7 @@ const NftTypeComponent = (props) => {
   const { onChangeFn } = props;
 
   const [selectedRegular, setSelectedRegular] = useState(true);
-  const [selectedPromo, setSelectedPromo] = useState(false);
+  const [selectedPromo, setSelectedPromo] = useState(true);
 
   const handleRegularChange = (event) => {
     setSelectedRegular(event.target.checked);
