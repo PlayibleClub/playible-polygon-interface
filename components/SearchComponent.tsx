@@ -8,7 +8,7 @@ const SearchComponent = (props) => {
   useEffect(() => {
     const delay = setTimeout(() => {
       console.log(search);
-      onChangeFn([search]);
+      onChangeFn(search);
     }, 1000);
     return () => clearTimeout(delay);
   }, [search]);
@@ -17,7 +17,7 @@ const SearchComponent = (props) => {
       <form
         onSubmit={(e) => {
           e.preventDefault();
-          onSubmitFn(search === '' ? ['allNames'] : [search]);
+          onSubmitFn(search === '' ? 'allNames' : search);
         }}
       >
         <div className="relative">

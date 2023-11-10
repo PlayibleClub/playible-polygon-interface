@@ -266,7 +266,7 @@ const Portfolio = () => {
     } else {
       setAthletes([]);
     }
-  }, [totalRegularSupply, totalPromoSupply, athleteOffset, currentPage, team, position]);
+  }, [totalRegularSupply, totalPromoSupply, athleteOffset, currentPage, team, position, name]);
 
   const handleSearchDynamic = (value) => {
     setName(value);
