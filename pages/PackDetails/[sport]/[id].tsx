@@ -232,7 +232,7 @@ export default function PackDetails(props) {
   async function fetchData() {
     try {
       const metadataResponse =
-        packType === '1' || packType === '2'
+        packType === '2' || packType === '3'
           ? await fetchPromoPackTokenMetadata(id)
           : await fetchRegularPackTokenMetadata(id);
       const metadataObject = JSON.parse(metadataResponse);
