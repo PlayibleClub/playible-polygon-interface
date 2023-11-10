@@ -5,7 +5,7 @@ export const ATHLETE_NFL_POLYGON = {
 
 export const PACK_NFL_POLYGON = {
   storage: '0x0B0f1766f78cf70bAcA70AF09Ac8DDd8Fce77D4F',
-  logic: '0xCa49D6474f59479680b8b6EC3db7b5f6f0d17b24',
+  logic: '0xC8F5326F774F4d84FE573333bEa5539a8184C777',
 };
 
 export const PROMO_PACK_NFL_POLYGON = {

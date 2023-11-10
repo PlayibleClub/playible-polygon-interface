@@ -33,6 +33,25 @@ export type packLogicABI = [
     anonymous: false;
     inputs: [
       {
+        indexed: false;
+        internalType: 'string';
+        name: 'message';
+        type: 'string';
+      },
+      {
+        indexed: false;
+        internalType: 'uint256';
+        name: 'value';
+        type: 'uint256';
+      }
+    ];
+    name: 'DebugLog';
+    type: 'event';
+  },
+  {
+    anonymous: false;
+    inputs: [
+      {
         indexed: true;
         internalType: 'address';
         name: 'previousOwner';
@@ -161,6 +180,19 @@ export type packLogicABI = [
     type: 'event';
   },
   {
+    inputs: [];
+    name: 'REGULAR_TYPE';
+    outputs: [
+      {
+        internalType: 'uint256';
+        name: '';
+        type: 'uint256';
+      }
+    ];
+    stateMutability: 'view';
+    type: 'function';
+  },
+  {
     inputs: [
       {
         internalType: 'address';
@@ -224,19 +256,6 @@ export type packLogicABI = [
       }
     ];
     stateMutability: 'view';
-    type: 'function';
-  },
-  {
-    inputs: [];
-    name: 'getAndIncrementTokenId';
-    outputs: [
-      {
-        internalType: 'uint256';
-        name: '';
-        type: 'uint256';
-      }
-    ];
-    stateMutability: 'nonpayable';
     type: 'function';
   },
   {

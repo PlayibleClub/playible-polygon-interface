@@ -86,53 +86,58 @@ export async function fetchClaimSoulboundStatus(account) {
 }
 
 export async function claimSoulboundPack(account) {
-  try {
-    if (window.ethereum) {
-      console.log('Fetch claim soulbound pack function called');
-      await window.ethereum.request({ method: 'eth_requestAccounts' });
+  return new Promise(async (resolve, reject) => {
+    try {
+      if (window.ethereum) {
+        console.log('Fetch claim soulbound pack function called');
+        await window.ethereum.request({ method: 'eth_requestAccounts' });
 
-      const web3 = new Web3(window.ethereum);
+        const web3 = new Web3(window.ethereum);
 
-      const contract = new web3.eth.Contract(
-        promoPackLogicNFLContractABI,
-        PROMO_PACK_NFL_POLYGON.logic
-      );
+        const contract = new web3.eth.Contract(
+          promoPackLogicNFLContractABI,
+          PROMO_PACK_NFL_POLYGON.logic
+        );
 
-      // Estimate gas for mintPacks function
-      console.log('Account:', account);
-      const gasEstimate = await contract.methods
-        .sendSoulboundTokensForMinting()
-        .estimateGas({ from: account });
-      console.log('Estimated Gas:', gasEstimate);
+        // Estimate gas for mintPacks function
+        console.log('Account:', account);
+        const gasEstimate = await contract.methods
+          .sendSoulboundTokensForMinting()
+          .estimateGas({ from: account });
+        console.log('Estimated Gas:', gasEstimate);
 
-      const gasPrice = await web3.eth.getGasPrice();
-      const tx = {
-        from: account,
-        to: PROMO_PACK_NFL_POLYGON.logic,
-        //@ts-ignore
-        gas: parseInt(gasEstimate),
-        gasPrice: gasPrice,
-        data: contract.methods.sendSoulboundTokensForMinting().encodeABI(),
-      };
-      // Call mint regular packs function
-      web3.eth
-        .sendTransaction(tx)
-        .on('transactionHash', function (hash) {
-          console.log('Transaction Hash:', hash);
-        })
-        //@ts-ignore
-        .on('confirmation', function (confirmationNumber, receipt) {
-          console.log('Confirmation Number:', confirmationNumber);
-          console.log('Receipt:', receipt);
-          console.log('Soulbound Pack minted successfully');
-        })
-        .on('error', function (error) {
-          console.error('Error:', error);
-        });
+        const gasPrice = await web3.eth.getGasPrice();
+        const tx = {
+          from: account,
+          to: PROMO_PACK_NFL_POLYGON.logic,
+          //@ts-ignore
+          gas: parseInt(gasEstimate),
+          gasPrice: gasPrice,
+          data: contract.methods.sendSoulboundTokensForMinting().encodeABI(),
+        };
+        // Call mint regular packs function
+        web3.eth
+          .sendTransaction(tx)
+          .on('transactionHash', function (hash) {
+            console.log('Transaction Hash:', hash);
+          })
+          //@ts-ignore
+          .on('confirmation', function (confirmationNumber, receipt) {
+            console.log('Confirmation Number:', confirmationNumber);
+            console.log('Receipt:', receipt);
+            console.log('Soulbound Pack minted successfully');
+            resolve(true);
+          })
+          .on('error', function (error) {
+            console.error('Error:', error);
+            reject(error);
+          });
+      }
+    } catch (error) {
+      console.error('Error claiming Soulbound Pack:', error);
+      reject(error);
     }
-  } catch (error) {
-    console.error('Error claiming Soulbound Pack:', error);
-  }
+  });
 }
 
 export async function checkPromoTokenOwner(account, id) {

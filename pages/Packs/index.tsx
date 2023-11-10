@@ -175,11 +175,6 @@ export default function Packs() {
     setCurrentPage(event.selected);
   };
 
-  const handleButtonClick = (e) => {
-    e.preventDefault();
-    reduxDispatch(setSportTypeRedux(currentSport));
-  };
-
   async function fetchTokens() {
     try {
       const tokens = await fetchRegularPackTokensByOwner(wallet, packOffset, packLimit);
@@ -354,13 +349,24 @@ export default function Packs() {
 
   const handleClaimButton = async () => {
     try {
+      console.log(currentSport);
+      reduxDispatch(setSportTypeRedux(currentSport));
+      setClaimingComplete(false);
       setLoading(true);
-      const successfulClaim = await claimSoulboundPack(wallet);
-      if (successfulClaim === true) {
+
+      const claimed = await claimSoulboundPack(wallet);
+      if (claimed) {
+        console.log('Soulbound Pack claimed successfully');
+        // Handle the successful claim (e.g., display a success message)
         setClaimingComplete(true);
+      } else {
+        console.error('Error claiming Soulbound Pack');
+        setLoading(false);
+        // Handle the case where claiming was not successful
       }
     } catch (error) {
       console.error('Error claiming Soulbound Pack:', error);
+      // Handle the error (e.g., display an error message on the UI)
     }
   };
 
@@ -400,6 +406,7 @@ export default function Packs() {
 
   useEffect(() => {
     fetchClaimStatus(wallet);
+    console.log('SFR:', sportFromRedux);
   }, [currentSport, categoryList, sportList, isSignedIn]);
 
   useEffect(() => {
@@ -423,7 +430,7 @@ export default function Packs() {
       setLoading(false);
       setEditModal(true);
     }
-  }, [claimingComplete, sportFromRedux, loading]);
+  }, [claimingComplete, loading]);
 
   useEffect(() => {
     setCopiedSportList([...sportList]);
@@ -485,34 +492,42 @@ export default function Packs() {
                     );
                   })}
                 </div> */}
-                <div className="iphone5:ml-6 md:ml-9 iphone5:mr-0 md:mr-4 iphone5:mt-4">
-                  {categoryList[0].isActive ? null : isClaimed ? (
-                    ''
-                  ) : (
-                    <div
-                      className={`${
-                        currentSport !== SPORT_NAME_LOOKUP.baseball &&
-                        currentSport !== SPORT_NAME_LOOKUP.football
-                          ? 'hidden'
-                          : ''
-                      }`}
-                    >
-                      <button
-                        className="bg-indigo-buttonblue text-indigo-white iphone5:w-full md:w-80 h-10 
-      text-center font-bold text-xs"
-                        onClick={(e) => handleClaimButton()}
+                {loading ? (
+                  <div className="flex w-full mt-10">
+                    <div className="w-5 h-5 rounded-full bg-indigo-buttonblue animate-bounce mr-5"></div>
+                    <div className="w-5 h-5 rounded-full bg-indigo-buttonblue animate-bounce mr-5"></div>
+                    <div className="w-5 h-5 rounded-full bg-indigo-buttonblue animate-bounce"></div>
+                  </div>
+                ) : (
+                  <div className="iphone5:ml-6 md:ml-9 iphone5:mr-0 md:mr-4 iphone5:mt-4">
+                    {categoryList[0].isActive ? null : isClaimed ? (
+                      ''
+                    ) : (
+                      <div
+                        className={`${
+                          currentSport !== SPORT_NAME_LOOKUP.baseball &&
+                          currentSport !== SPORT_NAME_LOOKUP.football
+                            ? 'hidden'
+                            : ''
+                        }`}
                       >
-                        {currentSport === SPORT_NAME_LOOKUP.basketball
-                          ? 'CLAIM BASKETBALL PACK'
-                          : currentSport === SPORT_NAME_LOOKUP.football
-                          ? 'CLAIM FOOTBALL PACK'
-                          : currentSport === SPORT_NAME_LOOKUP.baseball
-                          ? 'CLAIM BASEBALL PACK'
-                          : 'CLAIM CRICKET PACK'}
-                      </button>
-                    </div>
-                  )}
-                </div>
+                        <button
+                          className="bg-indigo-buttonblue text-indigo-white iphone5:w-full md:w-80 h-10 
+      text-center font-bold text-xs"
+                          onClick={(e) => handleClaimButton()}
+                        >
+                          {currentSport === SPORT_NAME_LOOKUP.basketball
+                            ? 'CLAIM BASKETBALL PACK'
+                            : currentSport === SPORT_NAME_LOOKUP.football
+                            ? 'CLAIM FOOTBALL PACK'
+                            : currentSport === SPORT_NAME_LOOKUP.baseball
+                            ? 'CLAIM BASEBALL PACK'
+                            : 'CLAIM CRICKET PACK'}
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )}
                 <div className="grid iphone5:grid-cols-2 gap-y-8 mt-4 md:grid-cols-4 iphone5:mt-8 iphone5:ml-2 md:ml-7 md:mt-9 ">
                   {categoryList[0].isActive
                     ? (categoryList[0].isActive ? allPacks : packs).length > 0 &&
