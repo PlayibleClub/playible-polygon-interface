@@ -151,7 +151,8 @@ const Portfolio = () => {
         team,
         name,
         type === 'regular' ? totalRegularSupply : totalPromoSupply,
-        type
+        type,
+        [1, 2, 3]
       )
     );
   }
@@ -209,7 +210,8 @@ const Portfolio = () => {
       position,
       team,
       name,
-      currentSport
+      currentSport,
+      [1, 2, 3]
     ).then((result) => {
       setAthletes(result);
     });
