@@ -25,7 +25,7 @@ export const OPENPACK_NFL_POLYGON = {
 
 export const PROMO_OPENPACK_NFL_POLYGON = {
   storage: '0x2d161E0fE5d14E6a4Ce1D1F001B510e031adeb31',
-  logic: '0x4D1f269A19FcA7Fae33CD3d407640DCc9035332c',
+  logic: '0x4587b03Da15D4d3b8Ed9ddA5640FD5c17f9b346a',
 };
 
 export const GAME_NFL_POLYGON = {
