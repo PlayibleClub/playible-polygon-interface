@@ -174,8 +174,8 @@ export default function CreateLineup(props) {
     if (gameData !== undefined) {
       //@ts-ignore:next-line
       populateLineup(gameData.positions);
+      setTokenTypeWhitelist(gameData.token_type_whitelist);
     }
-    setTokenTypeWhitelist(gameData.tokenTypeWhitelist);
   }, [gameData]);
   useEffect(() => {
     console.log(lineup);
