@@ -13,11 +13,11 @@ import { packLogicABI } from 'utils/polygon/ABI/pack_nft_logic';
 import promotional_pack_nft from 'utils/polygon/ABI/promotional_pack_nft.json';
 import pack_nft_storage from 'utils/polygon/ABI/pack_nft.json';
 import pack_nft_logic from 'utils/polygon/ABI/pack_nft_logic.json';
-import athlete_logic from '../polygon/ABI/athletelogic_abi.json';
-import game_storage from '../polygon/ABI/gamestorage_abi.json';
-import game_logic from '../polygon/ABI/gamelogic_abi.json';
-import athlete_storage from '../polygon/ABI/athletestorage_abi.json';
-import { AthleteStorageABI, AthleteLogicABI } from '../polygon/ABI/athleteABIs';
+import athlete_logic from '../polygon/ABI/regular_athlete_logic.json';
+import game_storage from '../polygon/ABI/game_storage.json';
+import game_logic from '../polygon/ABI/game_logic.json';
+import athlete_storage from '../polygon/ABI/regular_athlete_storage.json';
+//import { AthleteStorageABI, RegularAthleteLogicABI } from '../polygon/ABI/athleteABIs';
 import { GameStorageABI, GameLogicABI } from '../polygon/ABI/gameABIs';
 import { isWindows } from 'react-device-detect';
 
@@ -294,111 +294,111 @@ export async function checkTokenOwner(account, id) {
   }
 }
 
-export async function fetchFilteredAthleteSupplyForOwner(accountId, position, team, name) {
-  try {
-    if (window.ethereum) {
-      if (!/\S/.test(name)) {
-        name = 'allNames';
-      }
-      // console.log('function called');
-      // console.log(`Position: ${position}`);
-      // console.log(`Team ${team}`);
-      // console.log(`Name ${name}`);
-      // console.log(`Address: ${accountId}`);
-      //const provider = new Web3(window.ethereum);
-      const abi = athlete_logic as unknown as AthleteLogicABI;
-      await window.ethereum.request({ method: 'eth_requestAccounts' });
-      const contract = new Contract(abi, regularNFLAthleteLogicAddress);
-      contract.setProvider(window.ethereum);
-      const result = await contract.methods
-        .getFilteredTokenSupplyForOwner(accountId, position, team, name)
-        .call({ gas: '30000000' });
-      console.log(result);
-      return Number(result);
-    }
-  } catch (error) {
-    console.log(error);
-  }
-}
-export async function fetchFilteredAthleteTokensForOwner(
-  accountId,
-  athleteOffset,
-  athleteLimit,
-  position,
-  team,
-  name,
-  supply
-) {
-  try {
-    console.log(`Athlete offset: ${athleteOffset}`);
-    if (window.ethereum) {
-      let result = [];
-      if (supply === 0) {
-        return result;
-      }
-      if (!/\S/.test(name)) {
-        name = 'allNames';
-      }
-      if (supply < athleteLimit) {
-        athleteLimit = supply;
-      } else if (supply - athleteOffset < athleteLimit) {
-        athleteLimit = supply % athleteLimit;
-      }
+// export async function fetchFilteredAthleteSupplyForOwner(accountId, position, team, name) {
+//   try {
+//     if (window.ethereum) {
+//       if (!/\S/.test(name)) {
+//         name = 'allNames';
+//       }
+//       // console.log('function called');
+//       // console.log(`Position: ${position}`);
+//       // console.log(`Team ${team}`);
+//       // console.log(`Name ${name}`);
+//       // console.log(`Address: ${accountId}`);
+//       //const provider = new Web3(window.ethereum);
+//       const abi = athlete_logic as unknown as AthleteLogicABI;
+//       await window.ethereum.request({ method: 'eth_requestAccounts' });
+//       const contract = new Contract(abi, regularNFLAthleteLogicAddress);
+//       contract.setProvider(window.ethereum);
+//       const result = await contract.methods
+//         .getFilteredTokenSupplyForOwner(accountId, position, team, name)
+//         .call({ gas: '30000000' });
+//       console.log(result);
+//       return Number(result);
+//     }
+//   } catch (error) {
+//     console.log(error);
+//   }
+// }
+// export async function fetchFilteredAthleteTokensForOwner(
+//   accountId,
+//   athleteOffset,
+//   athleteLimit,
+//   position,
+//   team,
+//   name,
+//   supply
+// ) {
+//   try {
+//     console.log(`Athlete offset: ${athleteOffset}`);
+//     if (window.ethereum) {
+//       let result = [];
+//       if (supply === 0) {
+//         return result;
+//       }
+//       if (!/\S/.test(name)) {
+//         name = 'allNames';
+//       }
+//       if (supply < athleteLimit) {
+//         athleteLimit = supply;
+//       } else if (supply - athleteOffset < athleteLimit) {
+//         athleteLimit = supply % athleteLimit;
+//       }
 
-      const abi = athlete_logic as unknown as AthleteLogicABI;
-      console.log(position);
-      console.log(`Supply check: ${supply}`);
-      console.log(`Athlete limit : ${athleteLimit}`);
-      console.log(`Name: ${name}`);
-      await window.ethereum.request({ method: 'eth_requestAccounts' });
-      const contract = new Contract(abi, regularNFLAthleteLogicAddress);
-      contract.setProvider(window.ethereum);
-      result = await contract.methods
-        .getFilteredTokensForOwnerPagination(
-          accountId,
-          position,
-          team,
-          name,
-          [athleteOffset, athleteLimit],
-          supply
-        )
-        .call({ gas: '30000000' })
-        .then((result) => {
-          return Promise.all(
-            result
-              .filter((item) => Number(item[0] !== 0 && item[2].length > 0))
-              .map(convertPolygonNftToAthlete)
-              .map((item) => getAthleteInfoByApiId(item, undefined, undefined)) //for portfolio, assetdetails, and athleteselect
-          );
-        });
-      console.log(result);
-      return result;
-    }
-  } catch (error) {
-    console.log(error);
-  }
-}
-export async function fetchAthleteTokenMetadataAndURIById(tokenId: number, startTime, endTime) {
-  try {
-    if (window.ethereum) {
-      await window.ethereum.request({ method: 'eth_requestAccounts' });
-      const abi = athlete_logic as unknown as AthleteLogicABI;
-      const contract = new Contract(abi, regularNFLAthleteLogicAddress);
-      contract.setProvider(window.ethereum);
-      const result = await contract.methods.getExtraMetadataAndUri(tokenId).call();
+//       const abi = athlete_logic as unknown as AthleteLogicABI;
+//       console.log(position);
+//       console.log(`Supply check: ${supply}`);
+//       console.log(`Athlete limit : ${athleteLimit}`);
+//       console.log(`Name: ${name}`);
+//       await window.ethereum.request({ method: 'eth_requestAccounts' });
+//       const contract = new Contract(abi, regularNFLAthleteLogicAddress);
+//       contract.setProvider(window.ethereum);
+//       result = await contract.methods
+//         .getFilteredTokensForOwnerPagination(
+//           accountId,
+//           position,
+//           team,
+//           name,
+//           [athleteOffset, athleteLimit],
+//           supply
+//         )
+//         .call({ gas: '30000000' })
+//         .then((result) => {
+//           return Promise.all(
+//             result
+//               .filter((item) => Number(item[0] !== 0 && item[2].length > 0))
+//               .map(convertPolygonNftToAthlete)
+//               .map((item) => getAthleteInfoByApiId(item, undefined, undefined)) //for portfolio, assetdetails, and athleteselect
+//           );
+//         });
+//       console.log(result);
+//       return result;
+//     }
+//   } catch (error) {
+//     console.log(error);
+//   }
+// }
+// export async function fetchAthleteTokenMetadataAndURIById(tokenId: number, startTime, endTime) {
+//   try {
+//     if (window.ethereum) {
+//       await window.ethereum.request({ method: 'eth_requestAccounts' });
+//       const abi = athlete_logic as unknown as AthleteLogicABI;
+//       const contract = new Contract(abi, regularNFLAthleteLogicAddress);
+//       contract.setProvider(window.ethereum);
+//       const result = await contract.methods.getExtraMetadataAndUri(tokenId).call();
 
-      const token = await getAthleteInfoByApiId(
-        await convertPolygonNftToAthlete(result),
-        startTime,
-        endTime
-      );
+//       const token = await getAthleteInfoByApiId(
+//         await convertPolygonNftToAthlete(result),
+//         startTime,
+//         endTime
+//       );
 
-      return token;
-    }
-  } catch (error) {
-    console.log(error);
-  }
-}
+//       return token;
+//     }
+//   } catch (error) {
+//     console.log(error);
+//   }
+// }
 
 export async function fetchAllGames() {
   try {
