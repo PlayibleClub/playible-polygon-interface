@@ -27,12 +27,12 @@ export default function PackDetails(props) {
   const router = useRouter();
   const { query } = props;
   const id = query.id.toString();
-  const packType = id.length === 6 ? id[0] : '0';
+  const packType = id[0];
 
   console.log(packType);
   const myPack = {
     packName:
-      packType === '2' ? 'SOULBOUND PACK' : packType === '1' ? 'PROMO PACK' : 'STARTER PACK',
+      packType === '3' ? 'SOULBOUND PACK' : packType === '2' ? 'PROMO PACK' : 'STARTER PACK',
     id: id,
     sport: query.sport.toString().toUpperCase(),
   };
