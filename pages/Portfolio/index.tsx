@@ -276,7 +276,7 @@ const Portfolio = () => {
     setName(value);
   };
   const handlePageClick = (event) => {
-    let total = selectedRegular ? totalRegularSupply : 0; //selectedPromo ? totalPromoSupply : 0;
+    let total = selectedRegular ? totalRegularSupply : selectedPromo ? totalPromoSupply : 0;
     const newOffset = (event.selected * athleteLimit) % total;
     setAthleteOffset(newOffset);
     setCurrentPage(event.selected);
