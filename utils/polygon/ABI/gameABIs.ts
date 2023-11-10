@@ -116,6 +116,11 @@ export type GameStorageABI = [
         type: 'address[]';
       },
       {
+        internalType: 'uint8[]';
+        name: 'tokenTypeWhitelist';
+        type: 'uint8[]';
+      },
+      {
         internalType: 'uint16';
         name: 'usageCost';
         type: 'uint16';
@@ -166,6 +171,26 @@ export type GameStorageABI = [
   {
     inputs: [
       {
+        internalType: 'uint256';
+        name: 'gameId';
+        type: 'uint256';
+      }
+    ];
+    name: 'removeGameWhitelist';
+    outputs: [];
+    stateMutability: 'nonpayable';
+    type: 'function';
+  },
+  {
+    inputs: [];
+    name: 'renounceOwnership';
+    outputs: [];
+    stateMutability: 'nonpayable';
+    type: 'function';
+  },
+  {
+    inputs: [
+      {
         internalType: 'address';
         name: 'playerAddr';
         type: 'address';
@@ -191,65 +216,7 @@ export type GameStorageABI = [
         type: 'uint256[]';
       }
     ];
-    name: 'addToGameJoinedTeamsList';
-    outputs: [];
-    stateMutability: 'nonpayable';
-    type: 'function';
-  },
-  {
-    inputs: [
-      {
-        internalType: 'address';
-        name: 'playerAddr';
-        type: 'address';
-      },
-      {
-        internalType: 'uint256';
-        name: 'gameId';
-        type: 'uint256';
-      },
-      {
-        internalType: 'string';
-        name: 'teamName';
-        type: 'string';
-      },
-      {
-        internalType: 'uint256[]';
-        name: 'lineup';
-        type: 'uint256[]';
-      }
-    ];
-    name: 'addToPlayerLineupBatch';
-    outputs: [];
-    stateMutability: 'nonpayable';
-    type: 'function';
-  },
-  {
-    inputs: [
-      {
-        internalType: 'address';
-        name: 'playerAddr';
-        type: 'address';
-      },
-      {
-        internalType: 'uint256';
-        name: 'gameId';
-        type: 'uint256';
-      },
-      {
-        internalType: 'string';
-        name: 'teamName';
-        type: 'string';
-      }
-    ];
-    name: 'addToPlayerTeam';
-    outputs: [];
-    stateMutability: 'nonpayable';
-    type: 'function';
-  },
-  {
-    inputs: [];
-    name: 'renounceOwnership';
+    name: 'submitTeamLineupToGame';
     outputs: [];
     stateMutability: 'nonpayable';
     type: 'function';
@@ -436,6 +403,25 @@ export type GameStorageABI = [
     type: 'function';
   },
   {
+    inputs: [
+      {
+        internalType: 'uint256';
+        name: 'gameId';
+        type: 'uint256';
+      }
+    ];
+    name: 'getAddressesJoinedInGame';
+    outputs: [
+      {
+        internalType: 'address[]';
+        name: '';
+        type: 'address[]';
+      }
+    ];
+    stateMutability: 'view';
+    type: 'function';
+  },
+  {
     inputs: [];
     name: 'getAllGameIds';
     outputs: [
@@ -463,6 +449,11 @@ export type GameStorageABI = [
             internalType: 'address[]';
             name: 'whitelist';
             type: 'address[]';
+          },
+          {
+            internalType: 'uint8[]';
+            name: 'tokenTypeWhitelist';
+            type: 'uint8[]';
           },
           {
             internalType: 'uint16';
@@ -561,6 +552,11 @@ export type GameStorageABI = [
             internalType: 'address[]';
             name: 'whitelist';
             type: 'address[]';
+          },
+          {
+            internalType: 'uint8[]';
+            name: 'tokenTypeWhitelist';
+            type: 'uint8[]';
           },
           {
             internalType: 'uint16';
@@ -890,6 +886,11 @@ export type GameLogicABI = [
         type: 'address[]';
       },
       {
+        internalType: 'uint8[]';
+        name: 'tokenTypeWhitelist';
+        type: 'uint8[]';
+      },
+      {
         internalType: 'uint16';
         name: 'usageCost';
         type: 'uint16';
@@ -988,11 +989,6 @@ export type GameLogicABI = [
         internalType: 'uint256[]';
         name: 'apiIds';
         type: 'uint256[]';
-      },
-      {
-        internalType: 'uint256';
-        name: 'currentTime';
-        type: 'uint256';
       }
     ];
     name: 'submitLineup';
@@ -1173,6 +1169,11 @@ export type GameLogicABI = [
             internalType: 'address[]';
             name: 'whitelist';
             type: 'address[]';
+          },
+          {
+            internalType: 'uint8[]';
+            name: 'tokenTypeWhitelist';
+            type: 'uint8[]';
           },
           {
             internalType: 'uint16';

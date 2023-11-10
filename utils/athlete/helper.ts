@@ -7,7 +7,11 @@ import {
   GET_PLAYER_SCHEDULE,
   GET_ATHLETE_BY_API_ID,
 } from '../queries';
-import { formatToUTCDate, getUTCTimestampFromLocal } from 'utils/date/helper';
+import {
+  formatToUTCDate,
+  getUTCTimestampFromLocal,
+  getUTCTimestampSeconds,
+} from 'utils/date/helper';
 import { getSportType } from 'data/constants/sportConstants';
 import { AthleteIPFSMetadata, AthleteExtraMetadata } from 'utils/athlete/types';
 interface trait_type {
@@ -23,7 +27,7 @@ interface trait_type {
 
 // pull from graphQL and append the nft animation
 // return assembled Athlete
-async function getAthleteInfoByApiId(item, from, to) {
+async function getAthleteInfoByApiId(item, from, to, whitelist) {
   const { data } = await client.query({
     query: GET_ATHLETE_BY_API_ID,
     variables: {
@@ -32,7 +36,16 @@ async function getAthleteInfoByApiId(item, from, to) {
       to: to,
     },
   });
-
+  const isPromo = item.extra.tokenType === 2 ? true : false;
+  const isSoul = item.extra.tokenType === 3 ? true : false;
+  let isAllowed = false;
+  if (whitelist.includes(1) && !isPromo && !isSoul) {
+    isAllowed = true;
+  } else if (whitelist.includes(2) && isPromo) {
+    isAllowed = true;
+  } else if (whitelist.includes(3) && isSoul) {
+    isAllowed = true;
+  }
   const returningData = {
     primary_id: item.metadata.properties.symbol,
     athlete_id: item.extra.tokenId,
@@ -42,13 +55,15 @@ async function getAthleteInfoByApiId(item, from, to) {
     team: item.metadata.properties.team,
     position: item.metadata.properties.position,
     release: 'test',
-    isPromo: false,
+    isPromo: isPromo,
+    isSoul: isSoul,
     isOpen: false,
+    isAllowed: isAllowed,
     animation: data.getAthleteByApiId.nftAnimation,
     image: item.metadata.image,
     fantasy_score: getAvgSeasonFantasyScore(data.getAthleteByApiId.stats),
     stats_breakdown: data.getAthleteByApiId.stats,
-    isInGame: item.extra.restrictedUntil > getUTCTimestampFromLocal() ? true : false,
+    isInGame: item.extra.restrictedUntil > getUTCTimestampSeconds() ? true : false,
     isInjured: data.getAthleteByApiId.isInjured,
     isActive: data.getAthleteByApiId.isActive,
     playerHeadshot: data.getAthleteByApiId.playerHeadshot,
@@ -284,13 +299,14 @@ function convertNftToAthlete(item) {
 }
 
 function convertPolygonNftToAthlete(item) {
-  console.log(item);
+  //console.log(item);
   const extraMetadata: AthleteExtraMetadata = {
     tokenId: Number(item[0]).toString(),
-    restrictedUntil: Number(item[1]),
+    tokenType: Number(item[1]),
+    restrictedUntil: Number(item[2]),
   };
-  const ipfsMetadata: AthleteIPFSMetadata = JSON.parse(item[2]);
-  console.log(ipfsMetadata);
+  const ipfsMetadata: AthleteIPFSMetadata = JSON.parse(item[3]);
+  //console.log(ipfsMetadata);
   return {
     token_id: Number(extraMetadata.tokenId).toString(),
     metadata: ipfsMetadata,

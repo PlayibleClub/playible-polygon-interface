@@ -14,5 +14,12 @@ export type AthleteIPFSMetadata = {
 
 export type AthleteExtraMetadata = {
   tokenId: string;
+  tokenType: number;
   restrictedUntil: number;
+};
+
+export type PolygonLineup = {
+  playerAddr: string;
+  teamName: string;
+  lineup: number[];
 };

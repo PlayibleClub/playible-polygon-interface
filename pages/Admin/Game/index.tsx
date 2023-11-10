@@ -2,34 +2,28 @@ import React, { useEffect, useState } from 'react';
 import Container from '../../../components/containers/Container';
 import LoadingPageDark from '../../../components/loading/LoadingPageDark';
 import Main from '../../../components/Main';
-import Distribution from './components/distribution';
-import { axiosInstance } from '../../../utils/playible';
 import BaseModal from '../../../components/modals/BaseModal';
+import client from 'apollo-client';
 import TimeAgo from 'javascript-time-ago';
 import en from 'javascript-time-ago/locale/en.json';
-import ReactTimeAgo from 'react-time-ago';
 import { SPORT_TYPES, getSportType } from 'data/constants/sportConstants';
 import 'regenerator-runtime/runtime';
-import { format } from 'prettier';
-import { ADMIN } from '../../../data/constants/address';
 import { useRouter } from 'next/router';
-import { useSelector } from 'react-redux';
 import { useMutation } from '@apollo/client';
 import { CREATE_GAME } from '../../../utils/mutations';
 import { useWalletSelector } from 'contexts/WalletSelectorContext';
-import { DEFAULT_MAX_FEES, MINT_STORAGE_COST } from 'data/constants/gasFees';
-import { getGameInfoById } from 'utils/game/helper';
+import { getGameInfoById, AddGameType, PositionsType, mapGameInfo } from 'utils/game/helper';
 import AdminGameComponent from './components/AdminGameComponent';
 import moment, { utc } from 'moment';
 import { getUTCDateFromLocal, getUTCTimestampFromLocal } from 'utils/date/helper';
+import { MERGE_INTO_LEADERBOARD, GET_GAME } from 'utils/queries';
 import ReactPaginate from 'react-paginate';
-import { position } from 'utils/athlete/position';
 import ReactS3Client from 'react-aws-s3-typescript';
 import secretKeys from 's3config';
-import { ErrorResponse } from '@remix-run/router';
-import { current } from '@reduxjs/toolkit';
 import { getSport } from 'redux/athlete/athleteSlice';
 import Modal from 'components/modals/Modal';
+import { fetchGameCounter, executeAddGame, fetchAllGames } from 'utils/polygon/helper/gamePolygon';
+import { ens } from 'web3/lib/commonjs/eth.exports';
 TimeAgo.addDefaultLocale(en);
 
 export default function Index(props) {
@@ -68,6 +62,10 @@ export default function Index(props) {
     },
     {
       name: 'CREATE',
+      isActive: false,
+    },
+    {
+      name: 'MERGE',
       isActive: false,
     },
   ]);
@@ -233,7 +231,17 @@ export default function Index(props) {
   const [remountPositionArea, setRemountPositionArea] = useState(0);
   const [remountDropdown, setRemountDropdown] = useState(0);
   const [positionList, setPositionList] = useState(SPORT_TYPES[0].positionList);
-  const sportObj = SPORT_TYPES.map((x) => ({ name: x.sport, isActive: false }));
+  const sportObj = SPORT_TYPES.filter((x) => x.key === 'NFL').map((x) => ({
+    name: x.sport,
+    isActive: false,
+  }));
+  const [mergeGameInfo, setMergeGameInfo] = useState({
+    nearGameId: 1,
+    polygonGameId: 1,
+    sport: 'nfl', //default
+    auth: '',
+  });
+  console.log(sportObj);
   sportObj[0].isActive = true;
   const [sportList, setSportList] = useState([...sportObj]);
   const [currentSport, setCurrentSport] = useState(sportObj[0].name);
@@ -540,7 +548,7 @@ export default function Index(props) {
       errors.push('Start date has no value');
     }
 
-    if (dateStart < Date.now()) {
+    if (dateStart * 1000 < Date.now()) {
       errors.push('Start date is earlier than local time');
     }
 
@@ -783,18 +791,19 @@ export default function Index(props) {
   });
 
   const dateStartFormatted = moment(details.startTime).format('YYYY-MM-DD HH:mm:ss');
-  const dateStart = moment(dateStartFormatted).utc().unix() * 1000;
+  const dateStart = moment(dateStartFormatted).utc().unix();
   const dateEndFormatted = moment(details.endTime).format('YYYY-MM-DD HH:mm:ss');
-  const dateEnd = moment(dateEndFormatted).utc().unix() * 1000;
+  const dateEnd = moment(dateEndFormatted).utc().unix();
 
   const startFormattedTimestamp = moment(dateStartFormatted).toLocaleString();
   const endFormattedTimestamp = moment(dateEndFormatted).toLocaleString();
 
-  async function get_game_supply() {
-    setTotalGames(0);
+  async function getGameCurrentCounter() {
+    const result = await fetchGameCounter();
+    setTotalGames(Number(result));
   }
 
-  function get_games_list(totalGames) {
+  async function get_games_list(totalGames) {
     // query_games_list(totalGames, getSportType(currentSport).gameContract).then(async (data) => {
     //   //@ts-ignore:next-line
     //   const result = JSON.parse(Buffer.from(data.result).toString());
@@ -822,6 +831,35 @@ export default function Index(props) {
     //   setCompletedGames(completedGames);
     //   setOngoingGames(ongoingGames);
     // });
+    const result = await fetchAllGames(); //only gets NFL games for now
+    console.log(result);
+    setTotalGames(result.length);
+    console.log(getUTCTimestampFromLocal());
+    const upcoming = await Promise.all(
+      result
+        .filter((x) => Number(x.startTime) * 1000 > getUTCTimestampFromLocal())
+        .map((item) => mapGameInfo(item, 'new', currentSport))
+    );
+    const completed = await Promise.all(
+      result
+        .filter((x) => Number(x.endTime) * 1000 < getUTCTimestampFromLocal())
+        .map((item) => mapGameInfo(item, 'completed', currentSport))
+    );
+    const ongoing = await Promise.all(
+      result
+        .filter(
+          (x) =>
+            Number(x.startTime) * 1000 < getUTCTimestampFromLocal() &&
+            Number(x.endTime) * 1000 > getUTCTimestampFromLocal()
+        )
+        .map((item) => mapGameInfo(item, 'on-going', currentSport))
+    );
+    console.log(upcoming);
+    console.log(completed);
+    console.log(ongoing);
+    setNewGames(upcoming);
+    setCompletedGames(completed);
+    setOngoingGames(ongoing);
   }
 
   function getLineupLength(currentSport) {
@@ -841,48 +879,118 @@ export default function Index(props) {
   }
 
   async function execute_add_game() {
-    const addGameArgs = Buffer.from(
-      JSON.stringify({
-        game_id: details.gameId.toString(),
-        game_time_start: dateStart,
-        game_time_end: dateEnd,
-        whitelist: whitelistInfo,
-        positions:
-          currentSport === 'FOOTBALL'
-            ? positionsInfo
-            : currentSport === 'BASKETBALL'
-            ? positionsInfoBasketball
-            : currentSport === 'BASEBALL'
-            ? positionsInfoBaseball
-            : positionsInfoCricket,
-        lineup_len: getLineupLength(currentSport),
-        game_description: gameDescription,
-        prize_description: prizeDescription,
-        game_image: gameImage,
-      })
-    );
+    //deconstructPosition(positionsInfo);
+    const args: AddGameType = {
+      gameId: parseInt(details.gameId),
+      gameStartTime: dateStart,
+      gameEndTime: dateEnd,
+      whitelist: whitelistInfo !== null ? whitelistInfo : [],
+      tokenTypeWhitelist: [1, 2, 3], //hardcoded token type whitelist
+      usageCost: 0,
+      positions: positionsInfo,
+      lineupLen: getLineupLength(currentSport),
+      gameDescription: gameDescription,
+      prizeDescription: prizeDescription,
+      gameImage: gameImage,
+    };
+    executeAddGame(args, wallet);
+    console.log(args);
+    // const addGameArgs = Buffer.from(
+    //   JSON.stringify({
+    //     game_id: details.gameId.toString(),
+    //     game_time_start: dateStart,
+    //     game_time_end: dateEnd,
+    //     whitelist: whitelistInfo,
+    //     positions:
+    //       currentSport === 'FOOTBALL'
+    //         ? positionsInfo
+    //         : currentSport === 'BASKETBALL'
+    //         ? positionsInfoBasketball
+    //         : currentSport === 'BASEBALL'
+    //         ? positionsInfoBaseball
+    //         : positionsInfoCricket,
+    //     lineup_len: getLineupLength(currentSport),
+    //     game_description: gameDescription,
+    //     prize_description: prizeDescription,
+    //     game_image: gameImage,
+    //   })
+    // );
 
-    console.log(
-      JSON.stringify({
-        game_id: details.gameId.toString(),
-        game_time_start: dateStart,
-        game_time_end: dateEnd,
-        whitelist: whitelistInfo,
-        positions:
-          currentSport === 'FOOTBALL'
-            ? positionsInfo
-            : currentSport === 'BASKETBALL'
-            ? positionsInfoBasketball
-            : currentSport === 'BASEBALL'
-            ? positionsInfoBaseball
-            : positionsInfoCricket,
-        lineup_len: getLineupLength(currentSport),
-        game_description: gameDescription,
-        prize_description: prizeDescription,
-        game_image: gameImage,
-      })
-    );
+    // console.log(
+    //   JSON.stringify({
+    //     game_id: details.gameId.toString(),
+    //     game_time_start: dateStart,
+    //     game_time_end: dateEnd,
+    //     whitelist: whitelistInfo,
+    //     positions:
+    //       currentSport === 'FOOTBALL'
+    //         ? positionsInfo
+    //         : currentSport === 'BASKETBALL'
+    //         ? positionsInfoBasketball
+    //         : currentSport === 'BASEBALL'
+    //         ? positionsInfoBaseball
+    //         : positionsInfoCricket,
+    //     lineup_len: getLineupLength(currentSport),
+    //     game_description: gameDescription,
+    //     prize_description: prizeDescription,
+    //     game_image: gameImage,
+    //   })
+    // );
   }
+
+  const onNearGameIdChange = (e) => {
+    if (e.target.value !== 0) {
+      const nearGameId = e.target.value;
+      setMergeGameInfo({ ...mergeGameInfo, [e.target.name]: e.target.value });
+    }
+  };
+  const onPolygonGameIdChange = (e) => {
+    if (e.target.value !== 0) {
+      const polygonGameId = e.target.value;
+      setMergeGameInfo({ ...mergeGameInfo, [e.target.name]: e.target.value });
+    }
+  };
+
+  const submitMerge = async () => {
+    //add checking for gameIds if they exist
+    // console.log({
+    //   nearGameId: mergeGameInfo.nearGameId,
+    //   polygonGameId: mergeGameInfo.polygonGameId,
+    //   auth: mergeGameInfo.auth,
+    // });
+    console.log(mergeGameInfo.polygonGameId);
+    try {
+      const { data, errors } = await client.mutate({
+        mutation: MERGE_INTO_LEADERBOARD,
+        variables: {
+          sport: 'nfl',
+          polygonGameId: parseFloat(mergeGameInfo.polygonGameId.toString()),
+          nearGameId: parseFloat(mergeGameInfo.nearGameId.toString()),
+        },
+        context: {
+          headers: {
+            Authorization: mergeGameInfo.auth,
+          },
+        },
+      });
+      console.log(errors);
+      console.log(data);
+    } catch (e) {
+      console.error(e);
+    }
+    // const { data } = await client.query({
+    //   query: GET_GAME,
+    //   variables: {
+    //     getGameByIdId: 8,
+    //   },
+    // });
+    // console.log(data);
+  };
+
+  const onAuthChange = (e) => {
+    const auth = e.target.value;
+    setMergeGameInfo({ ...mergeGameInfo, [e.target.name]: e.target.value });
+  };
 
   useEffect(() => {
     getTotalPercent();
@@ -903,7 +1011,7 @@ export default function Index(props) {
   ]);
   useEffect(() => {
     get_games_list(totalGames);
-    get_game_supply();
+    getGameCurrentCounter();
 
     const list = SPORT_TYPES.find((x) => x.sport === currentSport);
 
@@ -1078,7 +1186,7 @@ export default function Index(props) {
                     </div>
                   </div>
                 </div>
-              ) : (
+              ) : tabs[1].isActive ? (
                 <>
                   <div>
                     {/* GAME ID */}
@@ -1397,6 +1505,58 @@ export default function Index(props) {
                     >
                       CREATE GAME
                     </button>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="flex mt-8">
+                    <div className="flex flex-col lg:w-1/4">
+                      <label className="font-monument">NEAR GAME ID</label>
+                      <input
+                        className="border outline-none rounded-lg px-3 p-2 w-5/6"
+                        id="nearGameId"
+                        type="number"
+                        min="1"
+                        name="nearGameId"
+                        onChange={(e) => onNearGameIdChange(e)}
+                        value={mergeGameInfo.nearGameId}
+                      ></input>
+                    </div>
+                    <div className="flex flex-col lg:w-1/4 ml-10">
+                      <label className="font-monument">POLYGON GAME ID</label>
+                      <input
+                        className="border outline-none rounded-lg px-3 p-2 w-5/6"
+                        id="polygonGameId"
+                        type="number"
+                        min="1"
+                        name="polygonGameId"
+                        onChange={(e) => onPolygonGameIdChange(e)}
+                        value={mergeGameInfo.polygonGameId}
+                      ></input>
+                    </div>
+                  </div>
+                  <div className="flex mt-8">
+                    <div className="flex flex-col lg:w-1/4">
+                      <label className="font-monument">AUTHORIZATION</label>
+                      <input
+                        className="border outline-none rounded-lg px-3 p-2 w-5/6"
+                        id="auth"
+                        type="text"
+                        name="auth"
+                        onChange={(e) => onAuthChange(e)}
+                        value={mergeGameInfo.auth}
+                      ></input>
+                    </div>
+                    <div className="flex flex-col ml-10 lg:w-1/4">
+                      <button
+                        className="mt-6 bg-indigo-buttonblue h-10 w-48 text-indigo-white"
+                        id="image"
+                        name="image"
+                        onClick={submitMerge}
+                      >
+                        CONFIRM
+                      </button>
+                    </div>
                   </div>
                 </>
               )}

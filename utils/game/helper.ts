@@ -44,6 +44,7 @@ async function mapGameInfo(item, status, currentSport) {
     start_time: Number(item.startTime),
     end_time: Number(item.endTime),
     whitelist: item.whitelist,
+    token_type_whitelist: item.tokenTypeWhitelist,
     usage_cost: Number(item.usageCost),
     positions: item.positions,
     lineup_len: Number(item.lineupLen),
@@ -120,5 +121,24 @@ function getPrizePool(gameId: string): string {
       return '$100 + 2 Championship Tickets';
   }
 }
+
+export type PositionsType = {
+  positions: string[];
+  amount: number;
+};
+
+export type AddGameType = {
+  gameId: number;
+  gameStartTime: number;
+  gameEndTime: number;
+  whitelist: string[];
+  tokenTypeWhitelist: number[];
+  usageCost: number;
+  positions: PositionsType[];
+  lineupLen: number;
+  gameDescription: string;
+  prizeDescription: string;
+  gameImage: string;
+};
 
 export { getGameInfoById, getImage, getDescription, getPrizePool, mapGameInfo };

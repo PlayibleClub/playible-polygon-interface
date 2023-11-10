@@ -2,12 +2,19 @@ import { Contract } from 'web3-eth-contract';
 
 import { convertPolygonNftToAthlete, getAthleteInfoByApiId } from 'utils/athlete/helper';
 import Web3 from 'web3';
-import athlete_logic from '../ABI/athletelogic_abi.json';
-import athlete_storage from '../ABI/athletestorage_abi.json';
-import { AthleteStorageABI, AthleteLogicABI } from '../ABI/athleteABIs';
-import { ATHLETE_NFL_POLYGON } from 'data/constants/polygonContracts';
+import regular_athlete_logic from '../ABI/regular_athlete_logic.json';
+import regular_athlete_storage from '../ABI/regular_athlete_storage.json';
+import promo_athlete_logic from '../ABI/promo_athlete_logic.json';
+import promo_athlete_storage from '../ABI/promo_athlete_storage.json';
+import {
+  RegularAthleteStorageABI,
+  RegularAthleteLogicABI,
+  PromoAthleteLogicABI,
+  PromoAthleteStorageABI,
+} from '../ABI/athleteABIs';
+import { ATHLETE_NFL_POLYGON, PROMO_ATHLETE_NFL_POLYGON } from 'data/constants/polygonContracts';
 
-export async function fetchFilteredAthleteSupplyForOwner(accountId, position, team, name) {
+export async function fetchFilteredAthleteSupplyForOwner(accountId, position, team, name, type) {
   try {
     if (window.ethereum) {
       if (!/\S/.test(name)) {
@@ -19,9 +26,18 @@ export async function fetchFilteredAthleteSupplyForOwner(accountId, position, te
       // console.log(`Name ${name}`);
       // console.log(`Address: ${accountId}`);
       //const provider = new Web3(window.ethereum);
-      const abi = athlete_logic as unknown as AthleteLogicABI;
+      let abi: RegularAthleteLogicABI | PromoAthleteLogicABI;
+      let address = '';
+      if (type === 'regular') {
+        abi = regular_athlete_logic as unknown as RegularAthleteLogicABI;
+        address = ATHLETE_NFL_POLYGON.logic;
+      } else if (type === 'promo') {
+        abi = promo_athlete_logic as unknown as PromoAthleteLogicABI;
+        address = PROMO_ATHLETE_NFL_POLYGON.logic;
+      }
+      //const abi = promo_athlete_logic as unknown as PromoAthleteLogicABI;
       await window.ethereum.request({ method: 'eth_requestAccounts' });
-      const contract = new Contract(abi, ATHLETE_NFL_POLYGON.logic);
+      const contract = new Contract(abi, address);
       contract.setProvider(window.ethereum);
       const result = await contract.methods
         .getFilteredTokenSupplyForOwner(accountId, position, team, name)
@@ -41,7 +57,9 @@ export async function fetchFilteredAthleteTokensForOwner(
   position,
   team,
   name,
-  supply
+  supply,
+  type,
+  whitelist
 ) {
   try {
     console.log(`Athlete offset: ${athleteOffset}`);
@@ -58,14 +76,24 @@ export async function fetchFilteredAthleteTokensForOwner(
       } else if (supply - athleteOffset < athleteLimit) {
         athleteLimit = supply % athleteLimit;
       }
+      let abi: RegularAthleteLogicABI | PromoAthleteLogicABI;
+      let address = '';
+      console.log(type);
+      if (type === 'regular') {
+        abi = regular_athlete_logic as unknown as RegularAthleteLogicABI;
+        address = ATHLETE_NFL_POLYGON.logic;
+      } else if (type === 'promo') {
+        console.log('promo query 23');
+        abi = promo_athlete_logic as unknown as PromoAthleteLogicABI;
+        address = PROMO_ATHLETE_NFL_POLYGON.logic;
+      }
 
-      const abi = athlete_logic as unknown as AthleteLogicABI;
       console.log(position);
       console.log(`Supply check: ${supply}`);
       console.log(`Athlete limit : ${athleteLimit}`);
       console.log(`Name: ${name}`);
       await window.ethereum.request({ method: 'eth_requestAccounts' });
-      const contract = new Contract(abi, ATHLETE_NFL_POLYGON.logic);
+      const contract = new Contract(abi, address);
       contract.setProvider(window.ethereum);
       result = await contract.methods
         .getFilteredTokensForOwnerPagination(
@@ -78,11 +106,12 @@ export async function fetchFilteredAthleteTokensForOwner(
         )
         .call({ gas: '30000000' })
         .then((result) => {
+          console.log(result);
           return Promise.all(
             result
-              .filter((item) => Number(item[0] !== 0 && item[2].length > 0))
+              .filter((item) => Number(item[0] !== 0 && item[3].length > 0))
               .map(convertPolygonNftToAthlete)
-              .map((item) => getAthleteInfoByApiId(item, undefined, undefined)) //for portfolio, assetdetails, and athleteselect
+              .map((item) => getAthleteInfoByApiId(item, undefined, undefined, whitelist)) //for portfolio, assetdetails, and athleteselect
           );
         });
       console.log(result);
@@ -92,19 +121,81 @@ export async function fetchFilteredAthleteTokensForOwner(
     console.log(error);
   }
 }
-export async function fetchAthleteTokenMetadataAndURIById(tokenId: number, startTime, endTime) {
+export async function fetchFilteredMixedTokensForOwner(
+  accountId,
+  isPromoPage,
+  athleteOffset,
+  promoOffset,
+  totalRegularSupply,
+  totalPromoSupply,
+  athleteLimit,
+  position,
+  team,
+  name,
+  currentSport,
+  whitelist
+) {
+  return await fetchFilteredAthleteTokensForOwner(
+    accountId,
+    isPromoPage ? athleteOffset + promoOffset : athleteOffset,
+    athleteLimit,
+    position,
+    team,
+    name,
+    isPromoPage ? totalPromoSupply : totalRegularSupply,
+    isPromoPage ? 'promo' : 'regular',
+    whitelist
+  ).then(async (result) => {
+    if (result.length < athleteLimit && !isPromoPage && totalPromoSupply !== 0) {
+      let sbLimit = athleteLimit - result.length;
+      let arrayToReturn = await fetchFilteredAthleteTokensForOwner(
+        accountId,
+        0,
+        sbLimit,
+        position,
+        team,
+        name,
+        totalPromoSupply,
+        'promo',
+        whitelist
+      ).then((result2) => {
+        result2.map((obj) => result.push(obj));
+        return result;
+      });
+      return arrayToReturn;
+    } else {
+      return result;
+    }
+  });
+}
+export async function fetchAthleteTokenMetadataAndURIById(
+  tokenId: number,
+  startTime,
+  endTime,
+  type
+) {
   try {
     if (window.ethereum) {
       await window.ethereum.request({ method: 'eth_requestAccounts' });
-      const abi = athlete_logic as unknown as AthleteLogicABI;
-      const contract = new Contract(abi, ATHLETE_NFL_POLYGON.logic);
+      let abi: RegularAthleteLogicABI | PromoAthleteLogicABI;
+      let address = '';
+      if (type === 'regular') {
+        abi = regular_athlete_logic as unknown as RegularAthleteLogicABI;
+        address = ATHLETE_NFL_POLYGON.logic;
+      } else if (type === 'promo') {
+        console.log('promo query 23');
+        abi = promo_athlete_logic as unknown as PromoAthleteLogicABI;
+        address = PROMO_ATHLETE_NFL_POLYGON.logic;
+      }
+      const contract = new Contract(abi, address);
       contract.setProvider(window.ethereum);
       const result = await contract.methods.getExtraMetadataAndUri(tokenId).call();
 
       const token = await getAthleteInfoByApiId(
         await convertPolygonNftToAthlete(result),
         startTime,
-        endTime
+        endTime,
+        [1, 2, 3] //whitelist, only used for AssetDetails so allow everything
       );
 
       return token;

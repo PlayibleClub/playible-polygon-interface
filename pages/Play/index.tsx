@@ -11,7 +11,7 @@ import ReactPaginate from 'react-paginate';
 import { SPORT_NAME_LOOKUP, SPORT_TYPES, getSportType } from 'data/constants/sportConstants';
 import { query_games_list, query_game_supply } from 'utils/near/helper';
 import { useWalletSelector } from 'contexts/WalletSelectorContext';
-import { fetchAllGames } from 'utils/polygon/ethers';
+import { fetchAllGames } from 'utils/polygon/helper/gamePolygon';
 const Play = (props) => {
   const { state: wallet } = useWalletSelector();
   const [activeCategory, setCategory] = useState('NEW');
@@ -36,13 +36,17 @@ const Play = (props) => {
     },
   ]);
 
-  const sportObj = [
-    { name: 'ALL', isActive: true },
-    ...SPORT_TYPES.map((x) => ({ name: x.sport, isActive: false })),
-  ];
+  // const sportObj = [
+  //   { name: 'ALL', isActive: true },
+  //   ...SPORT_TYPES.map((x) => ({ name: x.sport, isActive: false })),
+  // ];
+  const sportObj = SPORT_TYPES.filter((x) => x.key === 'NFL').map((x) => ({
+    name: x.sport,
+    isActive: true,
+  }));
   sportObj[0].isActive = true;
   const [sportList, setSportList] = useState([...sportObj]);
-  const [currentSport, setCurrentSport] = useState('BASEBALL');
+  const [currentSport, setCurrentSport] = useState('FOOTBALL');
   const [remountComponent, setRemountComponent] = useState(0);
 
   function getActiveTabGameTotal() {
@@ -70,16 +74,16 @@ const Play = (props) => {
     const all = prevSport.find((sport) => sport.name === 'ALL');
     switch (name) {
       case 'NEW':
-        if (!all) {
-          prevSport.unshift({ name: 'ALL', isActive: false });
-        }
+        // if (!all) {
+        //   prevSport.unshift({ name: 'ALL', isActive: false });
+        // }
         setSportList(prevSport);
         setCurrentTotal(newGames.length);
         break;
       case 'ON-GOING':
-        if (!all) {
-          prevSport.unshift({ name: 'ALL', isActive: false });
-        }
+        // if (!all) {
+        //   prevSport.unshift({ name: 'ALL', isActive: false });
+        // }
         setSportList(prevSport);
         setCurrentTotal(ongoingGames.length);
         break;
@@ -197,7 +201,6 @@ const Play = (props) => {
     console.log(result);
     setTotalGames(result.length);
     console.log(getUTCTimestampFromLocal());
-    console.log(`Compare: ${Number(result[0].startTime) * 1000}`);
     const upcoming = await Promise.all(
       result
         .filter((x) => Number(x.startTime) * 1000 > getUTCTimestampFromLocal())
@@ -457,7 +460,7 @@ const Play = (props) => {
                                     href={`/PlayDetails/${
                                       sportList[0].isActive
                                         ? allNew[currentSportIndex].sport.toLowerCase()
-                                        : currentSport
+                                        : currentSport.toLowerCase()
                                     }/${data.game_id}`}
                                     passHref
                                   >

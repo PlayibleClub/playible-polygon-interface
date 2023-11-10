@@ -54,6 +54,11 @@
 				"type": "address[]"
 			},
 			{
+				"internalType": "uint8[]",
+				"name": "tokenTypeWhitelist",
+				"type": "uint8[]"
+			},
+			{
 				"internalType": "uint16",
 				"name": "usageCost",
 				"type": "uint16"
@@ -152,11 +157,6 @@
 				"internalType": "uint256[]",
 				"name": "apiIds",
 				"type": "uint256[]"
-			},
-			{
-				"internalType": "uint256",
-				"name": "currentTime",
-				"type": "uint256"
 			}
 		],
 		"name": "submitLineup",
@@ -337,6 +337,11 @@
 						"internalType": "address[]",
 						"name": "whitelist",
 						"type": "address[]"
+					},
+					{
+						"internalType": "uint8[]",
+						"name": "tokenTypeWhitelist",
+						"type": "uint8[]"
 					},
 					{
 						"internalType": "uint16",

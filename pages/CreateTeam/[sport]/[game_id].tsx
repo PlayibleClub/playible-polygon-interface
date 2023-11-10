@@ -11,7 +11,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import Modal from 'components/modals/Modal';
 import { getSportType } from 'data/constants/sportConstants';
 import { DEFAULT_MAX_FEES } from 'data/constants/gasFees';
-import { fetchGame } from 'utils/polygon/ethers';
+import { fetchGame } from 'utils/polygon/helper/gamePolygon';
 import { mapGameInfo } from 'utils/game/helper';
 import { getAthleteLineup, getTeamName } from 'redux/athlete/athleteSlice';
 import {
@@ -21,9 +21,10 @@ import {
   setPosition,
   setTeamNameRedux,
   setSport,
+  setTokenWhitelist,
 } from 'redux/athlete/athleteSlice';
 import { query_game_data } from 'utils/near/helper';
-import { executeSubmitLineup } from 'utils/polygon/ethers';
+import { executeSubmitLineup } from 'utils/polygon/helper/gamePolygon';
 export default function CreateLineup(props) {
   const { query } = props;
   const gameId = query.game_id;
@@ -39,6 +40,7 @@ export default function CreateLineup(props) {
   // @ts-ignore:next-line
   const [teamName, setTeamName] = useState('Team 1');
   const [gameData, setGameData] = useState(undefined);
+  const [tokenTypeWhitelist, setTokenTypeWhitelist] = useState([]);
   const [submitModal, setSubmitModal] = useState(false);
   const [editModal, setEditModal] = useState(false);
   const [editInput, setEditInput] = useState(teamName);
@@ -148,10 +150,11 @@ export default function CreateLineup(props) {
     }
   };
 
-  const handleLineupClick = (game_id, position, athleteLineup, index, teamName) => {
+  const handleLineupClick = (game_id, position, athleteLineup, tokenWhitelist, index, teamName) => {
     dispatch(setGameId(game_id));
     dispatch(setPosition(position));
     dispatch(setAthleteLineup(athleteLineup));
+    dispatch(setTokenWhitelist(tokenWhitelist));
     dispatch(setIndex(index));
     dispatch(setTeamNameRedux(teamName));
     dispatch(setSport(currentSport));
@@ -172,6 +175,7 @@ export default function CreateLineup(props) {
       //@ts-ignore:next-line
       populateLineup(gameData.positions);
     }
+    setTokenTypeWhitelist(gameData.tokenTypeWhitelist);
   }, [gameData]);
   useEffect(() => {
     console.log(lineup);
@@ -211,7 +215,14 @@ export default function CreateLineup(props) {
                             <div
                               className="cursor-pointer"
                               onClick={() =>
-                                handleLineupClick(gameId, data.position, lineup, i, teamName)
+                                handleLineupClick(
+                                  gameId,
+                                  data.position,
+                                  lineup,
+                                  tokenTypeWhitelist,
+                                  i,
+                                  teamName
+                                )
                               }
                             >
                               <Lineup
@@ -231,7 +242,14 @@ export default function CreateLineup(props) {
                             <div
                               className="cursor-pointer"
                               onClick={() =>
-                                handleLineupClick(gameId, data.position, lineup, i, teamName)
+                                handleLineupClick(
+                                  gameId,
+                                  data.position,
+                                  lineup,
+                                  tokenTypeWhitelist,
+                                  i,
+                                  teamName
+                                )
                               }
                             >
                               <Lineup
