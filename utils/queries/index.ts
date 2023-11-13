@@ -508,3 +508,61 @@ export const GET_GAME = gql`
     }
   }
 `;
+
+export const GET_LEADERBOARD_TEAMS = gql`
+  query GetLeaderboardTeams($contract: String!, $sport: String!, $gameId: Float!) {
+    getLeaderboardTeams(contract: $contract, sport: $sport, gameId: $gameId) {
+      game_team_id
+      team_name
+      wallet_address
+      total
+      chain_name
+    }
+  }
+`;
+export const GET_LEADERBOARD_RESULT = gql`
+  query GetLeaderboardResult($sport: String!, $gameId: Float!, $contract: String!) {
+    getLeaderboardResult(sport: $sport, gameId: $gameId, contract: $contract) {
+      game_team_id
+      wallet_address
+      team_name
+      chain_name
+      total
+    }
+  }
+`;
+export const GET_GAME_BY_GAME_ID_AND_CHAIN = gql`
+  query GetGameByGameIdAndChain($gameId: Float!) {
+    getGameByGameIdAndChain(gameId: $gameId) {
+      id
+      name
+      gameId
+      startTime
+      endTime
+      contract
+      sport
+    }
+  }
+`;
+export const GET_MULTI_CHAIN_LEADERBOARD_TEAMS = gql`
+  query GetMultiChainLeaderboardTeams($chain: String!, $sport: String!, $gameId: Float!) {
+    getMultiChainLeaderboardTeams(chain: $chain, sport: $sport, gameId: $gameId) {
+      game_team_id
+      team_name
+      wallet_address
+      total
+      chain_name
+    }
+  }
+`;
+export const GET_MULTI_CHAIN_LEADERBOARD_RESULT = gql`
+  query GetMultiChainLeaderboardResult($chain: String!, $sport: String!, $gameId: Float!) {
+    getMultiChainLeaderboardResult(chain: $chain, sport: $sport, gameId: $gameId) {
+      game_team_id
+      team_name
+      wallet_address
+      total
+      chain_name
+    }
+  }
+`;
