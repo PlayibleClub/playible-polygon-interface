@@ -6,7 +6,9 @@ import { GameStorageABI, GameLogicABI } from '../ABI/gameABIs';
 import { GAME_NFL_POLYGON } from 'data/constants/polygonContracts';
 import { AddGameType } from 'utils/game/helper';
 import { fetchAthleteTokenMetadataAndURIById } from './athletePolygon';
+import { GET_LEADERBOARD_RESULT } from 'utils/queries';
 import { SPORT_NAME_LOOKUP } from 'data/constants/sportConstants';
+import client from 'apollo-client';
 export async function fetchAllGames() {
   try {
     if (window.ethereum) {
@@ -140,6 +142,57 @@ export async function fetchTeamsJoinedInGame(gameId: number) {
   }
 }
 
+export async function buildLeaderboardSingle(
+  playerLineups,
+  currentSport,
+  startTime,
+  endTime,
+  gameId
+) {
+  const arrayToReturn = await Promise.all(
+    playerLineups.map(async (item) => {
+      let itemToReturn = {
+        accountId: item.wallet_address,
+        teamName: item.team_name,
+        lineup: item.lineup !== undefined ? item.lineup : [],
+        total: 0,
+      };
+      if (itemToReturn.lineup.length > 0) {
+        //if lineup === 0, fetchTeamsJoinedInGame did not get a lineup for the address -> NEAR lineup
+        itemToReturn.lineup = await Promise.all(
+          itemToReturn.lineup.map((item) => {
+            let type = item.toString()[0] === '1' ? 'regular' : 'promo';
+            return fetchAthleteTokenMetadataAndURIById(item, startTime, endTime, type);
+          })
+        );
+      }
+
+      return itemToReturn;
+    })
+  );
+  console.log(arrayToReturn);
+  const { data } = await client.query({
+    query: GET_LEADERBOARD_RESULT,
+    variables: {
+      sport: 'nfl',
+      gameId: parseFloat(gameId),
+      contract: 'polygon',
+    },
+  });
+  console.log(data);
+  let leaderboardLineups = data.getLeaderboardResult;
+  const merge = arrayToReturn.map((item) => ({
+    ...item,
+    ...leaderboardLineups.find(
+      (newItem) =>
+        newItem.team_name === item.teamName &&
+        item.accountId.toLowerCase() === newItem.wallet_address.toLowerCase()
+    ),
+  }));
+  console.log(merge);
+  return merge;
+}
+
 export async function computeScores(lineup, currentSport, startTime, endTime) {
   const arrayToReturn = await Promise.all(
     lineup.map(async (item) => {
@@ -156,31 +209,31 @@ export async function computeScores(lineup, currentSport, startTime, endTime) {
           return fetchAthleteTokenMetadataAndURIById(item, startTime, endTime, type);
         })
       );
-      itemToReturn.lineup = itemToReturn.lineup.map((item) => {
-        //console.log(item);
-        return {
-          ...item,
-          stats_breakdown: item.fantasy_score,
-          // item.stats_breakdown
-          //   .filter((type) =>
-          //     currentSport === SPORT_NAME_LOOKUP.football
-          //       ? type.type === 'season' && type.played === 1
-          //       : ''
-          //   )
-          //   .reduce((accumulator, item) => {
-          //     return accumulator + item.fantasyScore;
-          //   }, 0) || 0,
-        };
-      });
-      itemToReturn.sumScore = itemToReturn.lineup.reduce((accumulator, object) => {
-        return accumulator + object.stats_breakdown;
-      }, 0);
+      // itemToReturn.lineup = itemToReturn.lineup.map((item) => {
+      //   //console.log(item);
+      //   return {
+      //     ...item,
+      //     stats_breakdown: item.fantasy_score,
+      //     // item.stats_breakdown
+      //     //   .filter((type) =>
+      //     //     currentSport === SPORT_NAME_LOOKUP.football
+      //     //       ? type.type === 'season' && type.played === 1
+      //     //       : ''
+      //     //   )
+      //     //   .reduce((accumulator, item) => {
+      //     //     return accumulator + item.fantasyScore;
+      //     //   }, 0) || 0,
+      //   };
+      // });
+      // itemToReturn.sumScore = itemToReturn.lineup.reduce((accumulator, object) => {
+      //   return accumulator + object.stats_breakdown;
+      // }, 0);
       return itemToReturn;
     })
   );
-  arrayToReturn.sort(function (a, b) {
-    return b.sumScore - a.sumScore;
-  });
+  // arrayToReturn.sort(function (a, b) {
+  //   return b.sumScore - a.sumScore;
+  // });
   return arrayToReturn;
 }
 
