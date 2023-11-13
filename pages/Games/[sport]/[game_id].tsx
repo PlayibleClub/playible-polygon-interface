@@ -7,6 +7,7 @@ import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/router';
 import Main from 'components/Main';
+import client from 'apollo-client';
 import { getRPCProvider } from 'utils/near';
 import LeaderboardComponent from '../components/LeaderboardComponent';
 import ViewTeamsContainer from 'components/containers/ViewTeamsContainer';
@@ -17,7 +18,9 @@ import {
   fetchTeamsJoinedInGame,
   computeScores,
   fetchPlayerTeams,
+  buildLeaderboardSingle,
 } from 'utils/polygon/helper/gamePolygon';
+import { GET_LEADERBOARD_TEAMS } from 'utils/queries';
 import { getNflWeek, getNflSeason, formatToUTCDate } from 'utils/date/helper';
 import LoadingPageDark from 'components/loading/LoadingPageDark';
 import { useDispatch } from 'react-redux';
@@ -37,6 +40,7 @@ const Games = (props) => {
   const router = useRouter();
   const dispatch = useDispatch();
   const [playerLineups, setPlayerLineups] = useState([]);
+  const [leaderboardLineups, setLeaderboardLineups] = useState([]);
   const provider = new providers.JsonRpcProvider({ url: getRPCProvider() });
   const {
     state: { wallet },
@@ -77,17 +81,47 @@ const Games = (props) => {
   };
 
   async function getTeamsJoinedInGame() {
+    //singular game, no merge with other contracts
+    console.log(currentSport);
+
+    const { data } = await client.query({
+      query: GET_LEADERBOARD_TEAMS,
+      variables: {
+        contract: 'polygon',
+        sport: 'nfl',
+        gameId: parseFloat(gameId),
+      },
+    });
+    console.log(data);
+    let dbArray = data.getLeaderboardTeams;
     const startTimeFormatted = formatToUTCDate(gameData.start_time);
     const endTimeFormatted = formatToUTCDate(gameData.end_time);
     const playerLineups = await fetchTeamsJoinedInGame(gameId);
+    const mergedArrays = dbArray.map((item) => ({
+      ...item,
+      ...playerLineups.find(
+        (newItem) =>
+          newItem.teamName === item.team_name &&
+          newItem.playerAddr.toLowerCase() == item.wallet_address.toLowerCase()
+      ),
+    }));
+    console.log(mergedArrays);
     console.log(playerLineups);
-    let computedLineup = await computeScores(
-      playerLineups,
+    const computedLineups = await buildLeaderboardSingle(
+      mergedArrays,
       currentSport,
       startTimeFormatted,
-      endTimeFormatted
+      endTimeFormatted,
+      gameId
     );
-    setPlayerLineups(computedLineup);
+    console.log(computedLineups);
+    // let computedLineup = await computeScores(
+    //   playerLineups,
+    //   currentSport,
+    //   startTimeFormatted,
+    //   endTimeFormatted
+    // );
+    setPlayerLineups(computedLineups);
     //console.log(computedLineup);
   }
 
@@ -97,7 +131,7 @@ const Games = (props) => {
 
   function getAccountScore(accountId, teamName) {
     const x = playerLineups.findIndex((x) => x.accountId === accountId && x.teamName === teamName);
-    return playerLineups[x]?.sumScore.toFixed(2);
+    return playerLineups[x]?.total.toFixed(2);
   }
 
   function getAccountPlacement(accountId, teamName) {
@@ -129,7 +163,7 @@ const Games = (props) => {
     if (x !== undefined) {
       setPlayerTeamSorted(
         x.sort(function (a, b) {
-          return b.sumScore - a.sumScore;
+          return b.total - a.total;
         })
       );
     }
@@ -241,7 +275,7 @@ const Games = (props) => {
                       <LeaderboardComponent
                         accountId={item.accountId}
                         teamName={item.teamName}
-                        teamScore={item.sumScore}
+                        teamScore={item.total}
                         index={index}
                         gameId={gameId}
                         isExtendedLeaderboard={false}
@@ -276,7 +310,7 @@ const Games = (props) => {
                           <LeaderboardComponent
                             accountId={item.accountId}
                             teamName={item.teamName}
-                            teamScore={item.sumScore}
+                            teamScore={item.total}
                             index={index}
                             gameId={gameId}
                             isExtendedLeaderboard={true}
