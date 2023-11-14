@@ -334,7 +334,6 @@ export default function PackDetails(props) {
       router.push('/Packs');
     }
   }, [isOwner]);
-  console.log(packType, '12937192837189237189');
   return (
     <Container activeName="PACKS">
       <div className="md:ml-6 mt-12">
