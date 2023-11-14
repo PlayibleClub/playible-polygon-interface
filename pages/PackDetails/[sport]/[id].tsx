@@ -232,7 +232,7 @@ export default function PackDetails(props) {
             // Estimate gas for mintPacks function
             const mintGasEstimate = await contractLogic.methods
               //@ts-ignore
-              .mintBatch(requestId, accounts[0], query.id, parseInt(packType) + 1)
+              .mintBatch(requestId, accounts[0], query.id, packType)
               .estimateGas({ from: accounts[0] });
 
             const mintTx = {
@@ -244,7 +244,7 @@ export default function PackDetails(props) {
               //@ts-ignore
               data: contractLogic.methods
                 //@ts-ignore
-                .mintBatch(requestId, accounts[0], query.id, parseInt(packType) + 1)
+                .mintBatch(requestId, accounts[0], query.id, packType)
                 .encodeABI(),
             };
 
@@ -334,7 +334,7 @@ export default function PackDetails(props) {
       router.push('/Packs');
     }
   }, [isOwner]);
-  console.log(parseInt(packType));
+  console.log(packType, '12937192837189237189');
   return (
     <Container activeName="PACKS">
       <div className="md:ml-6 mt-12">
@@ -371,7 +371,7 @@ export default function PackDetails(props) {
               <button
                 className="bg-indigo-buttonblue text-indigo-white w-5/6 md:w-80 h-10 text-center font-bold text-sm mt-4"
                 onClick={() => {
-                  if (packType === '0') {
+                  if (packType === '1') {
                     console.log('Calling requestAndMint');
                     requestAndMint();
                   } else {
