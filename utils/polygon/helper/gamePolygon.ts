@@ -6,7 +6,7 @@ import { GameStorageABI, GameLogicABI } from '../ABI/gameABIs';
 import { GAME_NFL_POLYGON } from 'data/constants/polygonContracts';
 import { AddGameType } from 'utils/game/helper';
 import { fetchAthleteTokenMetadataAndURIById } from './athletePolygon';
-import { GET_LEADERBOARD_RESULT } from 'utils/queries';
+import { GET_LEADERBOARD_RESULT, GET_MULTI_CHAIN_LEADERBOARD_RESULT } from 'utils/queries';
 import { SPORT_NAME_LOOKUP } from 'data/constants/sportConstants';
 import client from 'apollo-client';
 export async function fetchAllGames() {
@@ -142,12 +142,14 @@ export async function fetchTeamsJoinedInGame(gameId: number) {
   }
 }
 
-export async function buildLeaderboardSingle(
+export async function buildLeaderboard(
   playerLineups,
   currentSport,
   startTime,
   endTime,
-  gameId
+  gameId,
+  id,
+  isMulti
 ) {
   const arrayToReturn = await Promise.all(
     playerLineups.map(async (item) => {
@@ -171,16 +173,29 @@ export async function buildLeaderboardSingle(
     })
   );
   console.log(arrayToReturn);
-  const { data } = await client.query({
-    query: GET_LEADERBOARD_RESULT,
-    variables: {
-      sport: 'nfl',
-      gameId: parseFloat(gameId),
-      contract: 'polygon',
-    },
-  });
-  console.log(data);
-  let leaderboardLineups = data.getLeaderboardResult;
+  let leaderboardLineups;
+  if (isMulti) {
+    const { data } = await client.query({
+      query: GET_MULTI_CHAIN_LEADERBOARD_RESULT,
+      variables: {
+        sport: 'nfl',
+        gameId: parseFloat(id),
+        contract: 'polygon',
+      },
+    });
+    leaderboardLineups = data.getLeaderboardResult;
+  } else {
+    const { data } = await client.query({
+      query: GET_LEADERBOARD_RESULT,
+      variables: {
+        sport: 'nfl',
+        gameId: parseFloat(gameId),
+        contract: 'polygon',
+      },
+    });
+    leaderboardLineups = data.getLeaderboardResult;
+  }
+
   const merge = arrayToReturn.map((item) => ({
     ...item,
     ...leaderboardLineups.find(

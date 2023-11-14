@@ -18,9 +18,14 @@ import {
   fetchTeamsJoinedInGame,
   computeScores,
   fetchPlayerTeams,
-  buildLeaderboardSingle,
+  buildLeaderboard,
 } from 'utils/polygon/helper/gamePolygon';
-import { GET_LEADERBOARD_TEAMS } from 'utils/queries';
+import {
+  GET_LEADERBOARD_TEAMS,
+  GET_GAME_BY_GAME_ID_AND_CHAIN,
+  CHECK_IF_GAME_EXISTS_IN_MULTI_CHAIN_LEADERBOARD,
+  GET_MULTI_CHAIN_LEADERBOARD_TEAMS,
+} from 'utils/queries';
 import { getNflWeek, getNflSeason, formatToUTCDate } from 'utils/date/helper';
 import LoadingPageDark from 'components/loading/LoadingPageDark';
 import { useDispatch } from 'react-redux';
@@ -80,20 +85,43 @@ const Games = (props) => {
     setCurrentIndex(currentIndex);
   };
 
-  async function getTeamsJoinedInGame() {
-    //singular game, no merge with other contracts
-    console.log(currentSport);
-
+  async function getLeaderboard(id) {
     const { data } = await client.query({
-      query: GET_LEADERBOARD_TEAMS,
+      query: CHECK_IF_GAME_EXISTS_IN_MULTI_CHAIN_LEADERBOARD,
       variables: {
-        contract: 'polygon',
-        sport: 'nfl',
-        gameId: parseFloat(gameId),
+        chain: 'polygon',
+        sport: getSportType(currentSport).key.toLowerCase(),
+        gameId: parseFloat(id),
       },
     });
-    console.log(data);
-    let dbArray = data.getLeaderboardTeams;
+    console.log(data.checkIfGameExistsInMultiChainLeaderboard);
+    let isMulti = data.checkIfGameExistsInMultiChainLeaderboard;
+    let dbArray;
+    if (isMulti) {
+      const { data } = await client.query({
+        query: GET_MULTI_CHAIN_LEADERBOARD_TEAMS,
+        variables: {
+          contract: 'polygon',
+          sport: 'nfl',
+          gameId: parseFloat(id),
+        },
+      });
+      console.log('multi-chain');
+      console.log(data);
+      dbArray = data.getMultiChainLeaderboardTeams;
+    } else {
+      const { data } = await client.query({
+        query: GET_LEADERBOARD_TEAMS,
+        variables: {
+          contract: 'polygon',
+          sport: 'nfl',
+          gameId: parseFloat(gameId),
+        },
+      });
+      console.log(data);
+      dbArray = data.getLeaderboardTeams;
+    }
+
     const startTimeFormatted = formatToUTCDate(gameData.start_time);
     const endTimeFormatted = formatToUTCDate(gameData.end_time);
     const playerLineups = await fetchTeamsJoinedInGame(gameId);
@@ -107,13 +135,17 @@ const Games = (props) => {
     }));
     console.log(mergedArrays);
     console.log(playerLineups);
-    const computedLineups = await buildLeaderboardSingle(
+
+    const computedLineups = await buildLeaderboard(
       mergedArrays,
       currentSport,
       startTimeFormatted,
       endTimeFormatted,
-      gameId
+      gameId,
+      id,
+      isMulti
     );
+
     console.log(computedLineups);
     // let computedLineup = await computeScores(
     //   playerLineups,
@@ -122,6 +154,62 @@ const Games = (props) => {
     //   endTimeFormatted
     // );
     setPlayerLineups(computedLineups);
+  }
+
+  async function getGameInfoFromServer() {
+    //get game "id" for the game first
+    const { data } = await client.query({
+      query: GET_GAME_BY_GAME_ID_AND_CHAIN,
+      variables: {
+        chain: 'polygon',
+        sport: getSportType(currentSport).key.toLowerCase(),
+        gameId: parseFloat(gameId.toString()),
+      },
+    });
+    console.log(data);
+
+    getLeaderboard(data.getGameByGameIdAndChain.id);
+
+    //singular game, no merge with other contracts
+
+    // const { data } = await client.query({
+    //   query: GET_LEADERBOARD_TEAMS,
+    //   variables: {
+    //     contract: 'polygon',
+    //     sport: 'nfl',
+    //     gameId: parseFloat(gameId),
+    //   },
+    // });
+    // console.log(data);
+    // let dbArray = data.getLeaderboardTeams;
+    // const startTimeFormatted = formatToUTCDate(gameData.start_time);
+    // const endTimeFormatted = formatToUTCDate(gameData.end_time);
+    // const playerLineups = await fetchTeamsJoinedInGame(gameId);
+    // const mergedArrays = dbArray.map((item) => ({
+    //   ...item,
+    //   ...playerLineups.find(
+    //     (newItem) =>
+    //       newItem.teamName === item.team_name &&
+    //       newItem.playerAddr.toLowerCase() == item.wallet_address.toLowerCase()
+    //   ),
+    // }));
+    // console.log(mergedArrays);
+    // console.log(playerLineups);
+    // const computedLineups = await buildLeaderboardSingle(
+    //   mergedArrays,
+    //   currentSport,
+    //   startTimeFormatted,
+    //   endTimeFormatted,
+    //   gameId
+    // );
+    // console.log(computedLineups);
+    // // let computedLineup = await computeScores(
+    // //   playerLineups,
+    // //   currentSport,
+    // //   startTimeFormatted,
+    // //   endTimeFormatted
+    // // );
+    // setPlayerLineups(computedLineups);
     //console.log(computedLineup);
   }
 
@@ -177,7 +265,7 @@ const Games = (props) => {
   useEffect(() => {
     if (gameData !== undefined && gameData !== null) {
       getPlayerTeams();
-      getTeamsJoinedInGame();
+      getGameInfoFromServer();
       // console.log('Joined team counter: ' + gameData.joined_team_counter);
       //get_player_teams(wallet, gameId);
       //get_all_players_lineup_with_index();
