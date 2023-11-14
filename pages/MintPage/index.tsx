@@ -770,12 +770,12 @@ export default function Home(props) {
                                     accountERC20ApprovalAmount <
                                       Number(minterConfig.minting_price_decimals_6) *
                                         selectedMintAmount
-                                      ? 'bg-indigo-lightgray pointer-events-none'
-                                      : 'bg-indigo-buttonblue'
-                                  } w-9/12 flex text-center justify-center items-center font-montserrat text-indigo-white p-4 text-xs mt-8`}
-                                  onClick={() => executeMintRegularPacks()}
+                                      ? ''
+                                      : 'hidden pointer-events-none'
+                                  } w-9/12 flex text-center justify-center items-center bg-indigo-buttonblue font-montserrat text-indigo-white p-4 text-xs mt-8`}
+                                  onClick={() => approveERC20TokenSpending()}
                                 >
-                                  Mint ${Math.floor(selectedMintAmount * format_price())} USDT
+                                  APPROVE THIS SMART CONTRACT TO CONTINUE MINTING
                                 </button>
                               )
                             )}
@@ -793,12 +793,12 @@ export default function Home(props) {
                                     accountERC20ApprovalAmount <
                                       Number(minterConfig.minting_price_decimals_6) *
                                         selectedMintAmount
-                                      ? ''
-                                      : 'hidden'
-                                  } w-9/12 flex text-center justify-center items-center bg-indigo-buttonblue font-montserrat text-indigo-white p-4 text-xs mt-8`}
-                                  onClick={() => approveERC20TokenSpending()}
+                                      ? 'bg-indigo-lightgray pointer-events-none'
+                                      : 'bg-indigo-buttonblue'
+                                  } w-9/12 flex text-center justify-center items-center font-montserrat text-indigo-white p-4 text-xs mt-8`}
+                                  onClick={() => executeMintRegularPacks()}
                                 >
-                                  APPROVE THIS SMART CONTRACT TO CONTINUE MINTING
+                                  Mint ${Math.floor(selectedMintAmount * format_price())} USDT
                                 </button>
                               )
                             )}
