@@ -532,8 +532,8 @@ export const GET_LEADERBOARD_RESULT = gql`
   }
 `;
 export const GET_GAME_BY_GAME_ID_AND_CHAIN = gql`
-  query GetGameByGameIdAndChain($gameId: Float!) {
-    getGameByGameIdAndChain(gameId: $gameId) {
+  query GetGameByGameIdAndChain($chain: String!, $gameId: Float!, $sport: String!) {
+    getGameByGameIdAndChain(chain: $chain, gameId: $gameId, sport: $sport) {
       id
       name
       gameId
@@ -564,5 +564,15 @@ export const GET_MULTI_CHAIN_LEADERBOARD_RESULT = gql`
       total
       chain_name
     }
+  }
+`;
+
+export const CHECK_IF_GAME_EXISTS_IN_MULTI_CHAIN_LEADERBOARD = gql`
+  query CheckIfGameExistsInMultiChainLeaderboard(
+    $chain: String!
+    $sport: String!
+    $gameId: Float!
+  ) {
+    checkIfGameExistsInMultiChainLeaderboard(chain: $chain, sport: $sport, gameId: $gameId)
   }
 `;
