@@ -180,11 +180,17 @@ const TokenDrawPage = (props) => {
           for (let j = 0; j < cleanHexString.length; j += 2) {
             asciiString += String.fromCharCode(parseInt(cleanHexString.substr(j, 2), 16));
           }
-
           // Remove non-ASCII characters
           asciiString = asciiString.replace(/[^\x20-\x7E]/g, '');
           // Trim leading and trailing whitespaces
           asciiString = asciiString.trim();
+
+          // Check and remove unexpected characters before parsing
+          const openingBraceIndex = asciiString.indexOf('{');
+          if (openingBraceIndex > 0) {
+            asciiString = asciiString.substring(openingBraceIndex);
+          }
+
           try {
             return JSON.parse(
               JSON.stringify({

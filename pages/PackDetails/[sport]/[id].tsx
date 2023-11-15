@@ -79,7 +79,7 @@ export default function PackDetails(props) {
         };
 
         // Call mint regular packs function
-        const receipt = await web3.eth
+        web3.eth
           .sendTransaction(tx)
           .on('transactionHash', function (hash) {
             console.log('Transaction Hash:', hash);
@@ -128,7 +128,7 @@ export default function PackDetails(props) {
               data: contractLogic.methods.mintBatch(requestId, accounts[0], query.id).encodeABI(),
             };
 
-            const mintReceipt = await web3.eth
+            web3.eth
               .sendTransaction(mintTx)
               .on('transactionHash', function (hash) {
                 console.log('Mint Transaction Hash:', hash);
@@ -190,7 +190,7 @@ export default function PackDetails(props) {
         };
 
         // Call the mint function
-        const receipt = await web3.eth
+        web3.eth
           .sendTransaction(tx)
           .on('transactionHash', function (hash) {
             console.log('Transaction Hash:', hash);
@@ -248,7 +248,7 @@ export default function PackDetails(props) {
                 .encodeABI(),
             };
 
-            const mintReceipt = await web3.eth
+            web3.eth
               .sendTransaction(mintTx)
               .on('transactionHash', function (hash) {
                 console.log('Mint Transaction Hash:', hash);
