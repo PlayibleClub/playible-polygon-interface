@@ -510,8 +510,8 @@ export const GET_GAME = gql`
 `;
 
 export const GET_LEADERBOARD_TEAMS = gql`
-  query GetLeaderboardTeams($contract: String!, $sport: String!, $gameId: Float!) {
-    getLeaderboardTeams(contract: $contract, sport: $sport, gameId: $gameId) {
+  query GetLeaderboardTeams($chain: String!, $sport: String!, $gameId: Float!) {
+    getLeaderboardTeams(chain: $chain, sport: $sport, gameId: $gameId) {
       game_team_id
       team_name
       wallet_address
@@ -521,8 +521,8 @@ export const GET_LEADERBOARD_TEAMS = gql`
   }
 `;
 export const GET_LEADERBOARD_RESULT = gql`
-  query GetLeaderboardResult($sport: String!, $gameId: Float!, $contract: String!) {
-    getLeaderboardResult(sport: $sport, gameId: $gameId, contract: $contract) {
+  query GetLeaderboardResult($sport: String!, $gameId: Float!, $chain: String!) {
+    getLeaderboardResult(sport: $sport, gameId: $gameId, chain: $chain) {
       game_team_id
       wallet_address
       team_name
