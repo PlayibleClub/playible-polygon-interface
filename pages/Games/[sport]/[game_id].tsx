@@ -98,10 +98,11 @@ const Games = (props) => {
     let isMulti = data.checkIfGameExistsInMultiChainLeaderboard;
     let dbArray;
     if (isMulti) {
+      console.log(id);
       const { data } = await client.query({
         query: GET_MULTI_CHAIN_LEADERBOARD_TEAMS,
         variables: {
-          contract: 'polygon',
+          chain: 'polygon',
           sport: 'nfl',
           gameId: parseFloat(id),
         },
@@ -113,7 +114,7 @@ const Games = (props) => {
       const { data } = await client.query({
         query: GET_LEADERBOARD_TEAMS,
         variables: {
-          contract: 'polygon',
+          chain: 'polygon',
           sport: 'nfl',
           gameId: parseFloat(gameId),
         },

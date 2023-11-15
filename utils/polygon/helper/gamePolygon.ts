@@ -180,10 +180,10 @@ export async function buildLeaderboard(
       variables: {
         sport: 'nfl',
         gameId: parseFloat(id),
-        contract: 'polygon',
+        chain: 'polygon',
       },
     });
-    leaderboardLineups = data.getLeaderboardResult;
+    leaderboardLineups = data.getMultiChainLeaderboardResult;
   } else {
     const { data } = await client.query({
       query: GET_LEADERBOARD_RESULT,
