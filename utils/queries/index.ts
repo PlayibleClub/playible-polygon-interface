@@ -487,7 +487,11 @@ export const GET_CRICKET_SCHEDULE = gql`
 `;
 export const MERGE_INTO_LEADERBOARD = gql`
   mutation Mutation($sport: String!, $polygonGameId: Float!, $nearGameId: Float!) {
-    mergeIntoLeaderboard(sport: $sport, polygonGameId: $polygonGameId, nearGameId: $nearGameId) {
+    mergeIntoMultiChainLeaderboard(
+      sport: $sport
+      polygonGameId: $polygonGameId
+      nearGameId: $nearGameId
+    ) {
       id
       nearGame {
         id
