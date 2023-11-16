@@ -32,3 +32,10 @@ export const GAME_NFL_POLYGON = {
   storage: '0x98109F4F5BFfAC8F4048F340A5dF041c760A5f5b',
   logic: '0xa9c20d0D28A31Af12719EF794097Efb6F3a0FdB0',
 };
+
+export const POL141USDC = {
+  title: 'USDC',
+  mainnet: '',
+  testnet: '0x0FA8781a83E46826621b3BC094Ea2A0212e71B23',
+  decimals: 1000000,
+}; //ERC-20 USDC for Polygon
