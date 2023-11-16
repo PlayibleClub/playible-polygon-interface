@@ -885,7 +885,7 @@ export default function Index(props) {
       gameStartTime: dateStart,
       gameEndTime: dateEnd,
       whitelist: whitelistInfo !== null ? whitelistInfo : [],
-      tokenTypeWhitelist: [2, 3], //hardcoded token type whitelist
+      tokenTypeWhitelist: [1, 2, 3], //hardcoded token type whitelist
       usageCost: 0,
       positions: positionsInfo,
       lineupLen: getLineupLength(currentSport),
