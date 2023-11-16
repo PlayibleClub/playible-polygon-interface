@@ -89,7 +89,48 @@ export const GET_ATHLETE_BY_API_ID = gql`
     }
   }
 `;
-
+export const GET_ENTRY_SUMMARY_ATHLETES = gql`
+  query GetEntrySummaryAthletes(
+    $chain: String!
+    $gameId: Float!
+    $address: String!
+    $teamName: String!
+    $from: DateTime!
+    $to: DateTime!
+  ) {
+    getEntrySummaryAthletes(
+      chain: $chain
+      gameId: $gameId
+      address: $address
+      teamName: $teamName
+      from: $from
+      to: $to
+    ) {
+      athlete {
+        apiId
+        firstName
+        lastName
+        team {
+          key
+        }
+        position
+        stats {
+          type
+          fantasyScore
+          gameDate
+          played
+        }
+        nftImage
+        nftImageLocked
+        nftImagePromo
+        isInjured
+        isActive
+      }
+      type
+      token_id
+    }
+  }
+`;
 export const GET_CRICKET_ATHLETE_BY_ID = gql`
   query GetCricketAthleteById(
     $getCricketAthleteById: Float!
@@ -485,7 +526,11 @@ export const GET_CRICKET_SCHEDULE = gql`
 `;
 export const MERGE_INTO_LEADERBOARD = gql`
   mutation Mutation($sport: String!, $polygonGameId: Float!, $nearGameId: Float!) {
-    mergeIntoLeaderboard(sport: $sport, polygonGameId: $polygonGameId, nearGameId: $nearGameId) {
+    mergeIntoMultiChainLeaderboard(
+      sport: $sport
+      polygonGameId: $polygonGameId
+      nearGameId: $nearGameId
+    ) {
       id
       nearGame {
         id
@@ -539,7 +584,7 @@ export const GET_GAME_BY_GAME_ID_AND_CHAIN = gql`
       gameId
       startTime
       endTime
-      contract
+      chain
       sport
     }
   }
