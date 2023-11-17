@@ -108,6 +108,7 @@ const Games = (props) => {
     const currentIndex = playerLineups.findIndex(
       (item) => item.accountId.toLowerCase() === accountId && item.teamName === teamName
     );
+    console.log(`account id: ${accountId} teamName: ${teamName}`);
     if (playerLineups[currentIndex].scoresChecked === false) {
       //lineup is from polygon, show entrysummary
       const startTimeFormatted = formatToUTCDate(1699326000);
@@ -125,6 +126,7 @@ const Games = (props) => {
       newLineups[currentIndex].scoresChecked = true;
       setPlayerLineups(newLineups);
       setRemountComponent(Math.random());
+      console.log('next is lineups');
       console.log(newLineups[currentIndex]);
     }
     setViewModal(false);
