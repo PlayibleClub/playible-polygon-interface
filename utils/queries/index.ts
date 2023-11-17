@@ -618,6 +618,14 @@ export const CHECK_IF_GAME_EXISTS_IN_MULTI_CHAIN_LEADERBOARD = gql`
     $sport: String!
     $gameId: Float!
   ) {
-    checkIfGameExistsInMultiChainLeaderboard(chain: $chain, sport: $sport, gameId: $gameId)
+    checkIfGameExistsInMultiChainLeaderboard(chain: $chain, sport: $sport, gameId: $gameId) {
+      id
+      nearGame {
+        gameId
+      }
+      polygonGame {
+        gameId
+      }
+    }
   }
 `;
