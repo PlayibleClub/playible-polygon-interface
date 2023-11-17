@@ -178,14 +178,15 @@ export async function buildLeaderboard2(
     });
     leaderboardResults = data.getLeaderboardResult;
   }
-  const merge = playerTeams.map((item) => ({
-    ...item,
-    ...leaderboardResults.find((newItem) => {
-      newItem.team_name === item.team_name && newItem.wallet_address === item.wallet_address;
-    }),
-  }));
+  // const merge = playerTeams.map((item) => ({
+  //   ...item,
+  //   ...leaderboardResults.find((newItem) => {
+  //     newItem.team_name === item.team_name && newItem.wallet_address === item.wallet_address;
+  //   }),
+  // }));
+  // console.log(leaderboardResults);
   const arrayToReturn = await Promise.all(
-    merge.map(async (item) => {
+    leaderboardResults.map(async (item) => {
       return {
         accountId: item.wallet_address,
         teamName: item.team_name,
@@ -196,6 +197,7 @@ export async function buildLeaderboard2(
       };
     })
   );
+  console.log(arrayToReturn);
   return arrayToReturn;
 }
 
