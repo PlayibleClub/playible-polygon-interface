@@ -124,6 +124,7 @@ const Games = (props) => {
       );
       newLineups[currentIndex].scoresChecked = true;
       setPlayerLineups(newLineups);
+      setRemountComponent(Math.random());
       console.log(newLineups[currentIndex]);
     }
     setViewModal(false);
