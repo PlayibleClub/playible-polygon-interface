@@ -81,7 +81,7 @@ const Games = (props) => {
     if (playerLineups[item.index].scoresChecked === false) {
       //lineup is from polygon, show entrysummary
       let newLineups = [...playerLineups];
-      const startTimeFormatted = formatToUTCDate(gameData.start_time);
+      const startTimeFormatted = formatToUTCDate(1699326000);
       const endTimeFormatted = formatToUTCDate(gameData.end_time);
 
       newLineups[item.index].lineup = await getScores(
@@ -110,7 +110,7 @@ const Games = (props) => {
     );
     if (playerLineups[currentIndex].scoresChecked === false) {
       //lineup is from polygon, show entrysummary
-      const startTimeFormatted = formatToUTCDate(gameData.start_time);
+      const startTimeFormatted = formatToUTCDate(1699326000);
       const endTimeFormatted = formatToUTCDate(gameData.end_time);
       let newLineups = [...playerLineups];
       newLineups[currentIndex].lineup = getScores(
@@ -182,7 +182,7 @@ const Games = (props) => {
       startTime: gameData.start_time,
       endTime: gameData.end_time,
     });
-    const startTimeFormatted = formatToUTCDate(gameData.start_time);
+    const startTimeFormatted = formatToUTCDate(1699326000);
     const endTimeFormatted = formatToUTCDate(gameData.end_time);
 
     const playerLineups = await buildLeaderboard2(
@@ -197,78 +197,78 @@ const Games = (props) => {
     console.log(playerLineups);
     setPlayerLineups(playerLineups);
   }
-  async function getLeaderboard(id) {
-    const { data } = await client.query({
-      query: CHECK_IF_GAME_EXISTS_IN_MULTI_CHAIN_LEADERBOARD,
-      variables: {
-        chain: 'polygon',
-        sport: getSportType(currentSport).key.toLowerCase(),
-        gameId: parseFloat(id),
-      },
-    });
-    //console.log(data.checkIfGameExistsInMultiChainLeaderboard);
-    let isMulti = data.checkIfGameExistsInMultiChainLeaderboard;
-    let dbArray;
-    if (isMulti) {
-      //console.log(id);
-      const { data } = await client.query({
-        query: GET_MULTI_CHAIN_LEADERBOARD_TEAMS,
-        variables: {
-          chain: 'polygon',
-          sport: 'nfl',
-          gameId: parseFloat(id),
-        },
-      });
-      //console.log('multi-chain');
-      //console.log(data);
-      dbArray = data.getMultiChainLeaderboardTeams;
-    } else {
-      const { data } = await client.query({
-        query: GET_LEADERBOARD_TEAMS,
-        variables: {
-          chain: 'polygon',
-          sport: 'nfl',
-          gameId: parseFloat(gameId),
-        },
-      });
-      //console.log(data);
-      dbArray = data.getLeaderboardTeams;
-    }
+  // async function getLeaderboard(id) {
+  //   const { data } = await client.query({
+  //     query: CHECK_IF_GAME_EXISTS_IN_MULTI_CHAIN_LEADERBOARD,
+  //     variables: {
+  //       chain: 'polygon',
+  //       sport: getSportType(currentSport).key.toLowerCase(),
+  //       gameId: parseFloat(id),
+  //     },
+  //   });
+  //   //console.log(data.checkIfGameExistsInMultiChainLeaderboard);
+  //   let isMulti = data.checkIfGameExistsInMultiChainLeaderboard;
+  //   let dbArray;
+  //   if (isMulti) {
+  //     //console.log(id);
+  //     const { data } = await client.query({
+  //       query: GET_MULTI_CHAIN_LEADERBOARD_TEAMS,
+  //       variables: {
+  //         chain: 'polygon',
+  //         sport: 'nfl',
+  //         gameId: parseFloat(id),
+  //       },
+  //     });
+  //     //console.log('multi-chain');
+  //     //console.log(data);
+  //     dbArray = data.getMultiChainLeaderboardTeams;
+  //   } else {
+  //     const { data } = await client.query({
+  //       query: GET_LEADERBOARD_TEAMS,
+  //       variables: {
+  //         chain: 'polygon',
+  //         sport: 'nfl',
+  //         gameId: parseFloat(gameId),
+  //       },
+  //     });
+  //     //console.log(data);
+  //     dbArray = data.getLeaderboardTeams;
+  //   }
 
-    const startTimeFormatted = formatToUTCDate(gameData.start_time);
-    const endTimeFormatted = formatToUTCDate(gameData.end_time);
-    const playerLineups = await fetchTeamsJoinedInGame(gameId);
-    //console.log(playerLineups);
-    const mergedArrays = dbArray.map((item) => ({
-      ...item,
-      ...playerLineups.find(
-        (newItem) =>
-          newItem.teamName === item.team_name &&
-          newItem.playerAddr.toLowerCase() == item.wallet_address.toLowerCase()
-      ),
-    }));
-    //console.log(mergedArrays);
-    //console.log(playerLineups);
+  //   const startTimeFormatted = formatToUTCDate(1699326000 * 1000);
+  //   const endTimeFormatted = formatToUTCDate(gameData.end_time);
+  //   const playerLineups = await fetchTeamsJoinedInGame(gameId);
+  //   //console.log(playerLineups);
+  //   const mergedArrays = dbArray.map((item) => ({
+  //     ...item,
+  //     ...playerLineups.find(
+  //       (newItem) =>
+  //         newItem.teamName === item.team_name &&
+  //         newItem.playerAddr.toLowerCase() == item.wallet_address.toLowerCase()
+  //     ),
+  //   }));
+  //   //console.log(mergedArrays);
+  //   //console.log(playerLineups);
 
-    const computedLineups = await buildLeaderboard(
-      mergedArrays,
-      currentSport,
-      startTimeFormatted,
-      endTimeFormatted,
-      gameId,
-      id,
-      isMulti
-    );
+  //   const computedLineups = await buildLeaderboard(
+  //     mergedArrays,
+  //     currentSport,
+  //     startTimeFormatted,
+  //     endTimeFormatted,
+  //     gameId,
+  //     id,
+  //     isMulti
+  //   );
 
-    //console.log(computedLineups);
-    // let computedLineup = await computeScores(
-    //   playerLineups,
-    //   currentSport,
-    //   startTimeFormatted,
-    //   endTimeFormatted
-    // );
-    setPlayerLineups(computedLineups);
-  }
+  //   //console.log(computedLineups);
+  //   // let computedLineup = await computeScores(
+  //   //   playerLineups,
+  //   //   currentSport,
+  //   //   startTimeFormatted,
+  //   //   endTimeFormatted
+  //   // );
+  //   setPlayerLineups(computedLineups);
+  // }
 
   async function getGameInfoFromServer() {
     //get game "id" for the game first
