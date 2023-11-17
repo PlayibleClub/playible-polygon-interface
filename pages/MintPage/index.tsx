@@ -13,9 +13,9 @@ import { useRouter } from 'next/router';
 import { useDispatch, useSelector } from 'react-redux';
 import Modal from 'components/modals/Modal';
 import PortfolioContainer from '../../components/containers/PortfolioContainer';
-import { POL141USDC } from '../../data/constants/polygonConstants';
+import { POL141USDC } from '../../data/constants/polygonContracts';
 import { MINT_STORAGE_COST, DEFAULT_MAX_FEES } from 'data/constants/gasFees';
-import { execute_claim_soulbound_pack, query_claim_status } from 'utils/near/helper';
+import { getContract } from 'utils/polygon';
 import Link from 'next/link';
 import { SPORT_TYPES, getSportType, SPORT_NAME_LOOKUP } from 'data/constants/sportConstants';
 import ModalPortfolioContainer from 'components/containers/ModalPortfolioContainer';
@@ -239,7 +239,6 @@ export default function Home(props) {
       days: format_days,
     };
   }
-  const usdcContractAddress = '0x0FA8781a83E46826621b3BC094Ea2A0212e71B23';
 
   async function fetchUserMintedTokenAmount() {
     try {
@@ -258,9 +257,13 @@ export default function Home(props) {
         const web3 = new Web3(window.ethereum);
 
         const usdcERC20ContractABI = usdcABI as unknown as ERC20ABI;
-        const usdcContract = new web3.eth.Contract(usdcERC20ContractABI, usdcContractAddress, {
-          from: wallet,
-        });
+        const usdcContract = new web3.eth.Contract(
+          usdcERC20ContractABI,
+          await getContract(POL141USDC),
+          {
+            from: wallet,
+          }
+        );
 
         const allowance = await usdcContract.methods
           .allowance(wallet, PACK_NFL_POLYGON.storage)
@@ -280,9 +283,13 @@ export default function Home(props) {
         const web3 = new Web3(window.ethereum);
 
         const usdcERC20ContractABI = usdcABI as unknown as ERC20ABI;
-        const usdcContract = new web3.eth.Contract(usdcERC20ContractABI, usdcContractAddress, {
-          from: wallet,
-        });
+        const usdcContract = new web3.eth.Contract(
+          usdcERC20ContractABI,
+          await getContract(POL141USDC),
+          {
+            from: wallet,
+          }
+        );
 
         const usdcGasEstimate = await usdcContract.methods
           .approve(PACK_NFL_POLYGON.storage, accountBalance)
@@ -291,7 +298,7 @@ export default function Home(props) {
         const gasPrice = await web3.eth.getGasPrice();
         const tx = {
           from: wallet,
-          to: usdcContractAddress,
+          to: await getContract(POL141USDC),
           //@ts-ignore
           gas: parseInt(usdcGasEstimate),
           gasPrice: gasPrice,
@@ -520,6 +527,7 @@ export default function Home(props) {
     fetchUserAccountBalance();
     fetchUserMintedTokenAmount();
     console.log('Approved Amount:', accountERC20ApprovalAmount);
+    console.log('USDC address:', getContract(usePOL141));
   }, [currentSport, minterConfig, wallet, remountComponent, approvedComplete, loading]);
 
   useEffect(() => {
