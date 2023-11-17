@@ -103,7 +103,7 @@ const Games = (props) => {
     setCurrentIndex(item.index);
   };
 
-  const viewPopup = (accountId, teamName) => {
+  const viewPopup = async (accountId, teamName) => {
     console.log('hello');
     const currentIndex = playerLineups.findIndex(
       (item) => item.accountId.toLowerCase() === accountId && item.teamName === teamName
@@ -114,7 +114,7 @@ const Games = (props) => {
       const startTimeFormatted = formatToUTCDate(1699326000);
       const endTimeFormatted = formatToUTCDate(gameData.end_time);
       let newLineups = [...playerLineups];
-      newLineups[currentIndex].lineup = getScores(
+      newLineups[currentIndex].lineup = await getScores(
         'polygon',
         0,
         gameId,
