@@ -1,9 +1,19 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import PropTypes from 'prop-types';
-import useViewport  from 'utils/address/helper';
+import useViewport from 'utils/address/helper';
 import Link from 'next/link';
 const LeaderboardComponent = (props) => {
-  const { teamName, teamScore, index, accountId, gameId, onClickFn, isExtendedLeaderboard, isEntrySummary } = props;
+  const {
+    teamName,
+    lineupLength,
+    teamScore,
+    index,
+    accountId,
+    gameId,
+    onClickFn,
+    isExtendedLeaderboard,
+    isEntrySummary,
+  } = props;
   const { cutTeam, cutAddress, entryCut, entryCutTeam } = useViewport();
 
   return (
@@ -19,13 +29,13 @@ const LeaderboardComponent = (props) => {
         className="flex items-center justify-center ml-2 md:ml-6 bg-indigo-black text-indigo-white
         w-1/2 text-center p-1 iphone5:text-xs md:text-base font-monument"
       >
-        {cutTeam(teamName)} <br/>   
-        {cutAddress(accountId)} 
+        {cutTeam(teamName)} <br />
+        {cutAddress(accountId)}
       </div>
       <div className="flex items-center justify-center ml-6 w-12 text-center content-center font-black">
         {teamScore?.toFixed(2)}
       </div>
-      <div className="flex items-center justify-center ml-6 relative">
+      <div className={`flex items-center justify-center ml-6 relative`}>
         <div style={{ width: '32px', overflow: 'hidden' }}>
           <button
             onClick={(e) => {
@@ -43,6 +53,7 @@ const LeaderboardComponent = (props) => {
 
 LeaderboardComponent.propTypes = {
   teamName: PropTypes.string,
+  lineupLength: PropTypes.number,
   teamScore: PropTypes.number,
   index: PropTypes.number,
   accountId: PropTypes.string,
