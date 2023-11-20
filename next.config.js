@@ -12,7 +12,7 @@ nextConfig = {
     ],
   },
   env: {
-    POLYGON_ENV: process.env.POLYGON_ENV,
+    NEAR_ENV: process.env.NEAR_ENV,
     GRAPHQL_URL: process.env.GRAPHQL_URL,
     ADMIN: process.env.ADMIN,
     AWS_ACCESS_KEY: process.env.AWS_ACCESS_KEY,

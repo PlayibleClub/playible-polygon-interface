@@ -9,25 +9,13 @@ export const PROMO_ATHLETE_NFL_POLYGON = {
 };
 
 export const PACK_NFL_POLYGON = {
-  testnet: {
-    storage: '0x0B0f1766f78cf70bAcA70AF09Ac8DDd8Fce77D4F',
-    logic: '0xC8F5326F774F4d84FE573333bEa5539a8184C777',
-  },
-  mainnet: {
-    storage: '',
-    logic: '',
-  },
+  storage: '0x0B0f1766f78cf70bAcA70AF09Ac8DDd8Fce77D4F',
+  logic: '0xC8F5326F774F4d84FE573333bEa5539a8184C777',
 };
 
 export const PROMO_PACK_NFL_POLYGON = {
-  testnet: {
-    storage: '0xF60892E9D001686e41E8FE097894a36933c6A695',
-    logic: '0xa8C039983a03dAd358c9f52812F6D7Cad90211da',
-  },
-  mainnet: {
-    storage: '',
-    logic: '',
-  },
+  storage: '0xF60892E9D001686e41E8FE097894a36933c6A695',
+  logic: '0xa8C039983a03dAd358c9f52812F6D7Cad90211da',
 };
 
 export const OPENPACK_NFL_POLYGON = {
@@ -41,13 +29,6 @@ export const PROMO_OPENPACK_NFL_POLYGON = {
 };
 
 export const GAME_NFL_POLYGON = {
-  storage: '0x324D6Ef494Af8AdEc9aB9821642823849da1600B',
-  logic: '0x38F84A16c42F63FD6E04D28d9a790529c64BA1c7',
+  storage: '0x98109F4F5BFfAC8F4048F340A5dF041c760A5f5b',
+  logic: '0xa9c20d0D28A31Af12719EF794097Efb6F3a0FdB0',
 };
-
-export const POL141USDC = {
-  title: 'USDC',
-  mainnet: '',
-  testnet: '0x0FA8781a83E46826621b3BC094Ea2A0212e71B23',
-  decimals: 1000000,
-}; //ERC-20 USDC for Polygon

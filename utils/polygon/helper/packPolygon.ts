@@ -5,7 +5,6 @@ import { packLogicABI } from 'utils/polygon/ABI/pack_nft_logic';
 import pack_nft_storage from 'utils/polygon/ABI/pack_nft.json';
 import pack_nft_logic from 'utils/polygon/ABI/pack_nft_logic.json';
 import { PACK_NFL_POLYGON } from 'data/constants/polygonContracts';
-import { getConfig } from 'utils/polygon';
 
 const packStorageNFLContractABI = pack_nft_storage as unknown as packStorageABI;
 const packLogicNFLContractABI = pack_nft_logic as unknown as packLogicABI;
@@ -15,7 +14,7 @@ export async function fetchRegularPackTokenMetadata(tokenId) {
     if (window.ethereum) {
       console.log('Fetch regular pack tokens for owner function called');
       await window.ethereum.request({ method: 'eth_requestAccounts' });
-      const contract = new Contract(packLogicNFLContractABI, PACK_NFL_POLYGON[getConfig()].logic);
+      const contract = new Contract(packLogicNFLContractABI, PACK_NFL_POLYGON.logic);
       contract.setProvider(window.ethereum);
 
       const metadata = await contract.methods.getTokenMetadataById(tokenId).call();
@@ -33,7 +32,7 @@ export async function fetchRegularPackTokensByOwner(account, fromIndex, limit) {
     if (window.ethereum) {
       console.log('Fetch regular pack tokens for owner function called');
       await window.ethereum.request({ method: 'eth_requestAccounts' });
-      const contract = new Contract(packLogicNFLContractABI, PACK_NFL_POLYGON[getConfig()].logic);
+      const contract = new Contract(packLogicNFLContractABI, PACK_NFL_POLYGON.logic);
       contract.setProvider(window.ethereum);
 
       const response = await contract.methods
@@ -53,7 +52,7 @@ export async function fetchRegularPackTokenSupplyByOwner(account) {
       console.log('Fetch regular pack token supply function called');
       await window.ethereum.request({ method: 'eth_requestAccounts' });
       //@ts-ignore
-      const contract = new Contract(packLogicNFLContractABI, PACK_NFL_POLYGON[getConfig()].logic);
+      const contract = new Contract(packLogicNFLContractABI, PACK_NFL_POLYGON.logic);
       contract.setProvider(window.ethereum);
 
       const tokenSupply = await contract.methods
@@ -71,10 +70,7 @@ export async function fetchAccountBalance(accountId) {
     if (window.ethereum) {
       console.log('Fetch account balance called');
       await window.ethereum.request({ method: 'eth_requestAccounts' });
-      const contract = new Contract(
-        packStorageNFLContractABI,
-        PACK_NFL_POLYGON[getConfig()].storage
-      );
+      const contract = new Contract(packStorageNFLContractABI, PACK_NFL_POLYGON.storage);
       contract.setProvider(window.ethereum);
 
       // Call the get account balance function
@@ -92,10 +88,7 @@ export async function fetchRegularPackPrice() {
     if (window.ethereum) {
       console.log('Fetch regular pack price called');
       await window.ethereum.request({ method: 'eth_requestAccounts' });
-      const contract = new Contract(
-        packStorageNFLContractABI,
-        PACK_NFL_POLYGON[getConfig()].storage
-      );
+      const contract = new Contract(packStorageNFLContractABI, PACK_NFL_POLYGON.storage);
       contract.setProvider(window.ethereum);
 
       // Call the get regular pack price function
@@ -114,7 +107,7 @@ export async function fetchMintedTokenAmount(accountId) {
     if (window.ethereum) {
       console.log('Fetch minted token amount called');
       await window.ethereum.request({ method: 'eth_requestAccounts' });
-      const contract = new Contract(packLogicNFLContractABI, PACK_NFL_POLYGON[getConfig()].logic);
+      const contract = new Contract(packLogicNFLContractABI, PACK_NFL_POLYGON.logic);
       contract.setProvider(window.ethereum);
 
       // Call the get regular pack price function
@@ -135,7 +128,7 @@ export async function checkTokenOwner(account, id) {
     if (window.ethereum) {
       console.log('Fetch check token owner called');
       await window.ethereum.request({ method: 'eth_requestAccounts' });
-      const contract = new Contract(packLogicNFLContractABI, PACK_NFL_POLYGON[getConfig()].logic);
+      const contract = new Contract(packLogicNFLContractABI, PACK_NFL_POLYGON.logic);
       contract.setProvider(window.ethereum);
 
       // Call the getTokenOwner function
