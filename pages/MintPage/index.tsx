@@ -15,7 +15,7 @@ import Modal from 'components/modals/Modal';
 import PortfolioContainer from '../../components/containers/PortfolioContainer';
 import { POL141USDC } from '../../data/constants/polygonContracts';
 import { MINT_STORAGE_COST, DEFAULT_MAX_FEES } from 'data/constants/gasFees';
-import { getContract } from 'utils/polygon';
+import { getConfig } from 'utils/polygon';
 import Link from 'next/link';
 import { SPORT_TYPES, getSportType, SPORT_NAME_LOOKUP } from 'data/constants/sportConstants';
 import ModalPortfolioContainer from 'components/containers/ModalPortfolioContainer';
@@ -259,14 +259,14 @@ export default function Home(props) {
         const usdcERC20ContractABI = usdcABI as unknown as ERC20ABI;
         const usdcContract = new web3.eth.Contract(
           usdcERC20ContractABI,
-          await getContract(POL141USDC),
+          await POL141USDC[getConfig()],
           {
             from: wallet,
           }
         );
 
         const allowance = await usdcContract.methods
-          .allowance(wallet, PACK_NFL_POLYGON.storage)
+          .allowance(wallet, PACK_NFL_POLYGON[getConfig()].storage)
           .call();
 
         setAccountERC20ApprovalAmount(Number(allowance));
@@ -285,24 +285,26 @@ export default function Home(props) {
         const usdcERC20ContractABI = usdcABI as unknown as ERC20ABI;
         const usdcContract = new web3.eth.Contract(
           usdcERC20ContractABI,
-          await getContract(POL141USDC),
+          await POL141USDC[getConfig()],
           {
             from: wallet,
           }
         );
 
         const usdcGasEstimate = await usdcContract.methods
-          .approve(PACK_NFL_POLYGON.storage, accountBalance)
+          .approve(PACK_NFL_POLYGON[getConfig()].storage, accountBalance)
           .estimateGas();
 
         const gasPrice = await web3.eth.getGasPrice();
         const tx = {
           from: wallet,
-          to: await getContract(POL141USDC),
+          to: await POL141USDC[getConfig()],
           //@ts-ignore
           gas: parseInt(usdcGasEstimate),
           gasPrice: gasPrice,
-          data: usdcContract.methods.approve(PACK_NFL_POLYGON.storage, accountBalance).encodeABI(),
+          data: usdcContract.methods
+            .approve(PACK_NFL_POLYGON[getConfig()].storage, accountBalance)
+            .encodeABI(),
         };
 
         web3.eth
@@ -373,7 +375,10 @@ export default function Home(props) {
 
         const web3 = new Web3(window.ethereum);
 
-        const contract = new web3.eth.Contract(packLogicNFLContractABI, PACK_NFL_POLYGON.logic);
+        const contract = new web3.eth.Contract(
+          packLogicNFLContractABI,
+          PACK_NFL_POLYGON[getConfig()].logic
+        );
 
         // Estimate gas for mintPacks function
         console.log('Amount:', selectedMintAmount);
@@ -385,7 +390,7 @@ export default function Home(props) {
         const gasPrice = await web3.eth.getGasPrice();
         const tx = {
           from: wallet,
-          to: PACK_NFL_POLYGON.logic,
+          to: PACK_NFL_POLYGON[getConfig()].logic,
           //@ts-ignore
           gas: parseInt(gasEstimate),
           gasPrice: gasPrice,
@@ -527,7 +532,6 @@ export default function Home(props) {
     fetchUserAccountBalance();
     fetchUserMintedTokenAmount();
     console.log('Approved Amount:', accountERC20ApprovalAmount);
-    console.log('USDC address:', getContract(usePOL141));
   }, [currentSport, minterConfig, wallet, remountComponent, approvedComplete, loading]);
 
   useEffect(() => {
