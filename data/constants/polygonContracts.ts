@@ -9,8 +9,14 @@ export const PROMO_ATHLETE_NFL_POLYGON = {
 };
 
 export const PACK_NFL_POLYGON = {
-  storage: '0x0B0f1766f78cf70bAcA70AF09Ac8DDd8Fce77D4F',
-  logic: '0xC8F5326F774F4d84FE573333bEa5539a8184C777',
+  testnet: {
+    storage: '0x0B0f1766f78cf70bAcA70AF09Ac8DDd8Fce77D4F',
+    logic: '0xC8F5326F774F4d84FE573333bEa5539a8184C777',
+  },
+  mainnet: {
+    storage: '',
+    logic: '',
+  },
 };
 
 export const PROMO_PACK_NFL_POLYGON = {
