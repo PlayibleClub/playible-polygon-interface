@@ -1,11 +1,23 @@
 export const ATHLETE_NFL_POLYGON = {
-  storage: '0x087cc23E5aAC9c1C6DE94bf0CC2310c7b0E9399F',
-  logic: '0x6F2501fEC1E0470a58AF79B30c5Ca74d2a8DEc88', //currently using promotional addresses in game-frontend branch
+  testnet: {
+    storage: '0x087cc23E5aAC9c1C6DE94bf0CC2310c7b0E9399F',
+    logic: '0x6F2501fEC1E0470a58AF79B30c5Ca74d2a8DEc88',
+  },
+  mainnet: {
+    storage: '',
+    logic: '',
+  },
 };
 
 export const PROMO_ATHLETE_NFL_POLYGON = {
-  storage: '0x882Ae675D1501e7F5F4d005f33A3f3ac99F5D808',
-  logic: '0x1Bb33843Ab6E4f71cE1d432adC9262e9A9d91044',
+  testnet: {
+    storage: '0x882Ae675D1501e7F5F4d005f33A3f3ac99F5D808',
+    logic: '0x1Bb33843Ab6E4f71cE1d432adC9262e9A9d91044',
+  },
+  mainnet: {
+    storage: '',
+    logic: '',
+  },
 };
 
 export const PACK_NFL_POLYGON = {
@@ -31,18 +43,36 @@ export const PROMO_PACK_NFL_POLYGON = {
 };
 
 export const OPENPACK_NFL_POLYGON = {
-  storage: '0x63bbAA8a44c7D70c3e796717c4e95e1C32b0Bda9',
-  logic: '0x89F9DFD35e7dA51dD8664218F65aAaE7D98e3EAa',
+  testnet: {
+    storage: '0xf62e1FF360CD18b87a755AECFd856Ecaf975a90E',
+    logic: '0xCb53993d12F68C16fA77FB9F1B01809c3969cEe7',
+  },
+  mainnet: {
+    storage: '',
+    logic: '',
+  },
 };
 
 export const PROMO_OPENPACK_NFL_POLYGON = {
-  storage: '0x46b7769F209B84f95D1c15F1F13C1EB0Ce7F1648',
-  logic: '0x5a34A355D6098c8757BA7EA25d39C7215113D35e',
+  testnet: {
+    storage: '0x734E8ecC43B73EDeE4CfA6296E143617F34DB06a',
+    logic: '0x2995E1DFCaf9943b50B3D7D4DF0116E207022eB4',
+  },
+  mainnet: {
+    storage: '',
+    logic: '',
+  },
 };
 
 export const GAME_NFL_POLYGON = {
-  storage: '0x324D6Ef494Af8AdEc9aB9821642823849da1600B',
-  logic: '0x38F84A16c42F63FD6E04D28d9a790529c64BA1c7',
+  testnet: {
+    storage: '0x324D6Ef494Af8AdEc9aB9821642823849da1600B',
+    logic: '0x38F84A16c42F63FD6E04D28d9a790529c64BA1c7',
+  },
+  mainnet: {
+    storage: '',
+    logic: '',
+  },
 };
 
 export const POL141USDC = {

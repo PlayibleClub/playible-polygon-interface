@@ -11,7 +11,7 @@ import { useRouter } from 'next/router';
 import 'regenerator-runtime/runtime';
 import { BrowserView, MobileView, isBrowser, isMobile } from 'react-device-detect';
 import { transactions, utils, WalletConnection, providers } from 'near-api-js';
-import { getRPCProvider, getContract, getConfig } from 'utils/near';
+import { getRPCProvider, getContract } from 'utils/near';
 import { useWalletSelector } from 'contexts/WalletSelectorContext';
 import { decode } from 'js-base64';
 import { useLazyQuery, useQuery } from '@apollo/client';
@@ -34,6 +34,8 @@ import { query_nft_tokens_by_id } from 'utils/near/helper';
 import Web3 from 'web3';
 import { GET_ATHLETE_BY_ID } from 'utils/queries';
 import { ATHLETE_NFL_POLYGON } from 'data/constants/polygonContracts';
+import { getConfig } from 'utils/polygon';
+
 interface responseExperimentalTxStatus {
   receipts: Array<receipt>;
 }
@@ -54,7 +56,7 @@ const TokenDrawPage = (props) => {
   const { query, result } = props;
 
   const dispatch = useDispatch();
-  const footballContract = ATHLETE_NFL_POLYGON.logic;
+  const footballContract = ATHLETE_NFL_POLYGON[getConfig()].logic;
   const [videoPlaying, setVideoPlaying] = useState(true);
   const [sport, setSport] = useState('');
   const [loading, setLoading] = useState(true);
@@ -180,11 +182,17 @@ const TokenDrawPage = (props) => {
           for (let j = 0; j < cleanHexString.length; j += 2) {
             asciiString += String.fromCharCode(parseInt(cleanHexString.substr(j, 2), 16));
           }
-
           // Remove non-ASCII characters
           asciiString = asciiString.replace(/[^\x20-\x7E]/g, '');
           // Trim leading and trailing whitespaces
           asciiString = asciiString.trim();
+
+          // Check and remove unexpected characters before parsing
+          const openingBraceIndex = asciiString.indexOf('{');
+          if (openingBraceIndex > 0) {
+            asciiString = asciiString.substring(openingBraceIndex);
+          }
+
           try {
             return JSON.parse(
               JSON.stringify({
