@@ -86,8 +86,7 @@ const Games = (props) => {
 
       newLineups[item.index].lineup = await getScores(
         playerLineups[item.index].chain,
-        nearGameId,
-        polygonGameId,
+        playerLineups[item.index].chain === 'polygon' ? polygonGameId : nearGameId,
         playerLineups[item.index].accountId,
         playerLineups[item.index].teamName,
         startTimeFormatted,
@@ -116,7 +115,6 @@ const Games = (props) => {
       let newLineups = [...playerLineups];
       newLineups[currentIndex].lineup = await getScores(
         'polygon',
-        0,
         gameId,
         playerLineups[currentIndex].accountId,
         playerLineups[currentIndex].teamName,
