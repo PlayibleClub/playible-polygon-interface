@@ -53,10 +53,6 @@ export default function PackDetails(props) {
       if (window.ethereum) {
         await window.ethereum.request({ method: 'eth_requestAccounts' });
         const web3 = new Web3(window.ethereum);
-        const contractStorage = new web3.eth.Contract(
-          openPackStorage,
-          OPENPACK_NFL_POLYGON.storage
-        );
         const contractLogic = new web3.eth.Contract(openPackLogic, OPENPACK_NFL_POLYGON.logic);
         const accounts = await web3.eth.getAccounts();
         //@ts-ignore
@@ -74,6 +70,38 @@ export default function PackDetails(props) {
           setNumberOfConfirmation(1);
           console.log('hasRequest is false');
           mint();
+        }
+      }
+    } catch (error) {
+      console.error('Error:', error);
+    }
+  }
+
+  async function checkRequestPromo() {
+    try {
+      if (window.ethereum) {
+        await window.ethereum.request({ method: 'eth_requestAccounts' });
+        const web3 = new Web3(window.ethereum);
+        const contractLogic = new web3.eth.Contract(
+          promoOpenPackLogic,
+          PROMO_OPENPACK_NFL_POLYGON.logic
+        );
+        const accounts = await web3.eth.getAccounts();
+        //@ts-ignore
+        let hasRequest = await contractLogic.methods.isUserToRequestIdZero(accounts[0]).call();
+
+        // Log the value of hasRequest
+        console.log('Value of hasRequest:', hasRequest);
+
+        // Check the value of hasRequest and display messages accordingly
+        if (hasRequest) {
+          setNumberOfConfirmation(2);
+          console.log('hasRequest is true');
+          requestAndMintPromo();
+        } else {
+          setNumberOfConfirmation(1);
+          console.log('hasRequest is false');
+          mintPromo();
         }
       }
     } catch (error) {
@@ -120,9 +148,71 @@ export default function PackDetails(props) {
             data: contractLogic.methods.mintBatchWithoutPacks(requestId).encodeABI(),
           };
 
-          setTimeout(() => {
-            alert('Request timed out. Please refresh the page');
-          }, 30000);
+          web3.eth
+            .sendTransaction(mintTx)
+            .on('transactionHash', function (hash) {
+              console.log('Mint Transaction Hash:', hash);
+            })
+            .on('confirmation', function () {
+              console.log('User confirmed the transaction');
+              setConfirmationNumber(+1);
+            })
+            .on('receipt', function (receipt) {
+              console.log('Minting Successful');
+              router.push(`/TokenDrawPage/${receipt.transactionHash}`);
+            })
+            .on('error', function (error) {
+              console.log('error', error);
+              alert('Request timed out. Please refresh the page');
+            });
+        }
+      }
+    } catch (error) {
+      console.error('Error Minting:', error);
+    }
+  }
+
+  async function mintPromo() {
+    try {
+      if (window.ethereum) {
+        setLoading(true); // Set loading state to true
+        await window.ethereum.request({ method: 'eth_requestAccounts' });
+
+        const web3 = new Web3(window.ethereum);
+
+        const contractStorage = new web3.eth.Contract(
+          promoOpenPackStorage,
+          PROMO_OPENPACK_NFL_POLYGON.storage
+        );
+        const contractLogic = new web3.eth.Contract(
+          promoOpenPackLogic,
+          PROMO_OPENPACK_NFL_POLYGON.logic
+        );
+        const accounts = await web3.eth.getAccounts();
+        //@ts-ignore
+        const requestId = await contractStorage.methods.getRequestIdByUser(accounts[0]).call();
+        //@ts-ignore
+        let fulfilled = await contractStorage.methods.getRequestStatus(requestId).call();
+        //@ts-ignore
+        if (fulfilled.fulfilled) {
+          const gasPrice = await web3.eth.getGasPrice();
+
+          // Estimate gas for mintPacks function
+          const gasEstimate = await contractLogic.methods
+            //@ts-ignore
+            .mintBatchWithoutPacks(requestId, packType)
+            .estimateGas({ from: accounts[0] });
+          console.log('Estimated Gas:', gasEstimate);
+
+          const mintTx = {
+            from: accounts[0],
+            to: PROMO_OPENPACK_NFL_POLYGON.logic,
+            //@ts-ignore
+            gas: parseInt(gasEstimate),
+            gasPrice: gasPrice,
+            //@ts-ignore
+            data: contractLogic.methods.mintBatchWithoutPacks(requestId, packType).encodeABI(),
+          };
 
           web3.eth
             .sendTransaction(mintTx)
@@ -284,7 +374,6 @@ export default function PackDetails(props) {
           promoOpenPackLogic,
           PROMO_OPENPACK_NFL_POLYGON.logic
         );
-
         const accounts = await web3.eth.getAccounts();
 
         // Estimate gas for mintPacks function
@@ -303,7 +392,7 @@ export default function PackDetails(props) {
           data: contractStorage.methods.requestRandomWords().encodeABI(),
         };
 
-        // Call the mint function
+        // Call mint regular packs function
         web3.eth
           .sendTransaction(tx)
           .on('transactionHash', function (hash) {
@@ -311,76 +400,83 @@ export default function PackDetails(props) {
           })
           .on('confirmation', function () {
             console.log('User confirmed the transaction');
-            setConfirmationNumber((prev) => prev + 1);
-          });
-
-        console.log('Request Successful');
-
-        // Get requestId by user
-        const requestId = await contractStorage.methods
-          //@ts-ignore
-          .getRequestIdByUser(accounts[0])
-          .call();
-        console.log('Random words requested successfully, requestId:', requestId);
-
-        let count = 0;
-        const intervalId = setInterval(async () => {
-          count++;
-          console.log('Checking request status...', count);
-          if (count >= 30) {
-            alert('Request timed out. Please refresh the page');
-            clearInterval(intervalId);
-            return;
-          }
-          //@ts-ignore
-
-          let fulfilled = await contractStorage.methods
+            setConfirmationNumber(+1);
+          })
+          .then(async function () {
+            console.log('Request Successful');
             //@ts-ignore
-            .getRequestStatus(requestId)
-            .call();
-
-          //@ts-ignore
-          if (fulfilled.fulfilled) {
-            clearInterval(intervalId);
-
-            // Estimate gas for mintPacks function
-            const mintGasEstimate = await contractLogic.methods
+            let requestId = await contractStorage.methods.getRequestIdByUser(accounts[0]).call();
+            //@ts-ignore
+            while (requestId === BigInt(0)) {
+              console.log('Waiting for the request to have a non-zero requestId...');
+              // Wait for a period before checking again
+              await new Promise((resolve) => setTimeout(resolve, 5000)); // Wait for 5 seconds
               //@ts-ignore
-              .mintBatch(requestId, accounts[0], query.id, packType)
-              .estimateGas({ from: accounts[0] });
+              requestId = await contractStorage.methods.getRequestIdByUser(accounts[0]).call();
+            }
 
-            const mintTx = {
-              from: accounts[0],
-              to: PROMO_OPENPACK_NFL_POLYGON.logic,
-              //@ts-ignore
-              gas: parseInt(mintGasEstimate),
-              gasPrice: gasPrice,
-              //@ts-ignore
-              data: contractLogic.methods
-                //@ts-ignore
-                .mintBatch(requestId, accounts[0], query.id, packType)
-                .encodeABI(),
-            };
+            console.log('Received requestId:', requestId);
 
-            web3.eth
-              .sendTransaction(mintTx)
-              .on('transactionHash', function (hash) {
-                console.log('Mint Transaction Hash:', hash);
-              })
-              .on('confirmation', function () {
-                console.log('User confirmed the transaction');
-                setConfirmationNumber((prev) => prev + 1);
-              })
-              .on('receipt', function (receipt) {
-                console.log('Minting Successful');
-                router.push(`/TokenDrawPage/${receipt.transactionHash}`);
-              })
-              .on('error', function (error) {
-                console.log('error', error);
+            let count = 0;
+            const intervalId = setInterval(async () => {
+              count++;
+              console.log('Checking request status...', count);
+              if (count >= 30) {
                 alert('Request timed out. Please refresh the page');
-              });
-          }
-        }, 5000); // Check every 5 seconds
+                clearInterval(intervalId);
+                return;
+              }
+              //@ts-ignore
+              let fulfilled = await contractStorage.methods.getRequestStatus(requestId).call();
+              //@ts-ignore
+              if (fulfilled.fulfilled) {
+                clearInterval(intervalId);
+                const updatedGasPrice = await web3.eth.getGasPrice();
+
+                // Estimate gas for mintPacks function
+                const gasEstimate = await contractLogic.methods
+                  //@ts-ignore
+                  .mintBatchWithoutPacks(requestId, packType)
+                  .estimateGas({ from: accounts[0] });
+                console.log('Estimated Gas:', gasEstimate);
+
+                const mintTx = {
+                  from: accounts[0],
+                  to: PROMO_OPENPACK_NFL_POLYGON.logic,
+                  //@ts-ignore
+                  gas: parseInt(gasEstimate),
+                  gasPrice: updatedGasPrice,
+
+                  data: contractLogic.methods
+                    //@ts-ignore
+                    .mintBatchWithoutPacks(requestId, packType)
+                    .encodeABI(),
+                };
+
+                web3.eth
+                  .sendTransaction(mintTx)
+                  .on('transactionHash', function (hash) {
+                    console.log('Mint Transaction Hash:', hash);
+                  })
+                  .on('confirmation', function () {
+                    console.log('User confirmed the transaction');
+                    setConfirmationNumber(+1);
+                  })
+                  .on('receipt', function (receipt) {
+                    console.log('Minting Successful');
+                    router.push(`/TokenDrawPage/${receipt.transactionHash}`);
+                  })
+                  .on('error', function (error) {
+                    console.log('error', error);
+                    alert('Request timed out. Please refresh the page');
+                  });
+              }
+            }, 5000); // Check every 5 seconds
+          })
+          .catch(function (error) {
+            console.error('Error in transaction:', error);
+            setLoading(false); // Set loading state to false on error
+          });
       }
     } catch (error) {
       console.error('Error Request and Mint:', error);
@@ -487,11 +583,9 @@ export default function PackDetails(props) {
                   if (packType === '1') {
                     console.log('Calling requestAndMint');
                     checkRequest();
-                    // requestAndMint();
                   } else {
                     console.log('Calling requestAndMintPromo');
-                    checkRequest();
-                    // requestAndMintPromo();
+                    checkRequestPromo();
                   }
                 }}
               >
