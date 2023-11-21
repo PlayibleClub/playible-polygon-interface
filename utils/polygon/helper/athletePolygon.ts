@@ -12,6 +12,7 @@ import {
   PromoAthleteLogicABI,
   PromoAthleteStorageABI,
 } from '../ABI/athleteABIs';
+import { getConfig } from '..';
 import { ATHLETE_NFL_POLYGON, PROMO_ATHLETE_NFL_POLYGON } from 'data/constants/polygonContracts';
 
 export async function fetchFilteredAthleteSupplyForOwner(accountId, position, team, name, type) {
@@ -30,10 +31,10 @@ export async function fetchFilteredAthleteSupplyForOwner(accountId, position, te
       let address = '';
       if (type === 'regular') {
         abi = regular_athlete_logic as unknown as RegularAthleteLogicABI;
-        address = ATHLETE_NFL_POLYGON.logic;
+        address = ATHLETE_NFL_POLYGON[getConfig()].logic;
       } else if (type === 'promo' || type === 'soulbound') {
         abi = promo_athlete_logic as unknown as PromoAthleteLogicABI;
-        address = PROMO_ATHLETE_NFL_POLYGON.logic;
+        address = PROMO_ATHLETE_NFL_POLYGON[getConfig()].logic;
       }
       //const abi = promo_athlete_logic as unknown as PromoAthleteLogicABI;
       await window.ethereum.request({ method: 'eth_requestAccounts' });
@@ -85,11 +86,11 @@ export async function fetchFilteredAthleteTokensForOwner(
       });
       if (type === 'regular') {
         abi = regular_athlete_logic as unknown as RegularAthleteLogicABI;
-        address = ATHLETE_NFL_POLYGON.logic;
+        address = ATHLETE_NFL_POLYGON[getConfig()].logic;
       } else if (type === 'promo' || type === 'soulbound') {
         console.log('promo query 23');
         abi = promo_athlete_logic as unknown as PromoAthleteLogicABI;
-        address = PROMO_ATHLETE_NFL_POLYGON.logic;
+        address = PROMO_ATHLETE_NFL_POLYGON[getConfig()].logic;
       }
       console.log(type);
       //console.log(position);
@@ -190,11 +191,11 @@ export async function fetchAthleteTokenMetadataAndURIById(
       let address = '';
       if (type === 'regular') {
         abi = regular_athlete_logic as unknown as RegularAthleteLogicABI;
-        address = ATHLETE_NFL_POLYGON.logic;
+        address = ATHLETE_NFL_POLYGON[getConfig()].logic;
       } else if (type === 'promo' || type === 'soulbound') {
         console.log('promo query 23');
         abi = promo_athlete_logic as unknown as PromoAthleteLogicABI;
-        address = PROMO_ATHLETE_NFL_POLYGON.logic;
+        address = PROMO_ATHLETE_NFL_POLYGON[getConfig()].logic;
       }
       const contract = new Contract(abi, address);
       contract.setProvider(window.ethereum);

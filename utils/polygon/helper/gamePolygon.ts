@@ -11,6 +11,7 @@ import {
   GET_MULTI_CHAIN_LEADERBOARD_RESULT,
   GET_ENTRY_SUMMARY_ATHLETES,
 } from 'utils/queries';
+import { getConfig } from '..';
 import { SPORT_NAME_LOOKUP } from 'data/constants/sportConstants';
 import client from 'apollo-client';
 export async function fetchAllGames() {
@@ -19,7 +20,7 @@ export async function fetchAllGames() {
       console.log('call function');
       await window.ethereum.request({ method: 'eth_requestAccounts' });
       const abi = game_storage as unknown as GameStorageABI;
-      const contract = new Contract(abi, GAME_NFL_POLYGON.storage);
+      const contract = new Contract(abi, GAME_NFL_POLYGON[getConfig()].storage);
       contract.setProvider(window.ethereum);
       const result = await contract.methods.getAllGamesInfo().call({ gas: '30000000' });
       //console.log(result);
@@ -34,7 +35,7 @@ export async function fetchGame(gameId: number) {
     if (window.ethereum) {
       await window.ethereum.request({ method: 'eth_requestAccounts' });
       const abi = game_storage as unknown as GameStorageABI;
-      const contract = new Contract(abi, GAME_NFL_POLYGON.storage);
+      const contract = new Contract(abi, GAME_NFL_POLYGON[getConfig()].storage);
       contract.setProvider(window.ethereum);
       const result = await contract.methods.getGameInfo(gameId).call({ gas: '30000000' });
       return result;
@@ -48,7 +49,7 @@ export async function fetchGameCounter() {
     if (window.ethereum) {
       await window.ethereum.request({ method: 'eth_requestAccounts' });
       const abi = game_storage as unknown as GameStorageABI;
-      const contract = new Contract(abi, GAME_NFL_POLYGON.storage);
+      const contract = new Contract(abi, GAME_NFL_POLYGON[getConfig()].storage);
       contract.setProvider(window.ethereum);
       const result = await contract.methods.getTotalGamesCounter().call();
       return result;
@@ -64,7 +65,7 @@ export async function fetchPlayerTeams(accountId, gameId: number) {
       console.log(accountId);
       await window.ethereum.request({ method: 'eth_requestAccounts' });
       const abi = game_storage as unknown as GameStorageABI;
-      const contract = new Contract(abi, GAME_NFL_POLYGON.storage);
+      const contract = new Contract(abi, GAME_NFL_POLYGON[getConfig()].storage);
       contract.setProvider(window.ethereum);
       const result = await contract.methods
         .getPlayerTeam(accountId, gameId)
@@ -82,7 +83,7 @@ export async function fetchPlayerLineup(accountId: string, gameId: number, teamN
     if (window.ethereum) {
       await window.ethereum.request({ method: 'eth_requestAccounts' });
       const abi = game_storage as unknown as GameStorageABI;
-      const contract = new Contract(abi, GAME_NFL_POLYGON.storage);
+      const contract = new Contract(abi, GAME_NFL_POLYGON[getConfig()].storage);
       contract.setProvider(window.ethereum);
       let result = await contract.methods
         .getPlayerLineup(accountId, gameId, teamName)
@@ -103,7 +104,7 @@ export async function fetchJoinedPlayerCount(accountId, gameId: number) {
       console.log(accountId);
       await window.ethereum.request({ method: 'eth_requestAccounts' });
       const abi = game_storage as unknown as GameStorageABI;
-      const contract = new Contract(abi, GAME_NFL_POLYGON.storage);
+      const contract = new Contract(abi, GAME_NFL_POLYGON[getConfig()].storage);
       contract.setProvider(window.ethereum);
       const result = await contract.methods.viewPlayerJoinedCounter(gameId).call();
       //console.log(result);
@@ -119,7 +120,7 @@ export async function fetchJoinedAddresses(accountId: string, gameId: number) {
     if (window.ethereum) {
       await window.ethereum.request({ method: 'eth_requestAccounts' });
       const abi = game_storage as unknown as GameStorageABI;
-      const contract = new Contract(abi, GAME_NFL_POLYGON.storage);
+      const contract = new Contract(abi, GAME_NFL_POLYGON[getConfig()].storage);
       contract.setProvider(window.ethereum);
       const result = await contract.methods.getAddressesJoinedInGame(gameId).call();
       // console.log(result);
@@ -135,7 +136,7 @@ export async function fetchTeamsJoinedInGame(gameId: number) {
     if (window.ethereum) {
       await window.ethereum.request({ method: 'eth_requestAccounts' });
       const abi = game_storage as unknown as GameStorageABI;
-      const contract = new Contract(abi, GAME_NFL_POLYGON.storage);
+      const contract = new Contract(abi, GAME_NFL_POLYGON[getConfig()].storage);
       contract.setProvider(window.ethereum);
       const result = await contract.methods.getTeamsJoinedInGame(gameId).call();
 
@@ -409,7 +410,7 @@ export async function executeAddGame(args: AddGameType, accountId: string) {
       await window.ethereum.request({ method: 'eth_requestAccounts' });
       const web3 = new Web3(window.ethereum);
       const abi = game_logic as unknown as GameLogicABI;
-      const contract = new web3.eth.Contract(abi, GAME_NFL_POLYGON.logic);
+      const contract = new web3.eth.Contract(abi, GAME_NFL_POLYGON[getConfig()].logic);
 
       const gasEstimate = await contract.methods
         .addGameToStorage(
@@ -430,7 +431,7 @@ export async function executeAddGame(args: AddGameType, accountId: string) {
       const gasPrice = await web3.eth.getGasPrice();
       const tx = {
         from: accountId,
-        to: GAME_NFL_POLYGON.logic,
+        to: GAME_NFL_POLYGON[getConfig()].logic,
         gas: Number(gasEstimate).toString(),
         gasPrice: gasPrice,
         data: contract.methods
@@ -479,7 +480,7 @@ export async function executeSubmitLineup(
       await window.ethereum.request({ method: 'eth_requestAccounts' });
       const web3 = new Web3(window.ethereum);
       const abi = game_logic as unknown as GameLogicABI;
-      const contract = new web3.eth.Contract(abi, GAME_NFL_POLYGON.logic);
+      const contract = new web3.eth.Contract(abi, GAME_NFL_POLYGON[getConfig()].logic);
 
       const gasEstimate = await contract.methods
         .submitLineup(gameId, teamName, tokenIds, tokenPromoIds, lineup, apiIds)
@@ -489,7 +490,7 @@ export async function executeSubmitLineup(
       const gasPrice = await web3.eth.getGasPrice();
       const tx = {
         from: accountId,
-        to: GAME_NFL_POLYGON.logic,
+        to: GAME_NFL_POLYGON[getConfig()].logic,
         gas: Number(gasEstimate).toString(),
         gasPrice: gasPrice,
         data: contract.methods
