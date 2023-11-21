@@ -7,7 +7,6 @@ import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/router';
 import Main from 'components/Main';
-import client from 'apollo-client';
 import { getRPCProvider } from 'utils/near';
 import LeaderboardComponent from '../components/LeaderboardComponent';
 import ViewTeamsContainer from 'components/containers/ViewTeamsContainer';
@@ -18,16 +17,7 @@ import {
   fetchTeamsJoinedInGame,
   computeScores,
   fetchPlayerTeams,
-  buildLeaderboard,
-  buildLeaderboard2,
-  getScores,
 } from 'utils/polygon/helper/gamePolygon';
-import {
-  GET_LEADERBOARD_TEAMS,
-  GET_GAME_BY_GAME_ID_AND_CHAIN,
-  CHECK_IF_GAME_EXISTS_IN_MULTI_CHAIN_LEADERBOARD,
-  GET_MULTI_CHAIN_LEADERBOARD_TEAMS,
-} from 'utils/queries';
 import { getNflWeek, getNflSeason, formatToUTCDate } from 'utils/date/helper';
 import LoadingPageDark from 'components/loading/LoadingPageDark';
 import { useDispatch } from 'react-redux';
@@ -47,16 +37,12 @@ const Games = (props) => {
   const router = useRouter();
   const dispatch = useDispatch();
   const [playerLineups, setPlayerLineups] = useState([]);
-  const [remountComponent, setRemountComponent] = useState(0);
-  const [leaderboardLineups, setLeaderboardLineups] = useState([]);
   const provider = new providers.JsonRpcProvider({ url: getRPCProvider() });
   const {
     state: { wallet },
   } = useWalletSelector();
   const [playerTeams, setPlayerTeams] = useState([]);
   const [playerTeamSorted, setPlayerTeamSorted] = useState([]);
-  const [nearGameId, setNearGameId] = useState(0);
-  const [polygonGameId, setPolygonGameId] = useState(0);
   const [gameInfo, setGameInfo] = useState({});
   const [week, setWeek] = useState(0);
   const [nflSeason, setNflSeason] = useState('');
@@ -74,259 +60,34 @@ const Games = (props) => {
     //setGameData(await query_game_data(game_id, getSportType(currentSport).gameContract));
   }
 
-  const togglePopup = async (item) => {
-    console.log('hello');
+  const togglePopup = (item) => {
     console.log(item);
-    console.log(playerLineups[item.index]);
-    if (playerLineups[item.index].scoresChecked === false) {
-      //lineup is from polygon, show entrysummary
-      let newLineups = [...playerLineups];
-      const startTimeFormatted = formatToUTCDate(1699326000);
-      const endTimeFormatted = formatToUTCDate(gameData.end_time);
-
-      newLineups[item.index].lineup = await getScores(
-        playerLineups[item.index].chain,
-        nearGameId,
-        polygonGameId,
-        playerLineups[item.index].accountId,
-        playerLineups[item.index].teamName,
-        startTimeFormatted,
-        endTimeFormatted
-      );
-      newLineups[item.index].scoresChecked = true;
-      console.log(newLineups[item.index]);
-      setPlayerLineups(newLineups);
-      setRemountComponent(Math.random());
-    }
     setViewModal(false);
     setEntryModal(true);
     setCurrentIndex(item.index);
   };
 
-  const viewPopup = async (accountId, teamName) => {
-    console.log('hello');
+  const viewPopup = (accountId, teamName) => {
     const currentIndex = playerLineups.findIndex(
       (item) => item.accountId.toLowerCase() === accountId && item.teamName === teamName
     );
-    console.log(`account id: ${accountId} teamName: ${teamName}`);
-    if (playerLineups[currentIndex].scoresChecked === false) {
-      //lineup is from polygon, show entrysummary
-      const startTimeFormatted = formatToUTCDate(1699326000);
-      const endTimeFormatted = formatToUTCDate(gameData.end_time);
-      let newLineups = [...playerLineups];
-      newLineups[currentIndex].lineup = await getScores(
-        'polygon',
-        0,
-        gameId,
-        playerLineups[currentIndex].accountId,
-        playerLineups[currentIndex].teamName,
-        startTimeFormatted,
-        endTimeFormatted
-      );
-      newLineups[currentIndex].scoresChecked = true;
-      setPlayerLineups(newLineups);
-      setRemountComponent(Math.random());
-      console.log('next is lineups');
-      console.log(newLineups[currentIndex]);
-    }
     setViewModal(false);
     setEntryModal(true);
     setCurrentIndex(currentIndex);
   };
 
-  async function getLeaderboardOnlyBackend(id) {
-    let isMulti = true;
-    const { data, error } = await client.query({
-      query: CHECK_IF_GAME_EXISTS_IN_MULTI_CHAIN_LEADERBOARD,
-      variables: {
-        chain: 'polygon',
-        sport: getSportType(currentSport).key.toLowerCase(),
-        gameId: parseFloat(id),
-      },
-      errorPolicy: 'all',
-    });
-    console.log(data);
-    let leaderboardDetails;
-    if (data === null) {
-      isMulti = false;
-    } else {
-      leaderboardDetails = data.checkIfGameExistsInMultiChainLeaderboard;
-    }
-
-    //console.log(data.checkIfGameExistsInMultiChainLeaderboard);
-
-    console.log(isMulti);
-    let dbArray;
-    if (isMulti) {
-      const { data } = await client.query({
-        query: GET_MULTI_CHAIN_LEADERBOARD_TEAMS,
-        variables: {
-          chain: 'polygon',
-          sport: 'nfl',
-          gameId: parseFloat(id),
-        },
-      });
-      setNearGameId(leaderboardDetails.nearGame.gameId);
-      setPolygonGameId(leaderboardDetails.polygonGame.gameId);
-      dbArray = data.getMultiChainLeaderboardTeams;
-    } else {
-      const { data } = await client.query({
-        query: GET_LEADERBOARD_TEAMS,
-        variables: {
-          chain: 'polygon',
-          sport: 'nfl',
-          gameId: parseFloat(gameId),
-        },
-      });
-
-      dbArray = data.getLeaderboardTeams;
-    }
-    console.log({
-      startTime: gameData.start_time,
-      endTime: gameData.end_time,
-    });
-    const startTimeFormatted = formatToUTCDate(1699326000);
+  async function getTeamsJoinedInGame() {
+    const startTimeFormatted = formatToUTCDate(gameData.start_time);
     const endTimeFormatted = formatToUTCDate(gameData.end_time);
-
-    const playerLineups = await buildLeaderboard2(
-      dbArray,
+    const playerLineups = await fetchTeamsJoinedInGame(gameId);
+    console.log(playerLineups);
+    let computedLineup = await computeScores(
+      playerLineups,
       currentSport,
       startTimeFormatted,
-      endTimeFormatted,
-      gameId,
-      id,
-      isMulti
+      endTimeFormatted
     );
-    console.log(playerLineups);
-    setPlayerLineups(playerLineups);
-  }
-  // async function getLeaderboard(id) {
-  //   const { data } = await client.query({
-  //     query: CHECK_IF_GAME_EXISTS_IN_MULTI_CHAIN_LEADERBOARD,
-  //     variables: {
-  //       chain: 'polygon',
-  //       sport: getSportType(currentSport).key.toLowerCase(),
-  //       gameId: parseFloat(id),
-  //     },
-  //   });
-  //   //console.log(data.checkIfGameExistsInMultiChainLeaderboard);
-  //   let isMulti = data.checkIfGameExistsInMultiChainLeaderboard;
-  //   let dbArray;
-  //   if (isMulti) {
-  //     //console.log(id);
-  //     const { data } = await client.query({
-  //       query: GET_MULTI_CHAIN_LEADERBOARD_TEAMS,
-  //       variables: {
-  //         chain: 'polygon',
-  //         sport: 'nfl',
-  //         gameId: parseFloat(id),
-  //       },
-  //     });
-  //     //console.log('multi-chain');
-  //     //console.log(data);
-  //     dbArray = data.getMultiChainLeaderboardTeams;
-  //   } else {
-  //     const { data } = await client.query({
-  //       query: GET_LEADERBOARD_TEAMS,
-  //       variables: {
-  //         chain: 'polygon',
-  //         sport: 'nfl',
-  //         gameId: parseFloat(gameId),
-  //       },
-  //     });
-  //     //console.log(data);
-  //     dbArray = data.getLeaderboardTeams;
-  //   }
-
-  //   const startTimeFormatted = formatToUTCDate(1699326000 * 1000);
-  //   const endTimeFormatted = formatToUTCDate(gameData.end_time);
-  //   const playerLineups = await fetchTeamsJoinedInGame(gameId);
-  //   //console.log(playerLineups);
-  //   const mergedArrays = dbArray.map((item) => ({
-  //     ...item,
-  //     ...playerLineups.find(
-  //       (newItem) =>
-  //         newItem.teamName === item.team_name &&
-  //         newItem.playerAddr.toLowerCase() == item.wallet_address.toLowerCase()
-  //     ),
-  //   }));
-  //   //console.log(mergedArrays);
-  //   //console.log(playerLineups);
-
-  //   const computedLineups = await buildLeaderboard(
-  //     mergedArrays,
-  //     currentSport,
-  //     startTimeFormatted,
-  //     endTimeFormatted,
-  //     gameId,
-  //     id,
-  //     isMulti
-  //   );
-
-  //   //console.log(computedLineups);
-  //   // let computedLineup = await computeScores(
-  //   //   playerLineups,
-  //   //   currentSport,
-  //   //   startTimeFormatted,
-  //   //   endTimeFormatted
-  //   // );
-  //   setPlayerLineups(computedLineups);
-  // }
-
-  async function getGameInfoFromServer() {
-    //get game "id" for the game first
-    const { data } = await client.query({
-      query: GET_GAME_BY_GAME_ID_AND_CHAIN,
-      variables: {
-        chain: 'polygon',
-        sport: getSportType(currentSport).key.toLowerCase(),
-        gameId: parseFloat(gameId.toString()),
-      },
-    });
-    console.log(data);
-
-    //getLeaderboard(data.getGameByGameIdAndChain.id);
-    getLeaderboardOnlyBackend(data.getGameByGameIdAndChain.id);
-    //singular game, no merge with other contracts
-
-    // const { data } = await client.query({
-    //   query: GET_LEADERBOARD_TEAMS,
-    //   variables: {
-    //     contract: 'polygon',
-    //     sport: 'nfl',
-    //     gameId: parseFloat(gameId),
-    //   },
-    // });
-    // console.log(data);
-    // let dbArray = data.getLeaderboardTeams;
-    // const startTimeFormatted = formatToUTCDate(gameData.start_time);
-    // const endTimeFormatted = formatToUTCDate(gameData.end_time);
-    // const playerLineups = await fetchTeamsJoinedInGame(gameId);
-    // const mergedArrays = dbArray.map((item) => ({
-    //   ...item,
-    //   ...playerLineups.find(
-    //     (newItem) =>
-    //       newItem.teamName === item.team_name &&
-    //       newItem.playerAddr.toLowerCase() == item.wallet_address.toLowerCase()
-    //   ),
-    // }));
-    // console.log(mergedArrays);
-    // console.log(playerLineups);
-    // const computedLineups = await buildLeaderboardSingle(
-    //   mergedArrays,
-    //   currentSport,
-    //   startTimeFormatted,
-    //   endTimeFormatted,
-    //   gameId
-    // );
-    // console.log(computedLineups);
-    // // let computedLineup = await computeScores(
-    // //   playerLineups,
-    // //   currentSport,
-    // //   startTimeFormatted,
-    // //   endTimeFormatted
-    // // );
-    // setPlayerLineups(computedLineups);
+    setPlayerLineups(computedLineup);
     //console.log(computedLineup);
   }
 
@@ -336,7 +97,7 @@ const Games = (props) => {
 
   function getAccountScore(accountId, teamName) {
     const x = playerLineups.findIndex((x) => x.accountId === accountId && x.teamName === teamName);
-    return playerLineups[x]?.total.toFixed(2);
+    return playerLineups[x]?.sumScore.toFixed(2);
   }
 
   function getAccountPlacement(accountId, teamName) {
@@ -368,7 +129,7 @@ const Games = (props) => {
     if (x !== undefined) {
       setPlayerTeamSorted(
         x.sort(function (a, b) {
-          return b.total - a.total;
+          return b.sumScore - a.sumScore;
         })
       );
     }
@@ -382,7 +143,7 @@ const Games = (props) => {
   useEffect(() => {
     if (gameData !== undefined && gameData !== null) {
       getPlayerTeams();
-      getGameInfoFromServer();
+      getTeamsJoinedInGame();
       // console.log('Joined team counter: ' + gameData.joined_team_counter);
       //get_player_teams(wallet, gameId);
       //get_all_players_lineup_with_index();
@@ -480,8 +241,7 @@ const Games = (props) => {
                       <LeaderboardComponent
                         accountId={item.accountId}
                         teamName={item.teamName}
-                        lineupLength={item.lineup.length}
-                        teamScore={item.total}
+                        teamScore={item.sumScore}
                         index={index}
                         gameId={gameId}
                         isExtendedLeaderboard={false}
@@ -516,8 +276,7 @@ const Games = (props) => {
                           <LeaderboardComponent
                             accountId={item.accountId}
                             teamName={item.teamName}
-                            lineupLength={item.lineup.length}
-                            teamScore={item.total}
+                            teamScore={item.sumScore}
                             index={index}
                             gameId={gameId}
                             isExtendedLeaderboard={true}
@@ -540,11 +299,7 @@ const Games = (props) => {
                 </button>
               </Modal>
 
-              <EntrySummaryModal
-                key={remountComponent}
-                title={'ENTRY SUMMARY'}
-                visible={entryModal}
-              >
+              <EntrySummaryModal title={'ENTRY SUMMARY'} visible={entryModal}>
                 <div className=" transform iphone5:scale-55 md:scale-85 md:-mt-6 iphoneX:fixed iphoneX:-mt-6 iphone5:-ml-14 iPhonneX:-ml-20 md:-ml-12 md:static">
                   <ModalPortfolioContainer
                     title={playerLineups[currentIndex]?.teamName}
@@ -561,11 +316,7 @@ const Games = (props) => {
                             return (
                               <EntrySummaryPopup
                                 AthleteName={`${item.name}`}
-                                AvgScore={
-                                  item.stats_breakdown !== undefined
-                                    ? item.stats_breakdown?.toFixed(2)
-                                    : 0
-                                }
+                                AvgScore={item.stats_breakdown?.toFixed(2)}
                                 id={item.primary_id}
                                 uri={item.image}
                                 hoverable={false}

@@ -121,8 +121,8 @@ export default function Home(props) {
     //  setNbaSeason((await getSportCurrentSeason()).data.getSportCurrentSeason.apiSeason);
     await getNflCurrentSeason({
       variables: {
-        startDate: formatToUTCDate(getUTCTimestampFromLocal() / 1000),
-        endDate: formatToUTCDate(getUTCTimestampFromLocal() + (60 * 60 * 24) / 1000), // add 24 hours
+        startDate: formatToUTCDate(getUTCTimestampFromLocal()),
+        endDate: formatToUTCDate(getUTCTimestampFromLocal() + 60 * 60 * 24 * 1000), // add 24 hours
       },
     }).then((query) => {
       console.log(query);

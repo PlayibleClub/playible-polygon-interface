@@ -38,17 +38,11 @@ const AdminGameComponent = (props) => {
                 <div className="font-thin text-sm">
                   START DATE
                   <div className="text-base font-monument">
-                    {moment
-                      .utc(start_time * 1000)
-                      .local()
-                      .format(formatString)}
+                    {moment.utc(start_time).local().format(formatString)}
                   </div>
                   <div className="font-thin text-sm">END DATE</div>
                   <div className="text-base font-monument">
-                    {moment
-                      .utc(end_time * 1000)
-                      .local()
-                      .format(formatString)}
+                    {moment.utc(end_time).local().format(formatString)}
                   </div>
                 </div>
               </div>
