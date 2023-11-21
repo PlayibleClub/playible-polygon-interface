@@ -107,6 +107,7 @@ export default function Packs() {
       case 'ALL':
         if (sportList.length > 0) {
           setSportList([]);
+          setRemountComponent(Math.random());
         }
         break;
       case 'PROMOTIONAL':
@@ -119,6 +120,7 @@ export default function Packs() {
       case 'STARTER':
         if ((sportList.length = 0)) {
           setSportList(prevSport);
+          setRemountComponent(Math.random());
         }
         setCurrentTotal(packs.length);
         break;
@@ -317,15 +319,9 @@ export default function Packs() {
     }
     try {
       const resultFootball = await fetchRegularPackTokenSupplyByOwner(wallet);
-
-      setTotalSupply(Number(resultFootball));
-    } catch (error) {
-      console.error(error);
-    }
-    try {
       const resultFootballSb = await fetchPromoPackTokenSupplyByOwner(wallet);
 
-      setTotalSupply(Number(resultFootballSb));
+      setTotalSupply(Number(resultFootballSb) + Number(resultFootball));
     } catch (error) {
       console.error(error);
     }
@@ -376,14 +372,16 @@ export default function Packs() {
       getPackLimit();
       setPageCount(
         categoryList[0].isActive
-          ? Math.floor(totalSupply / packLimit)
+          ? Math.ceil(totalSupply / packLimit)
+          : categoryList[1].isActive
+          ? Math.ceil(totalSoulboundPacks / packLimit)
           : Math.ceil(totalPacks / packLimit)
       );
       const endOffset = packOffset + packLimit;
       console.log(`Loading packs from ${packOffset} to ${endOffset}`);
       console.log('isClaimedStatus', isClaimed);
       console.log('Total Supply:', totalSupply);
-
+      console.log('Total Promo supply:', totalSoulboundPacks);
       console.log('packOffset:', packOffset);
       console.log('PackLimit: ', packLimit);
       console.log('endOffset:', endOffset);
@@ -398,7 +396,7 @@ export default function Packs() {
     } else {
       console.log('Account Id not found');
     }
-  }, [totalPacks, pageCount, packOffset, totalSupply, currentPage]);
+  }, [totalPacks, pageCount, packOffset, totalSupply, currentPage, totalSoulboundPacks]);
 
   useEffect(() => {
     console.log('Packs', packs);
