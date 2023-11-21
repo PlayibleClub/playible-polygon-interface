@@ -48,7 +48,9 @@ function getNflSeason(playibleNflGameStart) {
 }
 
 function formatToUTCDate(date) {
-  return moment(date).utc().format('YYYY-MM-DDTHH:mm:ss.000[Z]');
+  return moment(date * 1000)
+    .utc()
+    .format('YYYY-MM-DDTHH:mm:ss.000[Z]');
 }
 export {
   getUTCTimestampFromLocal,
