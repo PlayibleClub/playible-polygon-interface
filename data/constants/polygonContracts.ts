@@ -43,13 +43,25 @@ export const PROMO_PACK_NFL_POLYGON = {
 };
 
 export const OPENPACK_NFL_POLYGON = {
-  storage: '0x63bbAA8a44c7D70c3e796717c4e95e1C32b0Bda9',
-  logic: '0x89F9DFD35e7dA51dD8664218F65aAaE7D98e3EAa',
+  testnet: {
+    storage: '0xf62e1FF360CD18b87a755AECFd856Ecaf975a90E',
+    logic: '0xCb53993d12F68C16fA77FB9F1B01809c3969cEe7',
+  },
+  mainnet: {
+    storage: '',
+    logic: '',
+  },
 };
 
 export const PROMO_OPENPACK_NFL_POLYGON = {
-  storage: '0x46b7769F209B84f95D1c15F1F13C1EB0Ce7F1648',
-  logic: '0x5a34A355D6098c8757BA7EA25d39C7215113D35e',
+  testnet: {
+    storage: '0x734E8ecC43B73EDeE4CfA6296E143617F34DB06a',
+    logic: '0x2995E1DFCaf9943b50B3D7D4DF0116E207022eB4',
+  },
+  mainnet: {
+    storage: '',
+    logic: '',
+  },
 };
 
 export const GAME_NFL_POLYGON = {
