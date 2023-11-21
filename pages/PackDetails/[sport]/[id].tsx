@@ -120,6 +120,10 @@ export default function PackDetails(props) {
             data: contractLogic.methods.mintBatchWithoutPacks(requestId).encodeABI(),
           };
 
+          setTimeout(() => {
+            alert('Request timed out. Please refresh the page');
+          }, 30000);
+
           web3.eth
             .sendTransaction(mintTx)
             .on('transactionHash', function (hash) {
@@ -187,6 +191,18 @@ export default function PackDetails(props) {
           })
           .then(async function () {
             console.log('Request Successful');
+            //@ts-ignore
+            let requestId = await contractStorage.methods.getRequestIdByUser(accounts[0]).call();
+            //@ts-ignore
+            while (requestId === BigInt(0)) {
+              console.log('Waiting for the request to have a non-zero requestId...');
+              // Wait for a period before checking again
+              await new Promise((resolve) => setTimeout(resolve, 5000)); // Wait for 5 seconds
+              //@ts-ignore
+              requestId = await contractStorage.methods.getRequestIdByUser(accounts[0]).call();
+            }
+
+            console.log('Received requestId:', requestId);
 
             let count = 0;
             const intervalId = setInterval(async () => {
@@ -197,23 +213,8 @@ export default function PackDetails(props) {
                 clearInterval(intervalId);
                 return;
               }
-              let requestId = await contractStorage.methods
-                //@ts-ignore
-                .getRequestIdByUser(accounts[0])
-                .call();
-              console.log('Random words requested successful, requestId:', requestId);
               //@ts-ignore
               let fulfilled = await contractStorage.methods.getRequestStatus(requestId).call();
-
-              // Add a loop to wait for the request to be fulfilled
-              //@ts-ignore
-              while (requestId === BigInt(0)) {
-                console.log('Waiting for the request to be fulfilled...');
-                await new Promise((resolve) => setTimeout(resolve, 1000)); // wait for 1 second before checking again
-                //@ts-ignore
-                fulfilled = await contractStorage.methods.getRequestStatus(requestId).call();
-              }
-
               //@ts-ignore
               if (fulfilled.fulfilled) {
                 clearInterval(intervalId);
