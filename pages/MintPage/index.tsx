@@ -478,6 +478,7 @@ export default function Home(props) {
   useEffect(() => {
     fetchClaimStatus(wallet);
     console.log('SFR:', sportFromRedux);
+    console.log(wallet);
   }, [currentSport, categoryList, isSignedIn]);
 
   useEffect(() => {
@@ -532,6 +533,7 @@ export default function Home(props) {
     fetchUserAccountBalance();
     fetchUserMintedTokenAmount();
     console.log('Approved Amount:', accountERC20ApprovalAmount);
+    console.log(wallet);
   }, [currentSport, minterConfig, wallet, remountComponent, approvedComplete, loading]);
 
   useEffect(() => {
