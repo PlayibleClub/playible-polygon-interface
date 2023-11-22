@@ -883,14 +883,14 @@ export default function Index(props) {
     return counter;
   }
 
-  async function execute_add_game(tokenTypeWhitelist) {
+  async function execute_add_game(token_TypeWhitelist) {
     //deconstructPosition(positionsInfo);
     const args: AddGameType = {
       gameId: parseInt(details.gameId),
       gameStartTime: dateStart,
       gameEndTime: dateEnd,
       whitelist: whitelistInfo !== null ? whitelistInfo : [],
-      tokenTypeWhitelist: [1, 2, 3], //hardcoded token type whitelist
+      tokenTypeWhitelist: token_TypeWhitelist, //hardcoded token type whitelist
       usageCost: 0,
       positions: positionsInfo,
       lineupLen: getLineupLength(currentSport),
@@ -1040,16 +1040,18 @@ export default function Index(props) {
   const [selectedPromo, setSelectedPromo] = useState(true);
   const [selectedSoulbound, setSelectedSoulbound] = useState(true);
 
-  let tokenTypeWhitelist = []
+  let token_TypeWhitelist = []
     if(selectedRegular){
-      tokenTypeWhitelist.push('regular');
+      token_TypeWhitelist.push('1');
       }
     if(selectedPromo){
-      tokenTypeWhitelist.push('promo');
+      token_TypeWhitelist.push('2');
       }
     if(selectedSoulbound){
-      tokenTypeWhitelist.push('soulbound');
+      token_TypeWhitelist.push('3');
       }
+
+      console.log("TOKEN VALUES", token_TypeWhitelist);
 
   useEffect(() => {
     currentTotal !== 0 ? setPageCount(Math.ceil(currentTotal / gamesLimit)) : setPageCount(1);
@@ -1215,7 +1217,6 @@ export default function Index(props) {
                         setSelectedPromo(selectedPromo);
                         setSelectedSoulbound(selectedSoulbound);
                         setRemountComponent(Math.random());
-                        //execute_add_game(selectedRegular);
                         }}
                     />
                     {/* GAME ID */}
@@ -1614,9 +1615,14 @@ export default function Index(props) {
         <p className="font-bold">End Date:</p> {endFormattedTimestamp}
         <p className="font-bold">Whitelist: </p>{' '}
         {whitelistInfo === null ? '' : whitelistInfo.join(', ')}
-        <p className="font-bold">NFT Token Type: </p>{tokenTypeWhitelist.map((type, index) => (
-          <span key={index}>{index > 0 ? ', ' : ''}{type.charAt(0).toUpperCase() + type.slice(1)}</span>
-        ))}
+        <p className="font-bold">NFT Token Type:  </p>{token_TypeWhitelist.map((value, index) => (
+          <span key={index}>{index > 0 ? ', ' : ''}{
+            value === '1' ? 'Regular' :
+            value === '2' ? 'Promo' :
+            value === '3' ? 'Soulbound' :
+            ''
+          }</span>
+          ))}
         <p className="font-bold">Game Description: </p>
         {gameDescription}
         <p className="font-bold">Prize Description: </p>
@@ -1658,7 +1664,7 @@ export default function Index(props) {
         <button
           className="bg-indigo-green font-monument tracking-widest text-indigo-white w-full h-16 text-center text-sm mt-4"
           onClick={() => {
-            execute_add_game(tokenTypeWhitelist);
+            execute_add_game(token_TypeWhitelist);
             setConfirmModal(false);
           }}
         >
