@@ -179,6 +179,7 @@ export async function buildLeaderboard2(
     });
     leaderboardResults = data.getLeaderboardResult;
   }
+  console.log(leaderboardResults);
   // const merge = playerTeams.map((item) => ({
   //   ...item,
   //   ...leaderboardResults.find((newItem) => {
@@ -186,20 +187,36 @@ export async function buildLeaderboard2(
   //   }),
   // }));
   // console.log(leaderboardResults);
-  const arrayToReturn = await Promise.all(
-    leaderboardResults.map(async (item) => {
-      return {
-        accountId: item.wallet_address,
-        teamName: item.team_name,
-        lineup: [],
-        total: item.total,
-        scoresChecked: false,
-        chain: item.chain_name,
-      };
-    })
-  );
-  console.log(arrayToReturn);
-  return arrayToReturn;
+  if (leaderboardResults.length === 0) {
+    const arrayToReturn = await Promise.all(
+      playerTeams.map(async (item) => {
+        return {
+          accountId: item.wallet_address,
+          teamName: item.team_name,
+          lineup: [],
+          total: item.total,
+          scoresChecked: false,
+          chain: item.chain_name,
+        };
+      })
+    );
+    return arrayToReturn;
+  } else {
+    const arrayToReturn = await Promise.all(
+      leaderboardResults.map(async (item) => {
+        return {
+          accountId: item.wallet_address,
+          teamName: item.team_name,
+          lineup: [],
+          total: item.total,
+          scoresChecked: false,
+          chain: item.chain_name,
+        };
+      })
+    );
+    console.log(arrayToReturn);
+    return arrayToReturn;
+  }
 }
 
 export async function buildLeaderboard(
