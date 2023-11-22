@@ -11,6 +11,7 @@ import { promoPackLogicABI } from 'utils/polygon/ABI/promo_pack_nft_logic';
 import promo_pack_nft_storage from 'utils/polygon/ABI/promo_pack_nft.json';
 import promo_pack_nft_logic from 'utils/polygon/ABI/promo_pack_nft_logic.json';
 import { PROMO_PACK_NFL_POLYGON } from 'data/constants/polygonContracts';
+import { getConfig } from 'utils/polygon';
 
 const promoPackStorageNFLContractABI = promo_pack_nft_storage as unknown as promoPackStorageABI;
 const promoPackLogicNFLContractABI = promo_pack_nft_logic as unknown as promoPackLogicABI;
@@ -57,7 +58,7 @@ export default function Promotional(props) {
 
         const contract = new web3.eth.Contract(
           promoPackLogicNFLContractABI,
-          PROMO_PACK_NFL_POLYGON.logic
+          PROMO_PACK_NFL_POLYGON[getConfig()].logic
         );
 
         // Estimate gas for mintPacks function
@@ -70,7 +71,7 @@ export default function Promotional(props) {
         const gasPrice = await web3.eth.getGasPrice();
         const tx = {
           from: wallet,
-          to: PROMO_PACK_NFL_POLYGON.logic,
+          to: PROMO_PACK_NFL_POLYGON[getConfig()].logic,
           //@ts-ignore
           gas: parseInt(gasEstimate),
           gasPrice: gasPrice,
