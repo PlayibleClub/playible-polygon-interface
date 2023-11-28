@@ -478,42 +478,59 @@ export async function executeSubmitLineup(
   lineup,
   apiIds
 ) {
-  try {
-    if (window.ethereum) {
-      console.log(`Account id: ${accountId}`);
-      console.log(`Game ID: ${gameId}`);
-      console.log(`Team name: ${teamName}`);
-      console.log(tokenIds);
-      console.log(tokenPromoIds);
-      console.log(lineup);
-      console.log(apiIds);
-      await window.ethereum.request({ method: 'eth_requestAccounts' });
-      const web3 = new Web3(window.ethereum);
-      const abi = game_logic as unknown as GameLogicABI;
-      const contract = new web3.eth.Contract(abi, GAME_NFL_POLYGON[getConfig()].logic);
+  return new Promise(async (resolve, reject) => {
+    try {
+      if (window.ethereum) {
+        console.log(`Account id: ${accountId}`);
+        console.log(`Game ID: ${gameId}`);
+        console.log(`Team name: ${teamName}`);
+        console.log(tokenIds);
+        console.log(tokenPromoIds);
+        console.log(lineup);
+        console.log(apiIds);
+        await window.ethereum.request({ method: 'eth_requestAccounts' });
+        const web3 = new Web3(window.ethereum);
+        const abi = game_logic as unknown as GameLogicABI;
+        const contract = new web3.eth.Contract(abi, GAME_NFL_POLYGON[getConfig()].logic);
 
-      const gasEstimate = await contract.methods
-        .submitLineup(gameId, teamName, tokenIds, tokenPromoIds, lineup, apiIds)
-        .estimateGas({ from: accountId });
-      console.log(`Estimated gas: ${gasEstimate}`);
-      console.log('test');
-      const gasPrice = await web3.eth.getGasPrice();
-      const tx = {
-        from: accountId,
-        to: GAME_NFL_POLYGON[getConfig()].logic,
-        gas: Number(gasEstimate).toString(),
-        gasPrice: gasPrice,
-        data: contract.methods
+        const gasEstimate = await contract.methods
           .submitLineup(gameId, teamName, tokenIds, tokenPromoIds, lineup, apiIds)
-          .encodeABI(),
-      };
-      web3.eth.sendTransaction(tx).on('transactionHash', (hash) => {
-        console.log(`Transaction hash: ${hash}`);
-      });
+          .estimateGas({ from: accountId });
+        console.log(`Estimated gas: ${gasEstimate}`);
+        console.log('test');
+        const gasPrice = await web3.eth.getGasPrice();
+        const tx = {
+          from: accountId,
+          to: GAME_NFL_POLYGON[getConfig()].logic,
+          gas: Number(gasEstimate).toString(),
+          gasPrice: gasPrice,
+          data: contract.methods
+            .submitLineup(gameId, teamName, tokenIds, tokenPromoIds, lineup, apiIds)
+            .encodeABI(),
+        };
+        web3.eth
+          .sendTransaction(tx)
+          .on('transactionHash', (hash) => {
+            console.log(`Transaction hash: ${hash}`);
+          })
+          //@ts-ignore
+          .on('confirmation', function (confirmationNumber, receipt) {
+            console.log({
+              confirmationNumber: confirmationNumber,
+              receipt: receipt,
+            });
+            resolve(true);
+          })
+          .on('error', (error) => {
+            console.error(`Error: ${error}`);
+            reject(error);
+          });
+      }
+    } catch (e) {
+      console.log(e);
     }
-  } catch (e) {
-    console.log(e);
-  }
+  });
+
   // console.log(`Account id: ${accountId}`);
   // console.log(`Game ID: ${gameId}`);
   // console.log(`Team name: ${teamName}`);

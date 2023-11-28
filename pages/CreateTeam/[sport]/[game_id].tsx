@@ -45,6 +45,7 @@ export default function CreateLineup(props) {
   const [submitModal, setSubmitModal] = useState(false);
   const [editModal, setEditModal] = useState(false);
   const [editInput, setEditInput] = useState(teamName);
+  const [loading, setLoading] = useState(false);
   function getTeamNamePage() {
     if (newTeamName != '') {
       setTeamName(newTeamName);
@@ -85,35 +86,8 @@ export default function CreateLineup(props) {
     setGameData(game);
   }
 
-  async function execute_submit_lineup(game_id, team_name, token_ids, promo_ids) {
-    // const submitLineupArgs = Buffer.from(
-    //   JSON.stringify({
-    //     game_id: game_id,
-    //     team_name: team_name,
-    //     token_ids: token_ids.length === 0 ? null : token_ids,
-    //     token_promo_ids: promo_ids.length === 0 ? null : promo_ids,
-    //   })
-    // );
-    // const action_submit_lineup = {
-    //   type: 'FunctionCall',
-    //   params: {
-    //     methodName: 'submit_lineup',
-    //     args: submitLineupArgs,
-    //     gas: DEFAULT_MAX_FEES,
-    //   },
-    // };
-    // const wallet = await selector.wallet();
-    // const tx = wallet.signAndSendTransactions({
-    //   transactions: [
-    //     {
-    //       receiverId: getSportType(currentSport).gameContract,
-    //       //@ts-ignore:next-line
-    //       actions: [action_submit_lineup],
-    //     },
-    //   ],
-    // });
-  }
-  function verifyLineup(game_id, team_name, lineup) {
+  async function verifyLineup(game_id, team_name, lineup) {
+    setLoading(true);
     const tokenIds = lineup
       .filter((data) => {
         return data.isPromo === false && data.isAthlete === true;
@@ -134,7 +108,22 @@ export default function CreateLineup(props) {
       return Number(data.athlete.primary_id);
     });
 
-    executeSubmitLineup(wallet, gameId, teamName, tokenIds, promoIds, tokenLineup, apiIds);
+    const success = await executeSubmitLineup(
+      wallet,
+      gameId,
+      teamName,
+      tokenIds,
+      promoIds,
+      tokenLineup,
+      apiIds
+    );
+    if (success) {
+      setLoading(false);
+      alert(`Succesfully submitted team ${teamName} to game ID ${gameId}`);
+    } else {
+      setLoading(false);
+      alert(`Error in submitting team to game ID ${gameId}`);
+    }
     //execute_submit_lineup(game_id, team_name, token_ids, promo_ids);
   }
 
@@ -296,19 +285,29 @@ export default function CreateLineup(props) {
         </Container>
         <Modal title={'Submit Team'} visible={submitModal} onClose={() => setSubmitModal(false)}>
           <div className="mt-2">
-            <p className="">Confirm team lineup</p>
-            <button
-              className="bg-indigo-green font-monument tracking-widest text-indigo-white w-full h-16 text-center text-sm mt-4"
-              onClick={() => verifyLineup(gameId, teamName, lineup)}
-            >
-              CONFIRM
-            </button>
-            <button
-              className="bg-red-pastel font-monument tracking-widest text-indigo-white w-full h-16 text-center text-sm mt-4"
-              onClick={() => setSubmitModal(false)}
-            >
-              CANCEL
-            </button>
+            {loading ? (
+              <div className="flex w-full">
+                <div className="w-5 h-5 rounded-full bg-indigo-buttonblue animate-bounce mr-5"></div>
+                <div className="w-5 h-5 rounded-full bg-indigo-buttonblue animate-bounce mr-5"></div>
+                <div className="w-5 h-5 rounded-full bg-indigo-buttonblue animate-bounce"></div>
+              </div>
+            ) : (
+              <>
+                <p className="">Confirm team lineup</p>
+                <button
+                  className="bg-indigo-green font-monument tracking-widest text-indigo-white w-full h-16 text-center text-sm mt-4"
+                  onClick={() => verifyLineup(gameId, teamName, lineup)}
+                >
+                  CONFIRM
+                </button>
+                <button
+                  className="bg-red-pastel font-monument tracking-widest text-indigo-white w-full h-16 text-center text-sm mt-4"
+                  onClick={() => setSubmitModal(false)}
+                >
+                  CANCEL
+                </button>
+              </>
+            )}
           </div>
         </Modal>
         <Modal
