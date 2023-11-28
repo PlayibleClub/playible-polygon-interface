@@ -972,9 +972,17 @@ export default function Index(props) {
             Authorization: mergeGameInfo.auth,
           },
         },
+        errorPolicy: 'all',
       });
-      console.log(errors);
-      console.log(data);
+      if (data !== null) {
+        alert(
+          `Multi-chain leaderboard for polygon game ID ${mergeGameInfo.polygonGameId} and NEAR game ID ${mergeGameInfo.nearGameId} created`
+        );
+      } else {
+        alert(
+          `Encountered an error creating multi-chain leaderboard for polygon game ID ${mergeGameInfo.polygonGameId} and NEAR game ID ${mergeGameInfo.nearGameId}`
+        );
+      }
     } catch (e) {
       console.error(e);
     }
