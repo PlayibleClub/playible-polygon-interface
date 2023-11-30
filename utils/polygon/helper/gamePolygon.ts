@@ -484,7 +484,8 @@ export async function executeAddGame(args: AddGameType, accountId: string) {
       }
     } catch (e) {
       console.log(e);
-      reject();
+      resolve(e);
+      reject(e);
     }
   });
 }
