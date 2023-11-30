@@ -895,9 +895,9 @@ export default function Index(props) {
     };
     const success = await executeAddGame(args, wallet);
     if (success) {
-      alert(`Game ${gameId} for ${currentSport} successfully added`);
+      alert(`Game ${parseInt(details.gameId)} for ${currentSport} successfully added`);
     } else {
-      alert(`Error in adding game ${gameId} for ${currentSport}`);
+      alert(`Error in adding game ${parseInt(gameId)} for ${currentSport}`);
     }
     console.log(args);
     // const addGameArgs = Buffer.from(
