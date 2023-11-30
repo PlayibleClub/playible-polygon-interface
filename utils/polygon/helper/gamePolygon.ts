@@ -484,6 +484,7 @@ export async function executeAddGame(args: AddGameType, accountId: string) {
       }
     } catch (e) {
       console.log(e);
+      reject();
     }
   });
 }
@@ -547,6 +548,8 @@ export async function executeSubmitLineup(
       }
     } catch (e) {
       console.log(e);
+      resolve(false);
+      reject(e);
     }
   });
 
