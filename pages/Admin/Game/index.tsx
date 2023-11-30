@@ -893,7 +893,7 @@ export default function Index(props) {
       prizeDescription: prizeDescription,
       gameImage: gameImage,
     };
-    const success = executeAddGame(args, wallet);
+    const success = await executeAddGame(args, wallet);
     if (success) {
       alert(`Game ${gameId} for ${currentSport} successfully added`);
     } else {
