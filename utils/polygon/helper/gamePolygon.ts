@@ -415,36 +415,15 @@ export async function computeScores(lineup, currentSport, startTime, endTime) {
 }
 
 export async function executeAddGame(args: AddGameType, accountId: string) {
-  try {
-    if (window.ethereum) {
-      await window.ethereum.request({ method: 'eth_requestAccounts' });
-      const web3 = new Web3(window.ethereum);
-      const abi = game_logic as unknown as GameLogicABI;
-      const contract = new web3.eth.Contract(abi, GAME_NFL_POLYGON[getConfig()].logic);
+  return new Promise(async (resolve, reject) => {
+    try {
+      if (window.ethereum) {
+        await window.ethereum.request({ method: 'eth_requestAccounts' });
+        const web3 = new Web3(window.ethereum);
+        const abi = game_logic as unknown as GameLogicABI;
+        const contract = new web3.eth.Contract(abi, GAME_NFL_POLYGON[getConfig()].logic);
 
-      const gasEstimate = await contract.methods
-        .addGameToStorage(
-          args.gameId,
-          args.gameStartTime,
-          args.gameEndTime,
-          args.whitelist,
-          args.tokenTypeWhitelist,
-          args.usageCost,
-          args.positions,
-          args.lineupLen,
-          args.gameDescription,
-          args.prizeDescription,
-          args.gameImage
-        )
-        .estimateGas({ from: accountId });
-      console.log(gasEstimate);
-      const gasPrice = await web3.eth.getGasPrice();
-      const tx = {
-        from: accountId,
-        to: GAME_NFL_POLYGON[getConfig()].logic,
-        gas: Number(gasEstimate).toString(),
-        gasPrice: gasPrice,
-        data: contract.methods
+        const gasEstimate = await contract.methods
           .addGameToStorage(
             args.gameId,
             args.gameStartTime,
@@ -458,15 +437,55 @@ export async function executeAddGame(args: AddGameType, accountId: string) {
             args.prizeDescription,
             args.gameImage
           )
-          .encodeABI(),
-      };
-      web3.eth.sendTransaction(tx).on('transactionHash', (hash) => {
-        console.log('Transaction submitted');
-      });
+          .estimateGas({ from: accountId });
+        console.log(gasEstimate);
+        const gasPrice = await web3.eth.getGasPrice();
+        const tx = {
+          from: accountId,
+          to: GAME_NFL_POLYGON[getConfig()].logic,
+          gas: Number(gasEstimate).toString(),
+          gasPrice: gasPrice,
+          data: contract.methods
+            .addGameToStorage(
+              args.gameId,
+              args.gameStartTime,
+              args.gameEndTime,
+              args.whitelist,
+              args.tokenTypeWhitelist,
+              args.usageCost,
+              args.positions,
+              args.lineupLen,
+              args.gameDescription,
+              args.prizeDescription,
+              args.gameImage
+            )
+            .encodeABI(),
+        };
+
+        web3.eth
+          .sendTransaction(tx)
+          .on('transactionHash', (hash) => {
+            console.log(`Transaction hash: ${hash}`);
+          })
+          //@ts-ignore
+          .on('confirmation', function (confirmationNumber, receipt) {
+            console.log({
+              confirmationNumber: confirmationNumber,
+              receipt: receipt,
+            });
+            console.log('Add game succeed');
+            resolve(true);
+          })
+          .on('error', (error) => {
+            console.log('ERROR in add game');
+            console.error(`Error: ${error}`);
+            reject(error);
+          });
+      }
+    } catch (e) {
+      console.log(e);
     }
-  } catch (e) {
-    console.log(e);
-  }
+  });
 }
 
 export async function executeSubmitLineup(

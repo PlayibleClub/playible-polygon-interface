@@ -893,7 +893,12 @@ export default function Index(props) {
       prizeDescription: prizeDescription,
       gameImage: gameImage,
     };
-    executeAddGame(args, wallet);
+    const success = executeAddGame(args, wallet);
+    if (success) {
+      alert(`Game ${gameId} for ${currentSport} successfully added`);
+    } else {
+      alert(`Error in adding game ${gameId} for ${currentSport}`);
+    }
     console.log(args);
     // const addGameArgs = Buffer.from(
     //   JSON.stringify({
