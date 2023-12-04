@@ -1,11 +1,22 @@
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/router';
+import { useDispatch, useSelector } from 'react-redux';
+import { setIsAdmin } from 'redux/admin/adminSlice';
 const AdminLogin = () => {
   const [userName, setUserName] = useState('');
   const [password, setPassword] = useState('');
-
+  const dispatch = useDispatch();
+  const router = useRouter();
   const userLogin = async () => {
     console.log('test');
+    console.log(process.env.ADMIN);
+    console.log(process.env.ADMIN2);
+    if (userName === process.env.ADMIN && password === process.env.ADMIN2) {
+      console.log('test');
+      dispatch(setIsAdmin(true));
+      router.push('/Admin/Game');
+    }
   };
   return (
     <div className="flex flex-col h-screen flex-wrap ">

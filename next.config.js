@@ -15,6 +15,7 @@ nextConfig = {
     POLYGON_ENV: process.env.POLYGON_ENV,
     GRAPHQL_URL: process.env.GRAPHQL_URL,
     ADMIN: process.env.ADMIN,
+    ADMIN2: process.env.ADMIN2,
     AWS_ACCESS_KEY: process.env.AWS_ACCESS_KEY,
     AWS_SECRET_KEY: process.env.AWS_SECRET_KEY,
   },
