@@ -66,8 +66,8 @@ export const PROMO_OPENPACK_NFL_POLYGON = {
 
 export const GAME_NFL_POLYGON = {
   testnet: {
-    storage: '0x26288485e55994Eb9414837981F23A54b9e527b7',
-    logic: '0xED0Dde48833a700A62CADcC6dD112537Caf752DE',
+    storage: '0x324D6Ef494Af8AdEc9aB9821642823849da1600B',
+    logic: '0x38F84A16c42F63FD6E04D28d9a790529c64BA1c7',
   },
   mainnet: {
     storage: '',
