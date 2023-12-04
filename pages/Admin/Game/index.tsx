@@ -897,7 +897,7 @@ export default function Index(props) {
     if (success) {
       alert(`Game ${parseInt(details.gameId)} for ${currentSport} successfully added`);
     } else {
-      alert(`Error in adding game ${parseInt(gameId)} for ${currentSport}`);
+      alert(`Error in adding game ${parseInt(details.gameId)} for ${currentSport}`);
     }
     console.log(args);
     // const addGameArgs = Buffer.from(
