@@ -22,13 +22,13 @@ const AdminLogin = () => {
     <div className="flex flex-col h-screen flex-wrap ">
       <div className="flex justify-center mt-6 mb-8 h-12 w-screen"> </div>
       <div className="flex justify-center mt-12 w-screen">
-        <Image
+        {/* <Image
           className=""
           src="/images/promotionheader.png"
           alt="Playible Logo"
           width={256}
           height={59}
-        ></Image>
+        ></Image> */}
       </div>
       <div className="flex justify-center mt-12 w-screen"></div>
       <div className="flex justify-center mt-4 w-screen">
