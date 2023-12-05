@@ -222,23 +222,23 @@ const AssetDetails = (props) => {
               <div className="font-bold">{athlete?.fantasy_score?.toFixed(2)}</div>
             </div>
             {currentSport === 'FOOTBALL' ? (
-              <Link href="https://paras.id/collection/athlete.nfl.playible.near">
-                <button
-                  className="bg-indigo-lightblue text-indigo-buttonblue w-full md:w-80 h-10 
+              // <Link href="https://paras.id/collection/athlete.nfl.playible.near">
+              <button
+                className="bg-indigo-lightblue text-indigo-buttonblue w-full md:w-80 h-10 
                 text-center font-bold text-md mt-12 self-center justify-center"
-                >
-                  PLACE FOR SALE
-                </button>
-              </Link>
+              >
+                PLACE FOR SALE
+              </button>
             ) : (
-              <Link href="https://paras.id/collection/athlete.basketball.playible.near">
-                <button
-                  className="bg-indigo-lightblue text-indigo-buttonblue w-full md:w-80 h-10 
+              // </Link>
+              // <Link href="https://paras.id/collection/athlete.basketball.playible.near">
+              <button
+                className="bg-indigo-lightblue text-indigo-buttonblue w-full md:w-80 h-10 
               text-center font-bold text-md mt-12 self-center justify-center"
-                >
-                  PLACE FOR SALE
-                </button>
-              </Link>
+              >
+                PLACE FOR SALE
+              </button>
+              // </Link>
             )}
           </div>
         </div>
