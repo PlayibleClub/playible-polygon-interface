@@ -8,7 +8,7 @@ import pack_nft_storage from 'utils/polygon/ABI/pack_nft.json';
 import pack_nft_logic from 'utils/polygon/ABI/pack_nft_logic.json';
 import promo_pack_nft_storage from 'utils/polygon/ABI/promo_pack_nft.json';
 import promo_pack_nft_logic from 'utils/polygon/ABI/promo_pack_nft_logic.json';
-import { PACK_NFL_POLYGON } from 'data/constants/polygonContracts';
+import { PACK_NFL_POLYGON, WEB3 } from 'data/constants/polygonContracts';
 import { PROMO_PACK_NFL_POLYGON } from 'data/constants/polygonContracts';
 import { getConfig } from 'utils/polygon';
 
@@ -304,4 +304,24 @@ export async function fetchClaimSoulboundStatus(account) {
     console.error('Error checking claim status:', error);
     return null;
   }
+}
+
+export async function fetchMetamaskNetworkBalance(address) {
+  const web3 = new Web3(WEB3[getConfig()]);
+
+  await web3.eth
+    .getBalance(address, 'latest') // 'latest' is an example block tag, you can use 'pending' or a block number
+    .then((balance) => {
+      // Handle the balance
+      //TODO: TEST IF IT WILL WORK IF IT WAS MOVED TO polygonContracts
+      //@ts-ignore
+      console.log('Wallet:', address);
+      console.log('Balance:', balance);
+      return balance;
+    })
+    .catch((err) => {
+      // Handle the error
+      console.error('Error getting balance:', err);
+      alert(err);
+    });
 }
