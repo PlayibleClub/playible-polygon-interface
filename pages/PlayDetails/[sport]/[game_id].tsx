@@ -119,7 +119,7 @@ export default function PlayDetails(props) {
                         <div className="iphone5:mt-4 md:mt-0">START DATE</div>
                         <div className=" font-monument text-lg">
                           {(gameData &&
-                            moment.utc(gameData.start_time).local().format('MM/DD/YYYY')) ||
+                            moment.unix(gameData.start_time).utc().local().format('MM/DD/YYYY')) ||
                             'N/A'}
                         </div>
                       </div>
@@ -127,8 +127,8 @@ export default function PlayDetails(props) {
                     <div className="iphone5:ml-4 md:ml-7">
                       <div className="mt-4">
                         {gameData &&
-                          (moment.utc(gameData.start_time).local() <= moment() &&
-                          moment.utc(gameData.end_time).local() > moment() ? (
+                          (moment.unix(gameData.start_time).utc().local() <= moment() &&
+                          moment.unix(gameData.end_time).utc().local() > moment() ? (
                             <>
                               <p>ENDS IN</p>
                               {gameData ? (
