@@ -329,7 +329,7 @@ export default function Home(props) {
             })
             .catch(function (error) {
               //@ts-ignore
-              alert(error.data.message);
+              alert(error);
               console.error('Error:', error);
             });
         }
@@ -396,39 +396,45 @@ export default function Home(props) {
           .sendTokensForMinting(selectedMintAmount)
           .estimateGas({ from: wallet });
         console.log('Estimated Gas:', gasEstimate);
-
-        const gasPrice = await web3.eth.getGasPrice();
-        const tx = {
-          from: wallet,
-          to: PACK_NFL_POLYGON[getConfig()].logic,
-          //@ts-ignore
-          gas: parseInt(gasEstimate),
-          gasPrice: gasPrice,
-          data: contract.methods.sendTokensForMinting(selectedMintAmount).encodeABI(),
-        };
-
         //@ts-ignore
-        if (metamaskBalance <= tx.gas) {
+        if (metamaskBalance <= gasEstimate) {
           alert('Metamask balance is less than estimated gas');
+        } else {
+          const gasPrice = await web3.eth.getGasPrice();
+          const tx = {
+            from: wallet,
+            to: PACK_NFL_POLYGON[getConfig()].logic,
+            //@ts-ignore
+            gas: parseInt(gasEstimate),
+            gasPrice: gasPrice,
+            data: contract.methods.sendTokensForMinting(selectedMintAmount).encodeABI(),
+          };
+
+          // Call mint regular packs function
+          web3.eth
+            .sendTransaction(tx)
+            .on('transactionHash', function (hash) {
+              console.log('Transaction Hash:', hash);
+              setLoading(true);
+            })
+            //@ts-ignore
+            .on('confirmation', function (confirmationNumber, receipt) {
+              console.log('Confirmation Number:', confirmationNumber);
+              console.log('Receipt:', receipt);
+              console.log('Regular Pack minted successfully');
+              setMintingComplete(true);
+            })
+            .on('error', function (error) {
+              setLoading(false);
+              console.error('Error:', error);
+            })
+            .catch(function (error) {
+              //@ts-ignore
+              alert(error);
+              setLoading(false);
+              console.error('Error:', error);
+            });
         }
-        // Call mint regular packs function
-        web3.eth
-          .sendTransaction(tx)
-          .on('transactionHash', function (hash) {
-            console.log('Transaction Hash:', hash);
-            setLoading(true);
-          })
-          //@ts-ignore
-          .on('confirmation', function (confirmationNumber, receipt) {
-            console.log('Confirmation Number:', confirmationNumber);
-            console.log('Receipt:', receipt);
-            console.log('Regular Pack minted successfully');
-            setMintingComplete(true);
-          })
-          .on('error', function (error) {
-            setLoading(false);
-            console.error('Error:', error);
-          });
       }
     } catch (error) {
       console.error('Error minting regular pack:', error);
@@ -442,21 +448,6 @@ export default function Home(props) {
   }
 
   const handleClaimButton = async () => {
-    const web3 = new Web3(WEB3[getConfig()]);
-
-    console.log(WEB3[getConfig()]);
-    web3.eth
-      .getBalance(wallet, 'latest') // 'latest' is an example block tag, you can use 'pending' or a block number
-      .then((balance) => {
-        // Handle the balance
-        console.log('Balance:', balance);
-      })
-      .catch((err) => {
-        // Handle the error
-        console.error('Error getting balance:', err);
-        alert(err);
-      });
-
     try {
       console.log(currentSport);
       reduxDispatch(setSportTypeRedux(currentSport));
