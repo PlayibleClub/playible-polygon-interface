@@ -85,7 +85,15 @@ const Portfolio = () => {
   });
 
   const [positionList, setPositionList] = useState(SPORT_TYPES[0].positionList);
-  const sportObj = SPORT_TYPES.map((x) => ({ name: x.sport, isActive: false }));
+  const sportObj = SPORT_TYPES.filter(
+    (x) =>
+      x.sport !== SPORT_NAME_LOOKUP.cricket &&
+      x.sport !== SPORT_NAME_LOOKUP.basketball &&
+      x.sport !== SPORT_NAME_LOOKUP.baseball
+  ).map((x) => ({
+    name: x.sport,
+    isActive: false,
+  }));
   sportObj[0].isActive = true;
   const [categoryList, setCategoryList] = useState([...sportObj]);
   const [currentSport, setCurrentSport] = useState(sportObj[0].name);

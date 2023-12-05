@@ -581,13 +581,17 @@ export default function PackDetails(props) {
             <div className="text-sm">RELEASE 1</div>
             {isLoading ? (
               <Modal title={`PACK OPENING`} visible={isLoading} isPackDetails={true}>
-                <div className="flex items-center justify-center">
-                  <div className="mx-4">
-                    Waiting for confirmation(s) {confirmationNumber} out of {numberofConfirmation}
+                <div className="mx-4">
+                  This process may take a few minutes. Please wait.
+                  <div>
+                    {' '}
+                    {confirmationNumber} out of {numberofConfirmation} confirmations.
                   </div>
-                  <div className="w-3 h-3 rounded-full bg-indigo-buttonblue animate-bounce mr-3"></div>
-                  <div className="w-3 h-3 rounded-full bg-indigo-buttonblue animate-bounce mr-3"></div>
-                  <div className="w-3 h-3 rounded-full bg-indigo-buttonblue animate-bounce"></div>
+                  <div className="flex items-center justify-center ml-12 -mt-4">
+                    <div className="w-3 h-3 rounded-full bg-indigo-buttonblue animate-bounce mr-3"></div>
+                    <div className="w-3 h-3 rounded-full bg-indigo-buttonblue animate-bounce mr-3"></div>
+                    <div className="w-3 h-3 rounded-full bg-indigo-buttonblue animate-bounce"></div>
+                  </div>
                 </div>
               </Modal>
             ) : isOwner ? (
@@ -606,7 +610,6 @@ export default function PackDetails(props) {
                 OPEN PACK
               </button>
             ) : null}
-
             {/* <Link
               href={`/TransferPack/${myPack.sport.toLowerCase()}/${encodeURIComponent(id)}/`}
               passHref
