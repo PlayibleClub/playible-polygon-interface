@@ -18,9 +18,13 @@ import { formatToUTCDate, getUTCTimestampFromLocal } from 'utils/date/helper';
 let count = 0;
 
 export default function Home(props) {
-  const [sportList, setSportList] = useState(
-    SPORT_TYPES.map((x) => ({ name: x.sport, key: x.key }))
-  );
+  const sportObj = SPORT_TYPES.filter(
+    (x) =>
+      x.sport !== SPORT_NAME_LOOKUP.cricket &&
+      x.sport !== SPORT_NAME_LOOKUP.basketball &&
+      x.sport !== SPORT_NAME_LOOKUP.baseball
+  ).map((x) => ({ name: x.sport, key: x.key }));
+  const [sportList, setSportList] = useState(sportObj);
   const [currentSport, setCurrentSport] = useState('mlb'.toLocaleLowerCase());
   const [getAthletes, { loading, error, data }] = useLazyQuery(GET_ATHLETES_TOP);
   const [getCricketAthletes] = useLazyQuery(GET_CRICKET_ATHLETES_TOP);
