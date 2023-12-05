@@ -23,6 +23,8 @@ import secretKeys from 's3config';
 import { getSport } from 'redux/athlete/athleteSlice';
 import Modal from 'components/modals/Modal';
 import { fetchGameCounter, executeAddGame, fetchAllGames } from 'utils/polygon/helper/gamePolygon';
+import { useSelector } from 'react-redux';
+import { getIsAdmin } from 'redux/admin/adminSlice';
 import { ens } from 'web3/lib/commonjs/eth.exports';
 import AdminGameFilter from './components/AdminGameFiilter';
 TimeAgo.addDefaultLocale(en);
@@ -34,6 +36,7 @@ export default function Index(props) {
   } = useWalletSelector();
   const connectedWallet = {};
   const router = useRouter();
+  const isAdmin = useSelector(getIsAdmin);
   const [loading, setLoading] = useState(false);
   const [contentLoading, setContentLoading] = useState(true);
   const [gameType, setGameType] = useState('new');
@@ -1065,6 +1068,12 @@ export default function Index(props) {
       }
 
       console.log("TOKEN VALUES", token_TypeWhitelist);
+
+  useEffect(() => {
+    if (!isAdmin) {
+      router.push('/Admin/Login');
+    }
+  });
 
   useEffect(() => {
     currentTotal !== 0 ? setPageCount(Math.ceil(currentTotal / gamesLimit)) : setPageCount(1);
