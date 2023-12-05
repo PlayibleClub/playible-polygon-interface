@@ -275,6 +275,11 @@ export async function claimSoulboundPack(account) {
           .on('error', function (error) {
             console.error('Error:', error);
             reject(error);
+          })
+          .catch(function (error) {
+            //@ts-ignore
+            alert(error);
+            console.error('Error:', error);
           });
       }
     } catch (error) {
