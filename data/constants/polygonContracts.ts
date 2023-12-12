@@ -53,6 +53,17 @@ export const PROMO_PACK_NFL_POLYGON = {
   },
 };
 
+export const PROMO_PACK_NBA_POLYGON = {
+  testnet: {
+    storage: '0x8F16Df806c40C9aa5dFFAe7F8187973c8740bC9b',
+    logic: '0x8D9c26c7e7DBbEcD76383FF47e2CC617fa81e30F',
+  },
+  mainnet: {
+    storage: '',
+    logic: '',
+  },
+};
+
 export const OPENPACK_NFL_POLYGON = {
   testnet: {
     storage: '0xf62e1FF360CD18b87a755AECFd856Ecaf975a90E',
