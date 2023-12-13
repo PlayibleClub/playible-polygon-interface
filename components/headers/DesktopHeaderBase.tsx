@@ -13,6 +13,31 @@ const DesktopHeaderBase = () => {
   } = useWalletSelector();
 
   const [loading, setLoading] = useState(false);
+  const [selectedOption, setSelectedOption] = useState('');
+
+  const handleOptionChange = (event) => {
+    const selectedValue = event.target.value;
+    setSelectedOption(selectedValue);
+
+    const env = process.env.POLYGON_ENV;
+    let url;
+    switch (env) {
+      case 'production':
+        url = 'mainnet';
+        break;
+      case 'development':
+        url = 'testnet';
+        break;
+    }
+
+    if (selectedValue === 'Near Protocol') {
+      window.location.href =
+        url === 'mainnet' ? 'https://app.playible.io/' : 'https://dev.app.playible.io/';
+    } else if (selectedValue === 'Polygon Mainnet') {
+      window.location.href =
+        url === 'mainnet' ? 'https://polygon.playible.io/' : 'https://dev.polygon.playible.io/';
+    }
+  };
 
   const connectWallet = async () => {
     if (!wallet) {
@@ -68,7 +93,25 @@ const DesktopHeaderBase = () => {
     }
   };
 
-  return <DesktopHeader>{renderWallet()}</DesktopHeader>;
+  return (
+    <DesktopHeader>
+      {' '}
+      <div className="flex flex-row text-sm h-12 items-center">
+        <select
+          className="bg-indigo-white iphone5:w-36 w-36 md:w-42 lg:w-36
+    ring-2 ring-offset-4 ring-indigo-black ring-opacity-25 focus:ring-2 focus:ring-indigo-black 
+    focus:outline-none cursor-pointer text-xs md:text-base mr-4 ring-offset-9 font-medium"
+          value={selectedOption}
+          onChange={handleOptionChange}
+        >
+          <option className="ring-offset-9 font-medium px-4 p-1">Select Network</option>
+          <option className="ring-offset-9 font-medium px-4 p-1">Near Protocol</option>
+          <option className="ring-offset-9 font-medium px-4 p-1">Polygon Mainnet</option>
+        </select>
+      </div>
+      {renderWallet()}
+    </DesktopHeader>
+  );
 };
 
 DesktopHeaderBase.propTypes = {
