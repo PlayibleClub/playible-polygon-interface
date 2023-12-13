@@ -36,17 +36,14 @@ import { persistor } from 'redux/athlete/store';
 import { getUTCDateFromLocal } from 'utils/date/helper';
 import moment from 'moment';
 import {
-  // claimSoulboundPack,
-  // fetchClaimSoulboundStatus,
+  claimSoulboundPack,
+  fetchClaimSoulboundStatus,
   fetchRegularPackPrice,
   fetchAccountBalance,
   fetchMintedTokenAmount,
+  fetchMetamaskNetworkBalance,
 } from 'utils/polygon/helper/packPolygon';
-import {
-  claimSoulboundPack,
-  fetchClaimSoulboundStatus,
-} from 'utils/polygon/helper/promoPackPolygon';
-import { PACK_NFL_POLYGON } from 'data/constants/polygonContracts';
+import { PACK_NFL_POLYGON, WEB3 } from 'data/constants/polygonContracts';
 const NANO_TO_SECONDS_DENOMINATOR = 1000000;
 const DECIMALS_USDC = 1000000;
 export default function Home(props) {
@@ -86,6 +83,7 @@ export default function Home(props) {
   });
   // Storage deposit is used to check if balance available to mint NFT and pay the required storage fee
   const [storageDepositAccountBalance, setStorageDepositAccountBalance] = useState(0);
+  const [metamaskAccountBalance, setMetamaskAccountBalance] = useState(0);
   const [selectedMintAmount, setSelectedMintAmount] = useState(0);
   const [minted, setMinted] = useState(0);
   const [accountBalance, setAccountBalance] = useState(0);
@@ -291,39 +289,50 @@ export default function Home(props) {
           }
         );
 
+        const metamaskBalance = await fetchMetamaskNetworkBalance(wallet);
         const usdcGasEstimate = await usdcContract.methods
           .approve(PACK_NFL_POLYGON[getConfig()].storage, accountBalance)
           .estimateGas();
+        //@ts-ignore
+        if (metamaskBalance <= usdcGasEstimate) {
+          alert('Metamask balance is less than estimated gas');
+        } else {
+          const gasPrice = await web3.eth.getGasPrice();
 
-        const gasPrice = await web3.eth.getGasPrice();
-        const tx = {
-          from: wallet,
-          to: await POL141USDC[getConfig()],
-          //@ts-ignore
-          gas: parseInt(usdcGasEstimate),
-          gasPrice: gasPrice,
-          data: usdcContract.methods
-            .approve(PACK_NFL_POLYGON[getConfig()].storage, accountBalance)
-            .encodeABI(),
-        };
+          const tx = {
+            from: wallet,
+            to: await POL141USDC[getConfig()],
+            //@ts-ignore
+            gas: parseInt(usdcGasEstimate),
+            gasPrice: gasPrice,
+            data: usdcContract.methods
+              .approve(PACK_NFL_POLYGON[getConfig()].storage, accountBalance)
+              .encodeABI(),
+          };
 
-        web3.eth
-          .sendTransaction(tx)
-          .on('transactionHash', function (hash) {
-            console.log('Transaction Hash:', hash);
-            setLoading(true);
-          })
-          //@ts-ignore
-          .on('confirmation', function (confirmationNumber, receipt) {
-            console.log('Confirmation Number:', confirmationNumber);
-            console.log('Receipt:', receipt);
-            setApprovedComplete(true);
-            setLoading(false);
-            setRemountComponent(Math.random());
-          })
-          .on('error', function (error) {
-            console.error('Error:', error);
-          });
+          web3.eth
+            .sendTransaction(tx)
+            .on('transactionHash', function (hash) {
+              console.log('Transaction Hash:', hash);
+              setLoading(true);
+            })
+            //@ts-ignore
+            .on('confirmation', function (confirmationNumber, receipt) {
+              console.log('Confirmation Number:', confirmationNumber);
+              console.log('Receipt:', receipt);
+              setApprovedComplete(true);
+              setLoading(false);
+              setRemountComponent(Math.random());
+            })
+            .on('error', function (error) {
+              console.error('Error:', error);
+            })
+            .catch(function (error) {
+              //@ts-ignore
+              alert(error);
+              console.error('Error:', error);
+            });
+        }
       }
     } catch (error) {
       console.error('Error approving metamask address:', error);
@@ -380,43 +389,56 @@ export default function Home(props) {
           PACK_NFL_POLYGON[getConfig()].logic
         );
 
+        const metamaskBalance = await fetchMetamaskNetworkBalance(wallet);
         // Estimate gas for mintPacks function
         console.log('Amount:', selectedMintAmount);
         const gasEstimate = await contract.methods
           .sendTokensForMinting(selectedMintAmount)
           .estimateGas({ from: wallet });
         console.log('Estimated Gas:', gasEstimate);
+        //@ts-ignore
+        if (metamaskBalance <= gasEstimate) {
+          alert('Metamask balance is less than estimated gas');
+        } else {
+          const gasPrice = await web3.eth.getGasPrice();
+          const tx = {
+            from: wallet,
+            to: PACK_NFL_POLYGON[getConfig()].logic,
+            //@ts-ignore
+            gas: parseInt(gasEstimate),
+            gasPrice: gasPrice,
+            data: contract.methods.sendTokensForMinting(selectedMintAmount).encodeABI(),
+          };
 
-        const gasPrice = await web3.eth.getGasPrice();
-        const tx = {
-          from: wallet,
-          to: PACK_NFL_POLYGON[getConfig()].logic,
-          //@ts-ignore
-          gas: parseInt(gasEstimate),
-          gasPrice: gasPrice,
-          data: contract.methods.sendTokensForMinting(selectedMintAmount).encodeABI(),
-        };
-        // Call mint regular packs function
-        web3.eth
-          .sendTransaction(tx)
-          .on('transactionHash', function (hash) {
-            console.log('Transaction Hash:', hash);
-            setLoading(true);
-          })
-          //@ts-ignore
-          .on('confirmation', function (confirmationNumber, receipt) {
-            console.log('Confirmation Number:', confirmationNumber);
-            console.log('Receipt:', receipt);
-            console.log('Regular Pack minted successfully');
-            setMintingComplete(true);
-          })
-          .on('error', function (error) {
-            setLoading(false);
-            console.error('Error:', error);
-          });
+          // Call mint regular packs function
+          web3.eth
+            .sendTransaction(tx)
+            .on('transactionHash', function (hash) {
+              console.log('Transaction Hash:', hash);
+              setLoading(true);
+            })
+            //@ts-ignore
+            .on('confirmation', function (confirmationNumber, receipt) {
+              console.log('Confirmation Number:', confirmationNumber);
+              console.log('Receipt:', receipt);
+              console.log('Regular Pack minted successfully');
+              setMintingComplete(true);
+            })
+            .on('error', function (error) {
+              setLoading(false);
+              console.error('Error:', error);
+            })
+            .catch(function (error) {
+              //@ts-ignore
+              alert(error);
+              setLoading(false);
+              console.error('Error:', error);
+            });
+        }
       }
     } catch (error) {
       console.error('Error minting regular pack:', error);
+      alert(error);
     }
   }
 

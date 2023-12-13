@@ -1,10 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
-import { fetchRegularPackTokenMetadata, checkTokenOwner } from 'utils/polygon/helper/packPolygon';
-import {
-  fetchPromoPackTokenMetadata,
-  checkPromoTokenOwner,
-} from 'utils/polygon/helper/promoPackPolygon';
+import { fetchPackTokenMetadata, checkTokenOwner } from 'utils/polygon/helper/packPolygon';
 import Container from 'components/containers/Container';
 import 'regenerator-runtime/runtime';
 import BackFunction from 'components/buttons/BackFunction';
@@ -502,8 +498,8 @@ export default function PackDetails(props) {
     try {
       const metadataResponse =
         packType === '2' || packType === '3'
-          ? await fetchPromoPackTokenMetadata(id)
-          : await fetchRegularPackTokenMetadata(id);
+          ? await fetchPackTokenMetadata(id, 'promo')
+          : await fetchPackTokenMetadata(id, 'regular');
       const metadataObject = JSON.parse(metadataResponse);
 
       const metadataUrl = metadataObject.metadata;
@@ -534,8 +530,8 @@ export default function PackDetails(props) {
     try {
       const owner =
         packType === '2' || packType === '3'
-          ? await checkPromoTokenOwner(wallet, id)
-          : await checkTokenOwner(wallet, id);
+          ? await checkTokenOwner(wallet, id, 'promo')
+          : await checkTokenOwner(wallet, id, 'regular');
 
       console.log(Number(owner));
       setIsOwner(Number(owner));

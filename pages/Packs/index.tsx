@@ -1,15 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import {
-  fetchRegularPackTokenMetadata,
-  fetchRegularPackTokenSupplyByOwner,
-  fetchRegularPackTokensByOwner,
-} from 'utils/polygon/helper/packPolygon';
-import {
   claimSoulboundPack,
   fetchClaimSoulboundStatus,
-  fetchPromoPackTokensByOwner,
-  fetchPromoPackTokenSupplyByOwner,
-} from 'utils/polygon/helper/promoPackPolygon';
+  fetchPackTokenSupplyByOwner,
+  fetchPackTokensByOwner,
+  fetchFilteredMixedTokensByOwner,
+} from 'utils/polygon/helper/packPolygon';
+
 import PortfolioContainer from '../../components/containers/PortfolioContainer';
 import Container from '../../components/containers/Container';
 import Main from '../../components/Main';
@@ -42,6 +39,7 @@ export default function Packs() {
   const [packOffset, setPackOffset] = useState(0);
   const [packLimit, setPackLimit] = useState(30);
   const [totalPacks, setTotalPacks] = useState(0);
+  const [regPageCount, setRegPageCount] = useState(0);
   const [isClaimed, setIsClaimed] = useState(false);
   const [totalSoulboundPacks, setTotalSoulboundPacks] = useState(0);
   const [activeCategory, setCategory] = useState('NEW');
@@ -81,15 +79,17 @@ export default function Packs() {
   const [baseballSbPacks, setBaseballSbPacks] = useState([]);
   const [cricketSbPacks, setCricketSbPacks] = useState([]);
   const [totalSupply, setTotalSupply] = useState(0);
+  const [promoOffset, setPromoOffset] = useState(0);
+  const [isPromoPage, setIsPromoPage] = useState(false);
   const allPacks = [
-    ...baseballSbPacks,
     ...baseballPacks,
-    ...basketballSbPacks,
+    ...baseballSbPacks,
     ...basketballPacks,
-    ...footballSbPacks,
+    ...basketballSbPacks,
     ...footballPacks,
-    ...cricketSbPacks,
+    ...footballSbPacks,
     ...cricketPacks,
+    ...cricketSbPacks,
   ];
   //for soulbound claiming, redirecting, and displaying the corresponding pack image
   const [sportFromRedux, setSportFromRedux] = useState(useSelector(getSportTypeRedux));
@@ -172,14 +172,75 @@ export default function Packs() {
   const handlePageClick = (event) => {
     const newOffset = categoryList[0].isActive
       ? (event.selected * packLimit) % totalSupply
+      : categoryList[1].isActive
+      ? (event.selected * packLimit) % totalSoulboundPacks
       : (event.selected * packLimit) % totalPacks;
     setPackOffset(newOffset);
     setCurrentPage(event.selected);
   };
 
+  const handleMixedPageClick = (event) => {
+    let newOffset;
+    if (event.selected * packLimit >= totalPacks) {
+      let offset;
+      if (packLimit - totalPacks < 0 && (packLimit - totalPacks) % packLimit !== 0) {
+        offset = ((packLimit - totalPacks) % packLimit) + packLimit;
+      } else offset = (packLimit - totalPacks) % packLimit;
+      let extra = 1;
+      newOffset = Math.abs(Math.abs(event.selected - regPageCount + 1) - extra) * packLimit;
+      setPromoOffset(offset);
+      setIsPromoPage(true);
+    } else {
+      setIsPromoPage(false);
+      newOffset = (event.selected * packLimit) % totalPacks;
+    }
+    console.log(promoOffset);
+    setPackOffset(newOffset);
+    setCurrentPage(event.selected);
+  };
+
+  async function fetchMixedToken() {
+    await fetchFilteredMixedTokensByOwner(
+      wallet,
+      isPromoPage,
+      packOffset,
+      promoOffset,
+      totalPacks,
+      totalSoulboundPacks,
+      packLimit
+    ).then(async (result) => {
+      const tokenIds = result[1]; // Assuming tokenIds is the second element
+      const metadata = result[2]; // Assuming metadata is the third element
+
+      //change metadata to contents instead of just retrieving the IPFS Link
+      const updatedTokens = await Promise.all(
+        metadata
+          .filter((metadataObject) => metadataObject) // Filter out empty metadataObjects
+          .map(async (metadataObject) => {
+            const metadata = JSON.parse(metadataObject).metadata;
+            const response = await fetch(metadata);
+            return response.json(); // Directly parse the response as JSON
+          })
+      );
+
+      const tokenIdsArray = Object.values(tokenIds);
+      //restructures array for better mapping
+      const structuredTokens = tokenIdsArray
+        .filter((_, index) => updatedTokens[index] !== undefined)
+        .map((tokenId, index) => {
+          return {
+            token_id: Number(tokenId),
+            metadata: updatedTokens[index], // Assuming updatedTokens is an array of objects
+          };
+        });
+
+      setFootballPacks(structuredTokens);
+    });
+  }
+
   async function fetchTokens() {
     try {
-      const tokens = await fetchRegularPackTokensByOwner(wallet, packOffset, packLimit);
+      const tokens = await fetchPackTokensByOwner(wallet, packOffset, packLimit, 'regular');
 
       const tokenIds = tokens[1]; // Assuming tokenIds is the second element
       const metadata = tokens[2]; // Assuming metadata is the third element
@@ -211,7 +272,7 @@ export default function Packs() {
       console.error('Error parsing JSON:', error);
     }
     try {
-      const tokens = await fetchPromoPackTokensByOwner(wallet, packOffset, packLimit);
+      const tokens = await fetchPackTokensByOwner(wallet, packOffset, packLimit, 'promo');
 
       const tokenIds = tokens[1]; // Assuming tokenIds is the second element
       const metadata = tokens[2]; // Assuming metadata is the third element
@@ -244,7 +305,7 @@ export default function Packs() {
     }
     try {
       console.log({ wallet, packOffset, packLimit });
-      const tokens = await fetchRegularPackTokensByOwner(wallet, packOffset, packLimit);
+      const tokens = await fetchPackTokensByOwner(wallet, packOffset, packLimit, 'regular');
 
       const tokenIds = tokens[1]; // Assuming tokenIds is the second element
       const metadata = tokens[2]; // Assuming metadata is the third element
@@ -276,7 +337,7 @@ export default function Packs() {
       console.error('Error parsing JSON:', error);
     }
     try {
-      const tokens = await fetchPromoPackTokensByOwner(wallet, packOffset, packLimit);
+      const tokens = await fetchPackTokensByOwner(wallet, packOffset, packLimit, 'promo');
 
       const tokenIds = tokens[1]; // Assuming tokenIds is the second element
       const metadata = tokens[2]; // Assuming metadata is the third element
@@ -311,22 +372,22 @@ export default function Packs() {
 
   async function fetchTokenSupply() {
     try {
-      const resultFootball = await fetchRegularPackTokenSupplyByOwner(wallet);
+      const resultFootball = await fetchPackTokenSupplyByOwner(wallet, 'regular');
 
       setTotalPacks(Number(resultFootball));
     } catch (error) {
       console.error(error);
     }
     try {
-      const resultFootball = await fetchRegularPackTokenSupplyByOwner(wallet);
-      const resultFootballSb = await fetchPromoPackTokenSupplyByOwner(wallet);
+      const resultFootball = await fetchPackTokenSupplyByOwner(wallet, 'regular');
+      const resultFootballSb = await fetchPackTokenSupplyByOwner(wallet, 'promo');
 
       setTotalSupply(Number(resultFootballSb) + Number(resultFootball));
     } catch (error) {
       console.error(error);
     }
     try {
-      const resultPromoFootball = await fetchPromoPackTokenSupplyByOwner(wallet);
+      const resultPromoFootball = await fetchPackTokenSupplyByOwner(wallet, 'promo');
 
       setTotalSoulboundPacks(Number(resultPromoFootball));
     } catch (error) {
@@ -370,9 +431,10 @@ export default function Packs() {
     if (isSignedIn && wallet) {
       fetchTokenSupply();
       getPackLimit();
+      setRegPageCount(Math.ceil(totalPacks / packLimit));
       setPageCount(
         categoryList[0].isActive
-          ? Math.ceil(totalSupply / packLimit)
+          ? Math.floor(totalSupply / packLimit)
           : categoryList[1].isActive
           ? Math.ceil(totalSoulboundPacks / packLimit)
           : Math.ceil(totalPacks / packLimit)
@@ -388,18 +450,32 @@ export default function Packs() {
     } else {
       console.log('Account Id not found');
     }
-  }, [packLimit, packOffset, currentSport, categoryList, sportList]);
+  }, [packLimit, packOffset, currentSport, categoryList, sportList, totalPacks, totalSupply]);
 
   useEffect(() => {
     if (isSignedIn && wallet) {
-      fetchTokens();
+      if (categoryList[0].isActive) {
+        fetchMixedToken();
+      } else {
+        fetchTokens();
+      }
     } else {
       console.log('Account Id not found');
     }
-  }, [totalPacks, pageCount, packOffset, totalSupply, currentPage, totalSoulboundPacks]);
+  }, [
+    totalPacks,
+    totalSoulboundPacks,
+    pageCount,
+    packOffset,
+    totalSupply,
+    currentPage,
+    totalSoulboundPacks,
+    currentPage,
+  ]);
 
   useEffect(() => {
     console.log('Packs', packs);
+    console.log('allPacks:', allPacks);
   }, [packs]);
 
   useEffect(() => {
@@ -568,7 +644,7 @@ export default function Packs() {
                   pageLinkClassName="rounded-lg hover:font-bold hover:bg-indigo-white hover:text-indigo-black pr-1 pl-1"
                   breakLabel="..."
                   nextLabel=">"
-                  onPageChange={handlePageClick}
+                  onPageChange={categoryList[0].isActive ? handleMixedPageClick : handlePageClick}
                   pageRangeDisplayed={5}
                   pageCount={pageCount}
                   previousLabel="<"
