@@ -13,7 +13,7 @@ import { useRouter } from 'next/router';
 import { useDispatch, useSelector } from 'react-redux';
 import Modal from 'components/modals/Modal';
 import PortfolioContainer from '../../components/containers/PortfolioContainer';
-import { POL141USDC } from '../../data/constants/polygonContracts';
+import { PACK_NBA_POLYGON, POL141USDC } from '../../data/constants/polygonContracts';
 import { MINT_STORAGE_COST, DEFAULT_MAX_FEES } from 'data/constants/gasFees';
 import { getConfig } from 'utils/polygon';
 import Link from 'next/link';
@@ -58,7 +58,7 @@ export default function Home(props) {
   const reduxDispatch = useDispatch();
   const [positionList, setPositionList] = useState(SPORT_TYPES[0].positionList);
   const sportObj = SPORT_TYPES.filter(
-    (x) => x.sport !== SPORT_NAME_LOOKUP.cricket && x.sport !== SPORT_NAME_LOOKUP.basketball
+    (x) => x.sport !== SPORT_NAME_LOOKUP.cricket && x.sport !== SPORT_NAME_LOOKUP.baseball
   ).map((x) => ({
     name: x.sport,
     isActive: false,
@@ -167,7 +167,12 @@ export default function Home(props) {
     }
     return (
       <Select
-        onChange={(event) => setSelectedMintAmount(event.value)}
+        onChange={(event) => {
+          setSelectedMintAmount(event.value);
+          setBalanceErrorMsg('');
+          setApprovedComplete(false);
+          setRemountComponent(Math.random());
+        }}
         options={optionMint.splice(0, 5)}
         className="md:w-1/3 w-4/5 mr-9 mt-5"
       />
@@ -240,9 +245,11 @@ export default function Home(props) {
 
   async function fetchUserMintedTokenAmount() {
     try {
-      const mintedTokenAmount = await fetchMintedTokenAmount(wallet); // Assuming this function returns a BigNumber
+      const mintedTokenAmount = await fetchMintedTokenAmount(wallet, currentSport); // Assuming this function returns a BigNumber
 
-      setMinted(Number(mintedTokenAmount));
+      currentSport === SPORT_NAME_LOOKUP.football
+        ? setMinted(Number(mintedTokenAmount))
+        : setMintedNba(Number(mintedTokenAmount));
     } catch (error) {
       console.error('Error fetching minted token amount:', error);
     }
@@ -264,7 +271,12 @@ export default function Home(props) {
         );
 
         const allowance = await usdcContract.methods
-          .allowance(wallet, PACK_NFL_POLYGON[getConfig()].storage)
+          .allowance(
+            wallet,
+            currentSport === 'FOOTBALL'
+              ? PACK_NFL_POLYGON[getConfig()].storage
+              : PACK_NBA_POLYGON[getConfig()].storage
+          )
           .call();
 
         setAccountERC20ApprovalAmount(Number(allowance));
@@ -277,7 +289,12 @@ export default function Home(props) {
   async function approveERC20TokenSpending() {
     try {
       if (window.ethereum) {
+        let packAddress =
+          currentSport === 'FOOTBALL'
+            ? PACK_NFL_POLYGON[getConfig()].storage
+            : PACK_NBA_POLYGON[getConfig()].storage;
         await window.ethereum.request({ method: 'eth_requestAccounts' });
+
         const web3 = new Web3(window.ethereum);
 
         const usdcERC20ContractABI = usdcABI as unknown as ERC20ABI;
@@ -291,7 +308,7 @@ export default function Home(props) {
 
         const metamaskBalance = await fetchMetamaskNetworkBalance(wallet);
         const usdcGasEstimate = await usdcContract.methods
-          .approve(PACK_NFL_POLYGON[getConfig()].storage, accountBalance)
+          .approve(packAddress, accountBalance)
           .estimateGas();
         //@ts-ignore
         if (metamaskBalance <= usdcGasEstimate) {
@@ -361,6 +378,11 @@ export default function Home(props) {
       return;
     }
 
+    let packAddress =
+      currentSport === 'FOOTBALL'
+        ? PACK_NFL_POLYGON[getConfig()].logic
+        : PACK_NBA_POLYGON[getConfig()].logic;
+
     console.log(mint_cost);
     if (accountBalance < mint_cost && currentSport === 'FOOTBALL') {
       setBalanceErrorMsg(
@@ -384,10 +406,7 @@ export default function Home(props) {
 
         const web3 = new Web3(window.ethereum);
 
-        const contract = new web3.eth.Contract(
-          packLogicNFLContractABI,
-          PACK_NFL_POLYGON[getConfig()].logic
-        );
+        const contract = new web3.eth.Contract(packLogicNFLContractABI, packAddress);
 
         const metamaskBalance = await fetchMetamaskNetworkBalance(wallet);
         // Estimate gas for mintPacks function
@@ -443,18 +462,20 @@ export default function Home(props) {
   }
 
   async function fetchClaimStatus(accountId) {
-    const isClaimed = await fetchClaimSoulboundStatus(accountId);
+    const isClaimed = await fetchClaimSoulboundStatus(accountId, 'FOOTBALL');
+    const isClaimedBasketball = await fetchClaimSoulboundStatus(accountId, 'BASKETBALL');
     setIsClaimedFootball(isClaimed);
+    setIsClaimedBasketball(isClaimedBasketball);
   }
 
-  const handleClaimButton = async () => {
+  const handleClaimButton = async (sportType) => {
     try {
-      console.log(currentSport);
-      reduxDispatch(setSportTypeRedux(currentSport));
+      console.log(sportType);
+      reduxDispatch(setSportTypeRedux(sportType));
       setClaimingComplete(false);
       setLoading(true);
 
-      const claimed = await claimSoulboundPack(wallet);
+      const claimed = await claimSoulboundPack(wallet, sportType);
       if (claimed) {
         console.log('Soulbound Pack claimed successfully');
         // Handle the successful claim (e.g., display a success message)
@@ -472,7 +493,7 @@ export default function Home(props) {
 
   async function fetchPackPrice() {
     try {
-      const regularPackPrice = await fetchRegularPackPrice(); // Assuming this function returns a BigNumber
+      const regularPackPrice = await fetchRegularPackPrice(currentSport); // Assuming this function returns a BigNumber
 
       // Convert the price to a string with 18 decimal places
       const priceString = Number(regularPackPrice);
@@ -488,7 +509,7 @@ export default function Home(props) {
 
   async function fetchUserAccountBalance() {
     try {
-      const accountBalance = await fetchAccountBalance(wallet);
+      const accountBalance = await fetchAccountBalance(wallet, currentSport);
 
       setAccountBalance(Number(accountBalance));
       console.log(accountBalance);
@@ -599,12 +620,12 @@ export default function Home(props) {
           <Main color="indigo-white">
             <div className="flex-initial iphone5:mt-20 md:ml-6 md:mt-8">
               <div className="flex md:flex-row md:float-right iphone5:flex-col md:mt-0">
-                {/* <div className="md:mr-5 md:mt-4 iphone5:mt-10">
+                <div className="md:mr-5 md:mt-4 iphone5:mt-10">
                   <form>
                     <select
                       onChange={(e) => {
                         setCurrentSport(e.target.value);
-                        setUseNEP141(NEP141NEAR);
+                        setUsePOL141(POL141USDC);
                       }}
                       className="bg-filter-icon bg-no-repeat bg-right bg-indigo-white ring-2 ring-offset-8 ring-indigo-black ring-opacity-25 focus:ring-2 focus:ring-indigo-black 
                         focus:outline-none cursor-pointer text-xs iphone5:ml-8 iphone5:w-4/6 md:text-base md:ml-8 md:mt-0 md:w-72 md:p-2 md:block lg:block"
@@ -614,7 +635,7 @@ export default function Home(props) {
                       })}
                     </select>
                   </form>
-                </div> */}
+                </div>
               </div>
               <div className="ml-8">
                 <ModalPortfolioContainer title="MINT PACKS" textcolor="text-indigo-black" />
@@ -626,9 +647,19 @@ export default function Home(props) {
                   ) : (
                     <button
                       className="w-60 flex text-center justify-center items-center iphone5:w-64 bg-indigo-buttonblue font-montserrat text-indigo-white p-3 mb-4 md:mr-4 text-xs "
-                      onClick={(e) => handleClaimButton()}
+                      onClick={(e) => handleClaimButton('FOOTBALL')}
                     >
                       CLAIM FOOTBALL PACK
+                    </button>
+                  )}
+                  {isClaimedBasketball ? (
+                    ''
+                  ) : (
+                    <button
+                      className="w-60 flex text-center justify-center items-center iphone5:w-64 bg-indigo-buttonblue font-montserrat text-indigo-white p-3 mb-4 md:mr-4 text-xs "
+                      onClick={(e) => handleClaimButton('BASKETBALL')}
+                    >
+                      CLAIM BASKETBALL PACK
                     </button>
                   )}
                 </div>
@@ -639,6 +670,12 @@ export default function Home(props) {
                     // onClick={logIn}
                   >
                     CONNECT WALLET TO CLAIM FOOTBALL PACK
+                  </button>
+                  <button
+                    className="w-60 flex text-center justify-center items-center iphone5:w-64 bg-indigo-buttonblue font-montserrat text-indigo-white p-3 mb-4 md:mr-4 text-xs "
+                    // onClick={logIn}
+                  >
+                    CONNECT WALLET TO CLAIM BASKETBALL PACK
                   </button>
                 </div>
               )}
