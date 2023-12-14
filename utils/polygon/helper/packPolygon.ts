@@ -8,8 +8,13 @@ import pack_nft_storage from 'utils/polygon/ABI/pack_nft.json';
 import pack_nft_logic from 'utils/polygon/ABI/pack_nft_logic.json';
 import promo_pack_nft_storage from 'utils/polygon/ABI/promo_pack_nft.json';
 import promo_pack_nft_logic from 'utils/polygon/ABI/promo_pack_nft_logic.json';
-import { PACK_NFL_POLYGON, WEB3 } from 'data/constants/polygonContracts';
-import { PROMO_PACK_NFL_POLYGON } from 'data/constants/polygonContracts';
+import {
+  PACK_NBA_POLYGON,
+  PROMO_PACK_NFL_POLYGON,
+  PACK_NFL_POLYGON,
+  WEB3,
+  PROMO_PACK_NBA_POLYGON,
+} from 'data/constants/polygonContracts';
 import { getConfig } from 'utils/polygon';
 
 const packStorageNFLContractABI = pack_nft_storage as unknown as packStorageABI;
@@ -17,17 +22,25 @@ const packLogicNFLContractABI = pack_nft_logic as unknown as packLogicABI;
 const promoPackStorageNFLContractABI = promo_pack_nft_storage as unknown as promoPackStorageABI;
 const promoPackLogicNFLContractABI = promo_pack_nft_logic as unknown as promoPackLogicABI;
 
-export async function fetchPackTokenMetadata(tokenId, type) {
+export async function fetchPackTokenMetadata(tokenId, type, currentSport) {
   try {
     if (window.ethereum) {
       let abi: promoPackLogicABI | packLogicABI;
       let address = '';
       if (type === 'regular') {
         abi = pack_nft_logic as unknown as packLogicABI;
-        address = PACK_NFL_POLYGON[getConfig()].logic;
+        if (currentSport === 'FOOTBALL') {
+          address = PACK_NFL_POLYGON[getConfig()].logic;
+        } else {
+          address = PACK_NBA_POLYGON[getConfig()].logic;
+        }
       } else if (type === 'promo' || type === 'soulbound') {
         abi = promo_pack_nft_logic as unknown as promoPackLogicABI;
-        address = PROMO_PACK_NFL_POLYGON[getConfig()].logic;
+        if (currentSport === 'FOOTBALL') {
+          address = PROMO_PACK_NFL_POLYGON[getConfig()].logic;
+        } else {
+          address = PROMO_PACK_NBA_POLYGON[getConfig()].logic;
+        }
       }
       console.log('Fetch regular pack tokens for owner function called');
       await window.ethereum.request({ method: 'eth_requestAccounts' });
@@ -43,17 +56,25 @@ export async function fetchPackTokenMetadata(tokenId, type) {
   }
 }
 
-export async function fetchPackTokensByOwner(account, fromIndex, limit, type) {
+export async function fetchPackTokensByOwner(account, fromIndex, limit, type, currentSport) {
   try {
     if (window.ethereum) {
       let abi: promoPackLogicABI | packLogicABI;
       let address = '';
       if (type === 'regular') {
         abi = pack_nft_logic as unknown as packLogicABI;
-        address = PACK_NFL_POLYGON[getConfig()].logic;
+        if (currentSport === 'FOOTBALL') {
+          address = PACK_NFL_POLYGON[getConfig()].logic;
+        } else {
+          address = PACK_NBA_POLYGON[getConfig()].logic;
+        }
       } else if (type === 'promo' || type === 'soulbound') {
         abi = promo_pack_nft_logic as unknown as promoPackLogicABI;
-        address = PROMO_PACK_NFL_POLYGON[getConfig()].logic;
+        if (currentSport === 'FOOTBALL') {
+          address = PROMO_PACK_NFL_POLYGON[getConfig()].logic;
+        } else {
+          address = PROMO_PACK_NBA_POLYGON[getConfig()].logic;
+        }
       }
       console.log('Fetch regular pack tokens for owner function called');
       await window.ethereum.request({ method: 'eth_requestAccounts' });
@@ -71,17 +92,25 @@ export async function fetchPackTokensByOwner(account, fromIndex, limit, type) {
   }
 }
 
-export async function fetchPackTokenSupplyByOwner(account, type) {
+export async function fetchPackTokenSupplyByOwner(account, type, currentSport) {
   try {
     if (window.ethereum) {
       let abi: promoPackLogicABI | packLogicABI;
       let address = '';
       if (type === 'regular') {
         abi = pack_nft_logic as unknown as packLogicABI;
-        address = PACK_NFL_POLYGON[getConfig()].logic;
+        if (currentSport === 'FOOTBALL') {
+          address = PACK_NFL_POLYGON[getConfig()].logic;
+        } else {
+          address = PACK_NBA_POLYGON[getConfig()].logic;
+        }
       } else if (type === 'promo' || type === 'soulbound') {
         abi = promo_pack_nft_logic as unknown as promoPackLogicABI;
-        address = PROMO_PACK_NFL_POLYGON[getConfig()].logic;
+        if (currentSport === 'FOOTBALL') {
+          address = PROMO_PACK_NFL_POLYGON[getConfig()].logic;
+        } else {
+          address = PROMO_PACK_NBA_POLYGON[getConfig()].logic;
+        }
       }
       console.log('Fetch regular pack tokens for owner function called');
       await window.ethereum.request({ method: 'eth_requestAccounts' });
@@ -136,14 +165,16 @@ export async function fetchFilteredMixedTokensByOwner(
   });
 }
 
-export async function fetchAccountBalance(accountId) {
+export async function fetchAccountBalance(accountId, currentSport) {
   try {
     if (window.ethereum) {
       console.log('Fetch account balance called');
       await window.ethereum.request({ method: 'eth_requestAccounts' });
       const contract = new Contract(
         packStorageNFLContractABI,
-        PACK_NFL_POLYGON[getConfig()].storage
+        currentSport === 'FOOTBALL'
+          ? PACK_NFL_POLYGON[getConfig()].storage
+          : PACK_NBA_POLYGON[getConfig()].storage
       );
       contract.setProvider(window.ethereum);
 
@@ -157,14 +188,16 @@ export async function fetchAccountBalance(accountId) {
     console.error('Error fetching account balance:', error);
   }
 }
-export async function fetchRegularPackPrice() {
+export async function fetchRegularPackPrice(currentSport) {
   try {
     if (window.ethereum) {
       console.log('Fetch regular pack price called');
       await window.ethereum.request({ method: 'eth_requestAccounts' });
       const contract = new Contract(
         packStorageNFLContractABI,
-        PACK_NFL_POLYGON[getConfig()].storage
+        currentSport === 'FOOTBALL'
+          ? PACK_NFL_POLYGON[getConfig()].storage
+          : PACK_NBA_POLYGON[getConfig()].storage
       );
       contract.setProvider(window.ethereum);
 
@@ -179,12 +212,16 @@ export async function fetchRegularPackPrice() {
   }
 }
 
-export async function fetchMintedTokenAmount(accountId) {
+export async function fetchMintedTokenAmount(accountId, currentSport) {
+  let packAddress =
+    currentSport === 'FOOTBALL'
+      ? PACK_NFL_POLYGON[getConfig()].logic
+      : PACK_NBA_POLYGON[getConfig()].logic;
   try {
     if (window.ethereum) {
       console.log('Fetch minted token amount called');
       await window.ethereum.request({ method: 'eth_requestAccounts' });
-      const contract = new Contract(packLogicNFLContractABI, PACK_NFL_POLYGON[getConfig()].logic);
+      const contract = new Contract(packLogicNFLContractABI, packAddress);
       contract.setProvider(window.ethereum);
 
       // Call the get regular pack price function
@@ -200,21 +237,29 @@ export async function fetchMintedTokenAmount(accountId) {
   }
 }
 
-export async function checkTokenOwner(account, id, type) {
+export async function checkTokenOwner(account, id, type, currentSport) {
   try {
     if (window.ethereum) {
       let abi: promoPackLogicABI | packLogicABI;
       let address = '';
       if (type === 'regular') {
         abi = pack_nft_logic as unknown as packLogicABI;
-        address = PACK_NFL_POLYGON[getConfig()].logic;
+        if (currentSport === 'FOOTBALL') {
+          address = PACK_NFL_POLYGON[getConfig()].logic;
+        } else {
+          address = PACK_NBA_POLYGON[getConfig()].logic;
+        }
       } else if (type === 'promo' || type === 'soulbound') {
         abi = promo_pack_nft_logic as unknown as promoPackLogicABI;
-        address = PROMO_PACK_NFL_POLYGON[getConfig()].logic;
+        if (currentSport === 'FOOTBALL') {
+          address = PROMO_PACK_NFL_POLYGON[getConfig()].logic;
+        } else {
+          address = PROMO_PACK_NBA_POLYGON[getConfig()].logic;
+        }
       }
       console.log('Fetch check token owner called');
       await window.ethereum.request({ method: 'eth_requestAccounts' });
-      const contract = new Contract(packLogicNFLContractABI, PACK_NFL_POLYGON[getConfig()].logic);
+      const contract = new Contract(abi, address);
       contract.setProvider(window.ethereum);
 
       // Call the getTokenOwner function
@@ -229,7 +274,11 @@ export async function checkTokenOwner(account, id, type) {
   }
 }
 
-export async function claimSoulboundPack(account) {
+export async function claimSoulboundPack(account, currentSport) {
+  let promoPackAddress =
+    currentSport === 'FOOTBALL'
+      ? PROMO_PACK_NFL_POLYGON[getConfig()].logic
+      : PROMO_PACK_NBA_POLYGON[getConfig()].logic;
   return new Promise(async (resolve, reject) => {
     try {
       if (window.ethereum) {
@@ -238,10 +287,7 @@ export async function claimSoulboundPack(account) {
 
         const web3 = new Web3(window.ethereum);
 
-        const contract = new web3.eth.Contract(
-          promoPackLogicNFLContractABI,
-          PROMO_PACK_NFL_POLYGON[getConfig()].logic
-        );
+        const contract = new web3.eth.Contract(promoPackLogicNFLContractABI, promoPackAddress);
 
         // Estimate gas for mintPacks function
         console.log('Account:', account);
@@ -253,7 +299,7 @@ export async function claimSoulboundPack(account) {
         const gasPrice = await web3.eth.getGasPrice();
         const tx = {
           from: account,
-          to: PROMO_PACK_NFL_POLYGON[getConfig()].logic,
+          to: promoPackAddress,
           //@ts-ignore
           gas: parseInt(gasEstimate),
           gasPrice: gasPrice,
@@ -289,16 +335,17 @@ export async function claimSoulboundPack(account) {
   });
 }
 
-export async function fetchClaimSoulboundStatus(account) {
+export async function fetchClaimSoulboundStatus(account, currentSport) {
+  let promoPackAddress =
+    currentSport === 'FOOTBALL'
+      ? PROMO_PACK_NFL_POLYGON[getConfig()].logic
+      : PROMO_PACK_NBA_POLYGON[getConfig()].logic;
   try {
     if (window.ethereum) {
       console.log('Fetch claim soulbound status function called');
 
       await window.ethereum.request({ method: 'eth_requestAccounts' });
-      const contract = new Contract(
-        promoPackLogicNFLContractABI,
-        PROMO_PACK_NFL_POLYGON[getConfig()].logic
-      );
+      const contract = new Contract(promoPackLogicNFLContractABI, promoPackAddress);
       contract.setProvider(window.ethereum);
       // Call the checkClaimStatus function
       const isClaimed = await contract.methods.checkClaimStatus(account).call({ from: account });
