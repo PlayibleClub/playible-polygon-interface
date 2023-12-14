@@ -10,7 +10,7 @@ import { promoPackStorageABI } from 'utils/polygon/ABI/promo_pack_nft';
 import { promoPackLogicABI } from 'utils/polygon/ABI/promo_pack_nft_logic';
 import promo_pack_nft_storage from 'utils/polygon/ABI/promo_pack_nft.json';
 import promo_pack_nft_logic from 'utils/polygon/ABI/promo_pack_nft_logic.json';
-import { PROMO_PACK_NFL_POLYGON } from 'data/constants/polygonContracts';
+import { PROMO_PACK_NFL_POLYGON, PROMO_PACK_NBA_POLYGON } from 'data/constants/polygonContracts';
 import { getConfig } from 'utils/polygon';
 
 const promoPackStorageNFLContractABI = promo_pack_nft_storage as unknown as promoPackStorageABI;
@@ -23,6 +23,7 @@ export default function Promotional(props) {
   } = useWalletSelector();
 
   const [loading, setLoading] = useState(false);
+  const [loadingNBA, setLoadingNBA] = useState(false);
   const [whitelistInfoNFL, setWhitelistInfoNFL] = useState(null);
   const [whitelistInfoNBA, setWhitelistInfoNBA] = useState(null);
   const [whitelistInfoMLB, setWhitelistInfoMLB] = useState(null);
@@ -49,6 +50,12 @@ export default function Promotional(props) {
         : currentSport === SPORT_NAME_LOOKUP.basketball
         ? whitelistInfoNBA?.toString()
         : whitelistInfoCRICKET?.toString();
+
+    let promoPackAddress =
+      currentSport === 'FOOTBALL'
+        ? PROMO_PACK_NFL_POLYGON[getConfig()].logic
+        : PROMO_PACK_NBA_POLYGON[getConfig()].logic;
+
     try {
       if (window.ethereum) {
         console.log('Fetch send promo pack function called');
@@ -56,10 +63,7 @@ export default function Promotional(props) {
 
         const web3 = new Web3(window.ethereum);
 
-        const contract = new web3.eth.Contract(
-          promoPackLogicNFLContractABI,
-          PROMO_PACK_NFL_POLYGON[getConfig()].logic
-        );
+        const contract = new web3.eth.Contract(promoPackLogicNFLContractABI, promoPackAddress);
 
         // Estimate gas for mintPacks function
         console.log('Account:', wallet);
@@ -71,7 +75,7 @@ export default function Promotional(props) {
         const gasPrice = await web3.eth.getGasPrice();
         const tx = {
           from: wallet,
-          to: PROMO_PACK_NFL_POLYGON[getConfig()].logic,
+          to: promoPackAddress,
           //@ts-ignore
           gas: parseInt(gasEstimate),
           gasPrice: gasPrice,
@@ -88,11 +92,13 @@ export default function Promotional(props) {
             console.log('Confirmation Number:', confirmationNumber);
             console.log('Receipt:', receipt);
             setLoading(false);
+            setLoadingNBA(false);
             alert('Promo Pack minted successfully!');
           })
           .on('error', function (error) {
             console.error('Error:', error);
             setLoading(false);
+            setLoadingNBA(false);
             alert('Promo Pack minting failed!');
           });
       }
@@ -180,7 +186,7 @@ export default function Promotional(props) {
 
   const handleButtonClick = (e) => {
     e.preventDefault();
-    setLoading(true);
+    currentSport === 'FOOTBALL' ? setLoading(true) : setLoadingNBA(true);
     execute_send_type_1_pack();
   };
 
@@ -219,30 +225,38 @@ export default function Promotional(props) {
             </div>
           </div>
         )}
-        <div className="flex flex-col w-1/2 ml-24 mt-24">
-          <label className="font-monument" htmlFor="duration">
-            SEND TYPE 1 BASKETBALL PACK
-          </label>
-          <input
-            className="border outline-none rounded-lg px-3 p-2"
-            id="receiverAccount"
-            name="receiverAccount"
-            type="text"
-            placeholder="Enter account to send type 1 pack to."
-            onChange={(e) => {
-              setCurrentSport('BASKETBALL'), onChangeWhitelistNBA(e);
-            }}
-            value={detailsNBA.receiverAccount}
-          />
-          <div className="  mt-6">
-            <button
-              className=" flex text-center justify-center items-center iphone5:w-64 bg-indigo-buttonblue font-montserrat text-indigo-white p-3 mb-4 md:mr-4 text-xs"
-              onClick={(e) => handleButtonClick(e)}
-            >
-              Send
-            </button>
+        {loadingNBA ? (
+          <div className="flex w-full ml-24 mt-24">
+            <div className="w-5 h-5 rounded-full bg-indigo-buttonblue animate-bounce mr-5"></div>
+            <div className="w-5 h-5 rounded-full bg-indigo-buttonblue animate-bounce mr-5"></div>
+            <div className="w-5 h-5 rounded-full bg-indigo-buttonblue animate-bounce"></div>
           </div>
-        </div>
+        ) : (
+          <div className="flex flex-col w-1/2 ml-24 mt-24">
+            <label className="font-monument" htmlFor="duration">
+              SEND TYPE 1 BASKETBALL PACK
+            </label>
+            <input
+              className="border outline-none rounded-lg px-3 p-2"
+              id="receiverAccount"
+              name="receiverAccount"
+              type="text"
+              placeholder="Enter account to send type 1 pack to."
+              onChange={(e) => {
+                setCurrentSport('BASKETBALL'), onChangeWhitelistNBA(e);
+              }}
+              value={detailsNBA.receiverAccount}
+            />
+            <div className="  mt-6">
+              <button
+                className=" flex text-center justify-center items-center iphone5:w-64 bg-indigo-buttonblue font-montserrat text-indigo-white p-3 mb-4 md:mr-4 text-xs"
+                onClick={(e) => handleButtonClick(e)}
+              >
+                Send
+              </button>
+            </div>
+          </div>
+        )}
         <div className="flex flex-col w-1/2 ml-24 mt-24">
           <label className="font-monument" htmlFor="duration">
             SEND TYPE 1 BASEBALL PACK
