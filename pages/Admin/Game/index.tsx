@@ -235,14 +235,14 @@ export default function Index(props) {
   const [remountPositionArea, setRemountPositionArea] = useState(0);
   const [remountDropdown, setRemountDropdown] = useState(0);
   const [positionList, setPositionList] = useState(SPORT_TYPES[0].positionList);
-  const sportObj = SPORT_TYPES.filter((x) => x.key === 'NFL').map((x) => ({
+  const sportObj = SPORT_TYPES.filter((x) => x.key === 'NBA').map((x) => ({
     name: x.sport,
     isActive: false,
   }));
   const [mergeGameInfo, setMergeGameInfo] = useState({
     nearGameId: 1,
     polygonGameId: 1,
-    sport: 'nfl', //default
+    sport: 'nba', //default
     auth: '',
   });
   console.log(sportObj);
@@ -1056,18 +1056,18 @@ export default function Index(props) {
   const [selectedPromo, setSelectedPromo] = useState(true);
   const [selectedSoulbound, setSelectedSoulbound] = useState(true);
 
-  let token_TypeWhitelist = []
-    if(selectedRegular){
-      token_TypeWhitelist.push('1');
-      }
-    if(selectedPromo){
-      token_TypeWhitelist.push('2');
-      }
-    if(selectedSoulbound){
-      token_TypeWhitelist.push('3');
-      }
+  let token_TypeWhitelist = [];
+  if (selectedRegular) {
+    token_TypeWhitelist.push('1');
+  }
+  if (selectedPromo) {
+    token_TypeWhitelist.push('2');
+  }
+  if (selectedSoulbound) {
+    token_TypeWhitelist.push('3');
+  }
 
-      console.log("TOKEN VALUES", token_TypeWhitelist);
+  console.log('TOKEN VALUES', token_TypeWhitelist);
 
   useEffect(() => {
     if (!isAdmin) {
@@ -1233,13 +1233,13 @@ export default function Index(props) {
               ) : tabs[1].isActive ? (
                 <>
                   <div>
-                  <AdminGameFilter 
+                    <AdminGameFilter
                       onChangeFn={(selectedRegular, selectedPromo, selectedSoulbound) => {
                         setSelectedRegular(selectedRegular);
                         setSelectedPromo(selectedPromo);
                         setSelectedSoulbound(selectedSoulbound);
                         setRemountComponent(Math.random());
-                        }}
+                      }}
                     />
                     {/* GAME ID */}
                     <div className="flex flex-col lg:w-1/2">
@@ -1637,14 +1637,13 @@ export default function Index(props) {
         <p className="font-bold">End Date:</p> {endFormattedTimestamp}
         <p className="font-bold">Whitelist: </p>{' '}
         {whitelistInfo === null ? '' : whitelistInfo.join(', ')}
-        <p className="font-bold">NFT Token Type:  </p>{token_TypeWhitelist.map((value, index) => (
-          <span key={index}>{index > 0 ? ', ' : ''}{
-            value === '1' ? 'Regular' :
-            value === '2' ? 'Promo' :
-            value === '3' ? 'Soulbound' :
-            ''
-          }</span>
-          ))}
+        <p className="font-bold">NFT Token Type: </p>
+        {token_TypeWhitelist.map((value, index) => (
+          <span key={index}>
+            {index > 0 ? ', ' : ''}
+            {value === '1' ? 'Regular' : value === '2' ? 'Promo' : value === '3' ? 'Soulbound' : ''}
+          </span>
+        ))}
         <p className="font-bold">Game Description: </p>
         {gameDescription}
         <p className="font-bold">Prize Description: </p>

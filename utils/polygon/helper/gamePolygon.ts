@@ -262,7 +262,7 @@ export async function buildLeaderboard(
     const { data } = await client.query({
       query: GET_MULTI_CHAIN_LEADERBOARD_RESULT,
       variables: {
-        sport: 'nfl',
+        sport: getSportType(currentSport).key.toLowerCase(),
         gameId: parseFloat(id),
         chain: 'polygon',
       },
@@ -272,7 +272,7 @@ export async function buildLeaderboard(
     const { data } = await client.query({
       query: GET_LEADERBOARD_RESULT,
       variables: {
-        sport: 'nfl',
+        sport: getSportType(currentSport).key.toLowerCase(),
         gameId: parseFloat(gameId),
         contract: 'polygon',
       },
