@@ -51,7 +51,7 @@ const HeaderBase = () => {
   const handleOptionChange = (selectedValue) => {
     setSelectedOption(selectedValue);
 
-    const env = process.env.NEAR_ENV;
+    const env = process.env.POLYGON_ENV;
     let url;
     switch (env) {
       case 'production':
@@ -65,7 +65,7 @@ const HeaderBase = () => {
     if (selectedValue === 'Near Protocol') {
       window.location.href =
         url === 'mainnet' ? 'https://app.playible.io/' : 'https://dev.app.playible.io/';
-    } else if (selectedValue === 'Polygon Matic') {
+    } else if (selectedValue === 'Polygon Mainnet') {
       window.location.href =
         url === 'mainnet' ? 'https://polygon.playible.io/' : 'https://dev.polygon.playible.io/';
     }
@@ -127,7 +127,7 @@ const HeaderBase = () => {
             <div className="flex flex-col items-start justify-center mr-8">
               <a
                 href="#"
-                onClick={() => handleOptionChange('Polygon Matic')}
+                onClick={() => handleOptionChange('Polygon Mainnet')}
                 className="hover:bg-indigo-slate p-2 rounded-md text-center mb-2 border-2 border-indigo-navbargrad2"
               >
                 <div className="flex items-center">
