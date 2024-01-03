@@ -4,7 +4,6 @@ import {
   fetchClaimSoulboundStatus,
   fetchPackTokenSupplyByOwner,
   fetchPackTokensByOwner,
-  fetchFilteredMixedTokensByOwner,
 } from 'utils/polygon/helper/packPolygon';
 
 import PortfolioContainer from '../../components/containers/PortfolioContainer';
@@ -66,7 +65,9 @@ export default function Packs() {
       isActive: false,
     },
   ]);
-  const sportObj = SPORT_TYPES.map((x) => ({ ...x, isActive: false }));
+  const sportObj = SPORT_TYPES.filter(
+    (x) => x.sport !== SPORT_NAME_LOOKUP.cricket && x.sport !== SPORT_NAME_LOOKUP.baseball
+  ).map((x) => ({ ...x, isActive: false }));
   sportObj[0].isActive = true;
   const [sportList, setSportList] = useState([...sportObj]);
   const [currentSport, setCurrentSport] = useState(sportObj[0].sport);
@@ -102,13 +103,13 @@ export default function Packs() {
     // setPackLimit(10);
     setRemountComponent(Math.random());
     const prevSport = [...sportList];
-
     switch (name) {
       case 'ALL':
         if (sportList.length > 0) {
           setSportList([]);
           setRemountComponent(Math.random());
         }
+        setCurrentTotal(allPacks.length);
         break;
       case 'PROMOTIONAL':
         if ((sportList.length = 0)) {
@@ -179,68 +180,15 @@ export default function Packs() {
     setCurrentPage(event.selected);
   };
 
-  const handleMixedPageClick = (event) => {
-    let newOffset;
-    if (event.selected * packLimit >= totalPacks) {
-      let offset;
-      if (packLimit - totalPacks < 0 && (packLimit - totalPacks) % packLimit !== 0) {
-        offset = ((packLimit - totalPacks) % packLimit) + packLimit;
-      } else offset = (packLimit - totalPacks) % packLimit;
-      let extra = 1;
-      newOffset = Math.abs(Math.abs(event.selected - regPageCount + 1) - extra) * packLimit;
-      setPromoOffset(offset);
-      setIsPromoPage(true);
-    } else {
-      setIsPromoPage(false);
-      newOffset = (event.selected * packLimit) % totalPacks;
-    }
-    console.log(promoOffset);
-    setPackOffset(newOffset);
-    setCurrentPage(event.selected);
-  };
-
   async function fetchMixedToken() {
-    await fetchFilteredMixedTokensByOwner(
-      wallet,
-      isPromoPage,
-      packOffset,
-      promoOffset,
-      totalPacks,
-      totalSoulboundPacks,
-      packLimit
-    ).then(async (result) => {
-      const tokenIds = result[1]; // Assuming tokenIds is the second element
-      const metadata = result[2]; // Assuming metadata is the third element
-
-      //change metadata to contents instead of just retrieving the IPFS Link
-      const updatedTokens = await Promise.all(
-        metadata
-          .filter((metadataObject) => metadataObject) // Filter out empty metadataObjects
-          .map(async (metadataObject) => {
-            const metadata = JSON.parse(metadataObject).metadata;
-            const response = await fetch(metadata);
-            return response.json(); // Directly parse the response as JSON
-          })
-      );
-
-      const tokenIdsArray = Object.values(tokenIds);
-      //restructures array for better mapping
-      const structuredTokens = tokenIdsArray
-        .filter((_, index) => updatedTokens[index] !== undefined)
-        .map((tokenId, index) => {
-          return {
-            token_id: Number(tokenId),
-            metadata: updatedTokens[index], // Assuming updatedTokens is an array of objects
-          };
-        });
-
-      setFootballPacks(structuredTokens);
-    });
-  }
-
-  async function fetchTokens() {
     try {
-      const tokens = await fetchPackTokensByOwner(wallet, packOffset, packLimit, 'regular');
+      const tokens = await fetchPackTokensByOwner(
+        wallet,
+        packOffset,
+        packLimit,
+        'regular',
+        'FOOTBALL'
+      );
 
       const tokenIds = tokens[1]; // Assuming tokenIds is the second element
       const metadata = tokens[2]; // Assuming metadata is the third element
@@ -272,7 +220,13 @@ export default function Packs() {
       console.error('Error parsing JSON:', error);
     }
     try {
-      const tokens = await fetchPackTokensByOwner(wallet, packOffset, packLimit, 'promo');
+      const tokens = await fetchPackTokensByOwner(
+        wallet,
+        packOffset,
+        packLimit,
+        'promo',
+        'FOOTBALL'
+      );
 
       const tokenIds = tokens[1]; // Assuming tokenIds is the second element
       const metadata = tokens[2]; // Assuming metadata is the third element
@@ -304,8 +258,93 @@ export default function Packs() {
       console.error('Error parsing JSON:', error);
     }
     try {
+      const tokens = await fetchPackTokensByOwner(
+        wallet,
+        packOffset,
+        packLimit,
+        'regular',
+        'BASKETBALL'
+      );
+
+      const tokenIds = tokens[1]; // Assuming tokenIds is the second element
+      const metadata = tokens[2]; // Assuming metadata is the third element
+
+      //change metadata to contents instead of just retrieving the IPFS Link
+      const updatedTokens = await Promise.all(
+        metadata
+          .filter((metadataObject) => metadataObject) // Filter out empty metadataObjects
+          .map(async (metadataObject) => {
+            const metadata = JSON.parse(metadataObject).metadata;
+            const response = await fetch(metadata);
+            return response.json(); // Directly parse the response as JSON
+          })
+      );
+
+      const tokenIdsArray = Object.values(tokenIds);
+      //restructures array for better mapping
+      const structuredTokens = tokenIdsArray
+        .filter((_, index) => updatedTokens[index] !== undefined)
+        .map((tokenId, index) => {
+          return {
+            token_id: Number(tokenId),
+            metadata: updatedTokens[index], // Assuming updatedTokens is an array of objects
+          };
+        });
+
+      setBasketballPacks(structuredTokens);
+    } catch (error) {
+      console.error('Error parsing JSON:', error);
+    }
+    try {
+      const tokens = await fetchPackTokensByOwner(
+        wallet,
+        packOffset,
+        packLimit,
+        'promo',
+        'BASKETBALL'
+      );
+
+      const tokenIds = tokens[1]; // Assuming tokenIds is the second element
+      const metadata = tokens[2]; // Assuming metadata is the third element
+
+      //change metadata to contents instead of just retrieving the IPFS Link
+      const updatedTokens = await Promise.all(
+        metadata
+          .filter((metadataObject) => metadataObject) // Filter out empty metadataObjects
+          .map(async (metadataObject) => {
+            const metadata = JSON.parse(metadataObject).metadata;
+            const response = await fetch(metadata);
+            return response.json(); // Directly parse the response as JSON
+          })
+      );
+
+      const tokenIdsArray = Object.values(tokenIds);
+      //restructures array for better mapping
+      const structuredTokens = tokenIdsArray
+        .filter((_, index) => updatedTokens[index] !== undefined)
+        .map((tokenId, index) => {
+          return {
+            token_id: Number(tokenId),
+            metadata: updatedTokens[index], // Assuming updatedTokens is an array of objects
+          };
+        });
+
+      setBasketballSbPacks(structuredTokens);
+    } catch (error) {
+      console.error('Error parsing JSON:', error);
+    }
+  }
+
+  async function fetchTokens() {
+    try {
       console.log({ wallet, packOffset, packLimit });
-      const tokens = await fetchPackTokensByOwner(wallet, packOffset, packLimit, 'regular');
+      const tokens = await fetchPackTokensByOwner(
+        wallet,
+        packOffset,
+        packLimit,
+        'regular',
+        currentSport
+      );
 
       const tokenIds = tokens[1]; // Assuming tokenIds is the second element
       const metadata = tokens[2]; // Assuming metadata is the third element
@@ -337,7 +376,13 @@ export default function Packs() {
       console.error('Error parsing JSON:', error);
     }
     try {
-      const tokens = await fetchPackTokensByOwner(wallet, packOffset, packLimit, 'promo');
+      const tokens = await fetchPackTokensByOwner(
+        wallet,
+        packOffset,
+        packLimit,
+        'promo',
+        currentSport
+      );
 
       const tokenIds = tokens[1]; // Assuming tokenIds is the second element
       const metadata = tokens[2]; // Assuming metadata is the third element
@@ -372,22 +417,29 @@ export default function Packs() {
 
   async function fetchTokenSupply() {
     try {
-      const resultFootball = await fetchPackTokenSupplyByOwner(wallet, 'regular');
+      const resultFootball = await fetchPackTokenSupplyByOwner(wallet, 'regular', currentSport);
 
       setTotalPacks(Number(resultFootball));
     } catch (error) {
       console.error(error);
     }
     try {
-      const resultFootball = await fetchPackTokenSupplyByOwner(wallet, 'regular');
-      const resultFootballSb = await fetchPackTokenSupplyByOwner(wallet, 'promo');
+      const resultFootball = await fetchPackTokenSupplyByOwner(wallet, 'regular', 'FOOTBALL');
+      const resultFootballSb = await fetchPackTokenSupplyByOwner(wallet, 'promo', 'FOOTBALL');
+      const resultBasketball = await fetchPackTokenSupplyByOwner(wallet, 'regular', 'BASKETBALL');
+      const resultBasketballSb = await fetchPackTokenSupplyByOwner(wallet, 'promo', 'BASKETBALL');
 
-      setTotalSupply(Number(resultFootballSb) + Number(resultFootball));
+      setTotalSupply(
+        Number(resultFootballSb) +
+          Number(resultFootball) +
+          Number(resultBasketballSb) +
+          Number(resultBasketball)
+      );
     } catch (error) {
       console.error(error);
     }
     try {
-      const resultPromoFootball = await fetchPackTokenSupplyByOwner(wallet, 'promo');
+      const resultPromoFootball = await fetchPackTokenSupplyByOwner(wallet, 'promo', currentSport);
 
       setTotalSoulboundPacks(Number(resultPromoFootball));
     } catch (error) {
@@ -397,7 +449,7 @@ export default function Packs() {
 
   async function fetchClaimStatus(accountId) {
     try {
-      const isClaimed = await fetchClaimSoulboundStatus(accountId);
+      const isClaimed = await fetchClaimSoulboundStatus(accountId, currentSport);
       setIsClaimed(isClaimed);
     } catch (error) {
       console.error(error);
@@ -411,7 +463,7 @@ export default function Packs() {
       setClaimingComplete(false);
       setLoading(true);
 
-      const claimed = await claimSoulboundPack(wallet);
+      const claimed = await claimSoulboundPack(wallet, currentSport);
       if (claimed) {
         console.log('Soulbound Pack claimed successfully');
         // Handle the successful claim (e.g., display a success message)
@@ -470,7 +522,7 @@ export default function Packs() {
     totalSupply,
     currentPage,
     totalSoulboundPacks,
-    currentPage,
+    currentSport,
   ]);
 
   useEffect(() => {
@@ -546,7 +598,7 @@ export default function Packs() {
 
               <div className="flex flex-col">
                 <hr className="opacity-10 -ml-6" />
-                {/* <div className="flex flex-row first:md:ml-10 iphone5:ml-2">
+                <div className="flex flex-row first:md:ml-10 iphone5:ml-2">
                   {sportList.map((x, index) => {
                     return (
                       <button
@@ -565,7 +617,7 @@ export default function Packs() {
                       </button>
                     );
                   })}
-                </div> */}
+                </div>
                 {loading ? (
                   <div className="flex w-full mt-10">
                     <div className="w-5 h-5 rounded-full bg-indigo-buttonblue animate-bounce mr-5"></div>
@@ -602,7 +654,10 @@ export default function Packs() {
                     )}
                   </div>
                 )}
-                <div className="grid iphone5:grid-cols-2 gap-y-8 mt-4 md:grid-cols-4 iphone5:mt-8 iphone5:ml-2 md:ml-7 md:mt-9 ">
+                <div
+                  className="grid iphone5:grid-cols-2 gap-y-8 mt-4 md:grid-cols-4 iphone5:mt-8 iphone5:ml-2 md:ml-7 md:mt-9 "
+                  key={remountComponent}
+                >
                   {categoryList[0].isActive
                     ? (categoryList[0].isActive ? allPacks : packs).length > 0 &&
                       (categoryList[0].isActive ? allPacks : packs)
@@ -644,7 +699,7 @@ export default function Packs() {
                   pageLinkClassName="rounded-lg hover:font-bold hover:bg-indigo-white hover:text-indigo-black pr-1 pl-1"
                   breakLabel="..."
                   nextLabel=">"
-                  onPageChange={categoryList[0].isActive ? handleMixedPageClick : handlePageClick}
+                  onPageChange={handlePageClick}
                   pageRangeDisplayed={5}
                   pageCount={pageCount}
                   previousLabel="<"

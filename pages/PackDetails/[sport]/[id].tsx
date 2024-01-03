@@ -498,8 +498,8 @@ export default function PackDetails(props) {
     try {
       const metadataResponse =
         packType === '2' || packType === '3'
-          ? await fetchPackTokenMetadata(id, 'promo')
-          : await fetchPackTokenMetadata(id, 'regular');
+          ? await fetchPackTokenMetadata(id, 'promo', myPack.sport)
+          : await fetchPackTokenMetadata(id, 'regular', myPack.sport);
       const metadataObject = JSON.parse(metadataResponse);
 
       const metadataUrl = metadataObject.metadata;
@@ -530,8 +530,8 @@ export default function PackDetails(props) {
     try {
       const owner =
         packType === '2' || packType === '3'
-          ? await checkTokenOwner(wallet, id, 'promo')
-          : await checkTokenOwner(wallet, id, 'regular');
+          ? await checkTokenOwner(wallet, id, 'promo', myPack.sport)
+          : await checkTokenOwner(wallet, id, 'regular', myPack.sport);
 
       console.log(Number(owner));
       setIsOwner(Number(owner));

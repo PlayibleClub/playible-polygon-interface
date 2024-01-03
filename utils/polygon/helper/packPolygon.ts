@@ -127,44 +127,6 @@ export async function fetchPackTokenSupplyByOwner(account, type, currentSport) {
   }
 }
 
-export async function fetchFilteredMixedTokensByOwner(
-  accountId,
-  isPromoPage,
-  athleteOffset,
-  promoOffset,
-  totalRegularSupply,
-  totalPromoSupply,
-  packLimit
-) {
-  console.log({
-    regular: totalRegularSupply,
-    promo: totalPromoSupply,
-  });
-  return await fetchPackTokensByOwner(
-    accountId,
-    isPromoPage ? athleteOffset + promoOffset : athleteOffset,
-    isPromoPage ? totalPromoSupply : totalRegularSupply,
-    isPromoPage ? 'promo' : 'regular'
-  ).then(async (result) => {
-    if (result.length < packLimit && !isPromoPage && totalPromoSupply !== 0) {
-      let sbLimit = packLimit - result.length;
-      let arrayToReturn = await fetchPackTokensByOwner(
-        accountId,
-        sbLimit,
-        totalPromoSupply,
-        'promo'
-      ).then((result2) => {
-        result2.map((obj) => result.push(obj));
-        return result;
-      });
-      console.log('arrayToReturn:', arrayToReturn);
-      return arrayToReturn;
-    } else {
-      return result;
-    }
-  });
-}
-
 export async function fetchAccountBalance(accountId, currentSport) {
   try {
     if (window.ethereum) {
