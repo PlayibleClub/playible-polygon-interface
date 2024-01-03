@@ -9,7 +9,7 @@ export const ATHLETE_NFL_POLYGON = {
   },
 };
 
-export const ATHLETE_NBA_POLYGON = {
+export const ATHLETE_BASKETBALL_POLYGON = {
   testnet: {
     storage: '0xC558a54872048fD649249608e9B156c025B29254',
     logic: '0xC558a54872048fD649249608e9B156c025B29254',
@@ -86,7 +86,7 @@ export const GAME_NFL_POLYGON = {
   },
 };
 
-export const GAME_NBA_POLYGON = {
+export const GAME_BASKETBALL_POLYGON = {
   testnet: {
     storage: '0xb7f42f41FB8f0fA734eE1e0625e6f9B481348969',
     logic: '0xE86573042FC1BaC00f7F353Abca400A19cf0Dc9d',
