@@ -14,8 +14,15 @@ import {
 } from '../ABI/athleteABIs';
 import { getConfig } from '..';
 import { ATHLETE_NFL_POLYGON, PROMO_ATHLETE_NFL_POLYGON } from 'data/constants/polygonContracts';
-
-export async function fetchFilteredAthleteSupplyForOwner(accountId, position, team, name, type) {
+import { getSportType } from 'data/constants/sportConstants';
+export async function fetchFilteredAthleteSupplyForOwner(
+  accountId,
+  position,
+  team,
+  name,
+  type,
+  currentSport
+) {
   try {
     if (window.ethereum) {
       if (!/\S/.test(name)) {
@@ -32,9 +39,10 @@ export async function fetchFilteredAthleteSupplyForOwner(accountId, position, te
       if (type === 'regular') {
         abi = regular_athlete_logic as unknown as RegularAthleteLogicABI;
         address = ATHLETE_NFL_POLYGON[getConfig()].logic;
+        address = getSportType(currentSport).regContract[getConfig()].logic;
       } else if (type === 'promo' || type === 'soulbound') {
         abi = promo_athlete_logic as unknown as PromoAthleteLogicABI;
-        address = PROMO_ATHLETE_NFL_POLYGON[getConfig()].logic;
+        address = getSportType(currentSport).promoContract[getConfig()].logic;
       }
       //const abi = promo_athlete_logic as unknown as PromoAthleteLogicABI;
       await window.ethereum.request({ method: 'eth_requestAccounts' });
@@ -60,7 +68,8 @@ export async function fetchFilteredAthleteTokensForOwner(
   name,
   supply,
   type,
-  whitelist
+  whitelist,
+  currentSport
 ) {
   try {
     //console.log(`Athlete offset: ${athleteOffset}`);
@@ -86,11 +95,11 @@ export async function fetchFilteredAthleteTokensForOwner(
       });
       if (type === 'regular') {
         abi = regular_athlete_logic as unknown as RegularAthleteLogicABI;
-        address = ATHLETE_NFL_POLYGON[getConfig()].logic;
+        address = getSportType(currentSport).regContract[getConfig()].logic;
       } else if (type === 'promo' || type === 'soulbound') {
         console.log('promo query 23');
         abi = promo_athlete_logic as unknown as PromoAthleteLogicABI;
-        address = PROMO_ATHLETE_NFL_POLYGON[getConfig()].logic;
+        address = getSportType(currentSport).promoContract[getConfig()].logic;
       }
       console.log(type);
       //console.log(position);
@@ -154,7 +163,8 @@ export async function fetchFilteredMixedTokensForOwner(
     name,
     isPromoPage ? totalPromoSupply : totalRegularSupply,
     isPromoPage ? 'promo' : 'regular',
-    whitelist
+    whitelist,
+    currentSport
   ).then(async (result) => {
     if (result.length < athleteLimit && !isPromoPage && totalPromoSupply !== 0) {
       let sbLimit = athleteLimit - result.length;
@@ -167,7 +177,8 @@ export async function fetchFilteredMixedTokensForOwner(
         name,
         totalPromoSupply,
         'promo',
-        whitelist
+        whitelist,
+        currentSport
       ).then((result2) => {
         result2.map((obj) => result.push(obj));
         return result;
@@ -182,7 +193,8 @@ export async function fetchAthleteTokenMetadataAndURIById(
   tokenId: number,
   startTime,
   endTime,
-  type
+  type,
+  currentSport
 ) {
   try {
     if (window.ethereum) {
@@ -191,11 +203,11 @@ export async function fetchAthleteTokenMetadataAndURIById(
       let address = '';
       if (type === 'regular') {
         abi = regular_athlete_logic as unknown as RegularAthleteLogicABI;
-        address = ATHLETE_NFL_POLYGON[getConfig()].logic;
+        address = getSportType(currentSport).regContract[getConfig()].logic;
       } else if (type === 'promo' || type === 'soulbound') {
         console.log('promo query 23');
         abi = promo_athlete_logic as unknown as PromoAthleteLogicABI;
-        address = PROMO_ATHLETE_NFL_POLYGON[getConfig()].logic;
+        address = getSportType(currentSport).promoContract[getConfig()].logic;
       }
       const contract = new Contract(abi, address);
       contract.setProvider(window.ethereum);
