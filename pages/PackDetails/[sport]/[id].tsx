@@ -11,9 +11,16 @@ import openPackStorage from 'utils/polygon/ABI/openPackAbi.json';
 import openPackLogic from 'utils/polygon/ABI/openPackLogicAbi.json';
 import promoOpenPackStorage from 'utils/polygon/ABI/promoOpenPackStorageAbi.json';
 import promoOpenPackLogic from 'utils/polygon/ABI/promoOpenPackLogicAbi.json';
+import nbaOpenPack from 'utils/polygon/ABI/nbaOpenPackAbi.json';
+import nbaOpenPackLogic from 'utils/polygon/ABI/nbaOpenPackLogicAbi.json';
+
 import Web3 from 'web3';
 import Modal from 'components/modals/Modal';
-import { OPENPACK_NFL_POLYGON, PROMO_OPENPACK_NFL_POLYGON } from 'data/constants/polygonContracts';
+import {
+  OPENPACK_NBA_POLYGON,
+  OPENPACK_NFL_POLYGON,
+  PROMO_OPENPACK_NFL_POLYGON,
+} from 'data/constants/polygonContracts';
 import { getConfig } from 'utils/polygon';
 
 export default function PackDetails(props) {
@@ -51,8 +58,8 @@ export default function PackDetails(props) {
         await window.ethereum.request({ method: 'eth_requestAccounts' });
         const web3 = new Web3(window.ethereum);
         const contractLogic = new web3.eth.Contract(
-          openPackLogic,
-          OPENPACK_NFL_POLYGON[getConfig()].logic
+          nbaOpenPackLogic,
+          OPENPACK_NBA_POLYGON[getConfig()].logic
         );
         const accounts = await web3.eth.getAccounts();
         //@ts-ignore
@@ -118,12 +125,12 @@ export default function PackDetails(props) {
         const web3 = new Web3(window.ethereum);
 
         const contractStorage = new web3.eth.Contract(
-          openPackStorage,
-          OPENPACK_NFL_POLYGON[getConfig()].storage
+          nbaOpenPack,
+          OPENPACK_NBA_POLYGON[getConfig()].storage
         );
         const contractLogic = new web3.eth.Contract(
-          openPackLogic,
-          OPENPACK_NFL_POLYGON[getConfig()].logic
+          nbaOpenPackLogic,
+          OPENPACK_NBA_POLYGON[getConfig()].logic
         );
         const accounts = await web3.eth.getAccounts();
         //@ts-ignore
@@ -143,7 +150,7 @@ export default function PackDetails(props) {
 
           const mintTx = {
             from: accounts[0],
-            to: OPENPACK_NFL_POLYGON[getConfig()].logic,
+            to: OPENPACK_NBA_POLYGON[getConfig()].logic,
             //@ts-ignore
             gas: parseInt(gasEstimate),
             gasPrice: gasPrice,
@@ -252,12 +259,12 @@ export default function PackDetails(props) {
         const web3 = new Web3(window.ethereum);
 
         const contractStorage = new web3.eth.Contract(
-          openPackStorage,
-          OPENPACK_NFL_POLYGON[getConfig()].storage
+          nbaOpenPack,
+          OPENPACK_NBA_POLYGON[getConfig()].storage
         );
         const contractLogic = new web3.eth.Contract(
-          openPackLogic,
-          OPENPACK_NFL_POLYGON[getConfig()].logic
+          nbaOpenPackLogic,
+          OPENPACK_NBA_POLYGON[getConfig()].logic
         );
         const accounts = await web3.eth.getAccounts();
 
@@ -270,7 +277,7 @@ export default function PackDetails(props) {
         const gasPrice = await web3.eth.getGasPrice();
         const tx = {
           from: accounts[0],
-          to: OPENPACK_NFL_POLYGON[getConfig()].storage,
+          to: OPENPACK_NBA_POLYGON[getConfig()].storage,
           //@ts-ignore
           gas: parseInt(gasEstimate),
           gasPrice: gasPrice,
@@ -327,7 +334,7 @@ export default function PackDetails(props) {
 
                 const mintTx = {
                   from: accounts[0],
-                  to: OPENPACK_NFL_POLYGON[getConfig()].logic,
+                  to: OPENPACK_NBA_POLYGON[getConfig()].logic,
                   //@ts-ignore
                   gas: parseInt(gasEstimate),
                   gasPrice: updatedGasPrice,
