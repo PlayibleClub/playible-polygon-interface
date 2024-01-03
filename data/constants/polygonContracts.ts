@@ -23,7 +23,7 @@ export const PROMO_ATHLETE_NFL_POLYGON = {
 export const PACK_NFL_POLYGON = {
   testnet: {
     storage: '0x0B0f1766f78cf70bAcA70AF09Ac8DDd8Fce77D4F',
-    logic: '0xC8F5326F774F4d84FE573333bEa5539a8184C777',
+    logic: '0xE99596a7EA18b5BD7F29B58e978f70bfe94066Ff',
   },
   mainnet: {
     storage: '',
@@ -34,7 +34,7 @@ export const PACK_NFL_POLYGON = {
 export const PACK_NBA_POLYGON = {
   testnet: {
     storage: '0xa79F6C07e6f753e197791630685F16C53297A852',
-    logic: '0x6204cD50Cd8594AFB326bD129f2511236c7168da',
+    logic: '0xa9AF526Bd7333f067fB84185cf70dEC625e12486',
   },
   mainnet: {
     storage: '',
