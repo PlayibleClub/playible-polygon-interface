@@ -32,6 +32,13 @@ import {
   ATHLETE_PROMO_CRICKET,
   OPENPACK_PROMO_CRICKET,
 } from 'data/constants/nearContracts';
+import {
+  ATHLETE_NFL_POLYGON,
+  PROMO_ATHLETE_NFL_POLYGON,
+  ATHLETE_NBA_POLYGON,
+  GAME_NFL_POLYGON,
+  GAME_NBA_POLYGON,
+} from './polygonContracts';
 import { getContract } from 'utils/near';
 export const NFL_SCHEDULE = {
   nfl2022regstart: 1662566400,
