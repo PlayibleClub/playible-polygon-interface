@@ -225,73 +225,6 @@ export async function buildLeaderboard2(
   }
 }
 
-export async function buildLeaderboard(
-  playerLineups,
-  currentSport,
-  startTime,
-  endTime,
-  gameId,
-  id,
-  isMulti
-) {
-  const arrayToReturn = await Promise.all(
-    playerLineups.map(async (item) => {
-      let itemToReturn = {
-        accountId: item.wallet_address,
-        teamName: item.team_name,
-        lineup: item.lineup !== undefined ? item.lineup : [],
-        total: 0,
-        scoresChecked: false,
-      };
-      if (itemToReturn.lineup.length > 0) {
-        //if lineup === 0, fetchTeamsJoinedInGame did not get a lineup for the address -> NEAR lineup
-        itemToReturn.lineup = await Promise.all(
-          itemToReturn.lineup.map((item) => {
-            let type = item.toString()[0] === '1' ? 'regular' : 'promo';
-            return fetchAthleteTokenMetadataAndURIById(item, startTime, endTime, type);
-          })
-        );
-      }
-
-      return itemToReturn;
-    })
-  );
-  console.log(arrayToReturn);
-  let leaderboardLineups;
-  if (isMulti) {
-    const { data } = await client.query({
-      query: GET_MULTI_CHAIN_LEADERBOARD_RESULT,
-      variables: {
-        sport: getSportType(currentSport).key.toLowerCase(),
-        gameId: parseFloat(id),
-        chain: 'polygon',
-      },
-    });
-    leaderboardLineups = data.getMultiChainLeaderboardResult;
-  } else {
-    const { data } = await client.query({
-      query: GET_LEADERBOARD_RESULT,
-      variables: {
-        sport: getSportType(currentSport).key.toLowerCase(),
-        gameId: parseFloat(gameId),
-        contract: 'polygon',
-      },
-    });
-    leaderboardLineups = data.getLeaderboardResult;
-  }
-
-  const merge = arrayToReturn.map((item) => ({
-    ...item,
-    ...leaderboardLineups.find(
-      (newItem) =>
-        newItem.team_name === item.teamName &&
-        item.accountId.toLowerCase() === newItem.wallet_address.toLowerCase()
-    ),
-  }));
-  console.log(merge);
-  return merge;
-}
-
 export async function getScores(
   chain,
   gameId,
@@ -416,7 +349,7 @@ export async function computeScores(lineup, currentSport, startTime, endTime) {
       itemToReturn.lineup = await Promise.all(
         itemToReturn.lineup.map((item) => {
           let type = item.toString()[0] === '1' ? 'regular' : 'promo';
-          return fetchAthleteTokenMetadataAndURIById(item, startTime, endTime, type);
+          return fetchAthleteTokenMetadataAndURIById(item, startTime, endTime, type, currentSport);
         })
       );
       itemToReturn.lineup = itemToReturn.lineup.map((item) => {

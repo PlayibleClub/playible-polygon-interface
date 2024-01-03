@@ -114,7 +114,8 @@ const AthleteSelect = (props) => {
       name,
       type === 'regular' ? totalRegularSupply : totalPromoSupply,
       type,
-      whitelist
+      whitelist,
+      currentSport
     );
     console.log(result);
     setAthletes(result);
@@ -161,11 +162,11 @@ const AthleteSelect = (props) => {
   async function getFilteredTokenSupplyForOwner(type) {
     if (type === 'regular') {
       setTotalRegularSupply(
-        await fetchFilteredAthleteSupplyForOwner(wallet, position, team, name, type)
+        await fetchFilteredAthleteSupplyForOwner(wallet, position, team, name, type, currentSport)
       );
     } else if (type === 'promo') {
       setTotalPromoSupply(
-        await fetchFilteredAthleteSupplyForOwner(wallet, position, team, name, type)
+        await fetchFilteredAthleteSupplyForOwner(wallet, position, team, name, type, currentSport)
       );
     }
   }

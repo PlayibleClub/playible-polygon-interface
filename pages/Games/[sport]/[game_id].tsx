@@ -18,7 +18,6 @@ import {
   fetchTeamsJoinedInGame,
   computeScores,
   fetchPlayerTeams,
-  buildLeaderboard,
   buildLeaderboard2,
   getScores,
 } from 'utils/polygon/helper/gamePolygon';
