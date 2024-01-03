@@ -9,6 +9,17 @@ export const ATHLETE_NFL_POLYGON = {
   },
 };
 
+export const ATHLETE_BASKETBALL_POLYGON = {
+  testnet: {
+    storage: '0xC558a54872048fD649249608e9B156c025B29254',
+    logic: '0xC558a54872048fD649249608e9B156c025B29254',
+  },
+  mainnet: {
+    storage: '',
+    logic: '',
+  },
+};
+
 export const PROMO_ATHLETE_NFL_POLYGON = {
   testnet: {
     storage: '0x882Ae675D1501e7F5F4d005f33A3f3ac99F5D808',
@@ -72,6 +83,17 @@ export const GAME_NFL_POLYGON = {
   mainnet: {
     storage: '0x3702Ea05D7e6d17e31da61E9Fc6F6AfA637EAc99',
     logic: '0x8DAddd1E5b502A208ceA59811B02A821dEbBA865',
+  },
+};
+
+export const GAME_BASKETBALL_POLYGON = {
+  testnet: {
+    storage: '0xb7f42f41FB8f0fA734eE1e0625e6f9B481348969',
+    logic: '0xE86573042FC1BaC00f7F353Abca400A19cf0Dc9d',
+  },
+  mainnet: {
+    storage: '',
+    logic: '',
   },
 };
 
