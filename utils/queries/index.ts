@@ -97,12 +97,14 @@ export const GET_ENTRY_SUMMARY_ATHLETES = gql`
     $gameId: Float!
     $address: String!
     $teamName: String!
+    $sport: String!
   ) {
     getEntrySummaryAthletes(
       chain: $chain
       gameId: $gameId
       address: $address
       teamName: $teamName
+      sport: $sport
     ) {
       athlete {
         apiId
@@ -112,12 +114,6 @@ export const GET_ENTRY_SUMMARY_ATHLETES = gql`
           key
         }
         position
-        stats {
-          type
-          fantasyScore
-          gameDate
-          played
-        }
         nftImage
         nftImageLocked
         nftImagePromo
@@ -129,6 +125,34 @@ export const GET_ENTRY_SUMMARY_ATHLETES = gql`
     }
   }
 `;
+export const GET_ENTRY_SUMMARY_ATHLETES_WITH_SCORE = gql`
+  query GetEntrySummaryAthletesWithScore(
+    $endTime: DateTime!
+    $startTime: DateTime!
+    $sport: String!
+    $chain: String!
+    $gameId: Float!
+    $address: String!
+    $teamName: String!
+  ) {
+    getEntrySummaryAthletesWithScore(
+      endTime: $endTime
+      startTime: $startTime
+      sport: $sport
+      chain: $chain
+      gameId: $gameId
+      address: $address
+      teamName: $teamName
+    ) {
+      game_team_athlete_id
+      athlete_id
+      first_name
+      last_name
+      total
+    }
+  }
+`;
+
 export const GET_CRICKET_ATHLETE_BY_ID = gql`
   query GetCricketAthleteById(
     $getCricketAthleteById: Float!
@@ -564,8 +588,20 @@ export const GET_LEADERBOARD_TEAMS = gql`
   }
 `;
 export const GET_LEADERBOARD_RESULT = gql`
-  query GetLeaderboardResult($sport: String!, $gameId: Float!, $chain: String!) {
-    getLeaderboardResult(sport: $sport, gameId: $gameId, chain: $chain) {
+  query GetLeaderboardResult(
+    $sport: String!
+    $gameId: Float!
+    $chain: String!
+    $startTime: DateTime!
+    $endTime: DateTime!
+  ) {
+    getLeaderboardResult(
+      sport: $sport
+      gameId: $gameId
+      chain: $chain
+      startTime: $startTime
+      endTime: $endTime
+    ) {
       game_team_id
       wallet_address
       team_name
@@ -599,8 +635,20 @@ export const GET_MULTI_CHAIN_LEADERBOARD_TEAMS = gql`
   }
 `;
 export const GET_MULTI_CHAIN_LEADERBOARD_RESULT = gql`
-  query GetMultiChainLeaderboardResult($chain: String!, $sport: String!, $gameId: Float!) {
-    getMultiChainLeaderboardResult(chain: $chain, sport: $sport, gameId: $gameId) {
+  query GetMultiChainLeaderboardResult(
+    $chain: String!
+    $sport: String!
+    $gameId: Float!
+    $startTime: DateTime!
+    $endTime: DateTime!
+  ) {
+    getMultiChainLeaderboardResult(
+      chain: $chain
+      sport: $sport
+      gameId: $gameId
+      startTime: $startTime
+      endTime: $endTime
+    ) {
       game_team_id
       team_name
       wallet_address

@@ -92,6 +92,40 @@ export async function fetchPackTokensByOwner(account, fromIndex, limit, type, cu
   }
 }
 
+export async function fetchAllPackTokensByOwner(account, type, currentSport) {
+  try {
+    if (window.ethereum) {
+      let abi: promoPackLogicABI | packLogicABI;
+      let address = '';
+      if (type === 'regular') {
+        abi = pack_nft_logic as unknown as packLogicABI;
+        if (currentSport === 'FOOTBALL') {
+          address = PACK_NFL_POLYGON[getConfig()].logic;
+        } else {
+          address = PACK_NBA_POLYGON[getConfig()].logic;
+        }
+      } else if (type === 'promo' || type === 'soulbound') {
+        abi = promo_pack_nft_logic as unknown as promoPackLogicABI;
+        if (currentSport === 'FOOTBALL') {
+          address = PROMO_PACK_NFL_POLYGON[getConfig()].logic;
+        } else {
+          address = PROMO_PACK_NBA_POLYGON[getConfig()].logic;
+        }
+      }
+      console.log('Fetch regular pack tokens for owner function called');
+      await window.ethereum.request({ method: 'eth_requestAccounts' });
+      const contract = new Contract(abi, address);
+      contract.setProvider(window.ethereum);
+
+      const response = await contract.methods.getAllTokensByOwner(account).call({ from: account });
+
+      return response;
+    }
+  } catch (error) {
+    console.error('Error fetching regular tokens by owner:', error);
+  }
+}
+
 export async function fetchPackTokenSupplyByOwner(account, type, currentSport) {
   try {
     if (window.ethereum) {
