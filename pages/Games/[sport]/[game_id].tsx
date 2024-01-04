@@ -81,12 +81,16 @@ const Games = (props) => {
     if (playerLineups[item.index].scoresChecked === false) {
       //lineup is from polygon, show entrysummary
       let newLineups = [...playerLineups];
-      const startTimeFormatted = formatToUTCDate(1699326000);
+      const startTimeFormatted = formatToUTCDate(gameData.start_time);
       const endTimeFormatted = formatToUTCDate(gameData.end_time);
 
       newLineups[item.index].lineup = await getScores(
         playerLineups[item.index].chain,
         playerLineups[item.index].chain === 'polygon' ? polygonGameId : nearGameId,
+        gameId,
+        getSportType(currentSport).key.toLowerCase(),
+        startTimeFormatted,
+        endTimeFormatted,
         playerLineups[item.index].accountId,
         playerLineups[item.index].teamName
       );
@@ -108,12 +112,16 @@ const Games = (props) => {
     console.log(`account id: ${accountId} teamName: ${teamName}`);
     if (playerLineups[currentIndex].scoresChecked === false) {
       //lineup is from polygon, show entrysummary
-      const startTimeFormatted = formatToUTCDate(1699326000);
+      const startTimeFormatted = formatToUTCDate(gameData.start_time);
       const endTimeFormatted = formatToUTCDate(gameData.end_time);
       let newLineups = [...playerLineups];
       newLineups[currentIndex].lineup = await getScores(
         'polygon',
         gameId,
+        gameId,
+        getSportType(currentSport).key.toLowerCase(),
+        startTimeFormatted,
+        endTimeFormatted,
         playerLineups[currentIndex].accountId,
         playerLineups[currentIndex].teamName
       );
@@ -156,7 +164,7 @@ const Games = (props) => {
         query: GET_MULTI_CHAIN_LEADERBOARD_TEAMS,
         variables: {
           chain: 'polygon',
-          sport: 'nfl',
+          sport: getSportType(currentSport).key.toLowerCase(),
           gameId: parseFloat(id),
         },
       });
@@ -168,7 +176,7 @@ const Games = (props) => {
         query: GET_LEADERBOARD_TEAMS,
         variables: {
           chain: 'polygon',
-          sport: 'nfl',
+          sport: getSportType(currentSport).key.toLowerCase(),
           gameId: parseFloat(gameId),
         },
       });
@@ -179,7 +187,7 @@ const Games = (props) => {
       startTime: gameData.start_time,
       endTime: gameData.end_time,
     });
-    const startTimeFormatted = formatToUTCDate(1699326000);
+    const startTimeFormatted = formatToUTCDate(gameData.start_time);
     const endTimeFormatted = formatToUTCDate(gameData.end_time);
 
     const playerLineups = await buildLeaderboard2(

@@ -6,10 +6,12 @@ import { GameStorageABI, GameLogicABI } from '../ABI/gameABIs';
 import { GAME_NFL_POLYGON } from 'data/constants/polygonContracts';
 import { AddGameType } from 'utils/game/helper';
 import { fetchAthleteTokenMetadataAndURIById } from './athletePolygon';
+import { getSportType } from 'data/constants/sportConstants';
 import {
   GET_LEADERBOARD_RESULT,
   GET_MULTI_CHAIN_LEADERBOARD_RESULT,
   GET_ENTRY_SUMMARY_ATHLETES,
+  GET_ENTRY_SUMMARY_ATHLETES_WITH_SCORE,
 } from 'utils/queries';
 import { getConfig } from '..';
 import { SPORT_NAME_LOOKUP } from 'data/constants/sportConstants';
@@ -162,9 +164,11 @@ export async function buildLeaderboard2(
     const { data } = await client.query({
       query: GET_MULTI_CHAIN_LEADERBOARD_RESULT,
       variables: {
-        sport: 'nfl',
+        sport: getSportType(currentSport).key.toLowerCase(),
         gameId: parseFloat(id),
         chain: 'polygon',
+        startTime: startTime,
+        endTime: endTime,
       },
     });
     leaderboardResults = data.getMultiChainLeaderboardResult;
@@ -172,9 +176,11 @@ export async function buildLeaderboard2(
     const { data } = await client.query({
       query: GET_LEADERBOARD_RESULT,
       variables: {
-        sport: 'nfl',
+        sport: getSportType(currentSport).key.toLowerCase(),
         gameId: parseFloat(gameId),
         chain: 'polygon',
+        startTime: startTime,
+        endTime: endTime,
       },
     });
     leaderboardResults = data.getLeaderboardResult;
@@ -256,7 +262,7 @@ export async function buildLeaderboard(
     const { data } = await client.query({
       query: GET_MULTI_CHAIN_LEADERBOARD_RESULT,
       variables: {
-        sport: 'nfl',
+        sport: getSportType(currentSport).key.toLowerCase(),
         gameId: parseFloat(id),
         chain: 'polygon',
       },
@@ -266,7 +272,7 @@ export async function buildLeaderboard(
     const { data } = await client.query({
       query: GET_LEADERBOARD_RESULT,
       variables: {
-        sport: 'nfl',
+        sport: getSportType(currentSport).key.toLowerCase(),
         gameId: parseFloat(gameId),
         contract: 'polygon',
       },
@@ -286,7 +292,16 @@ export async function buildLeaderboard(
   return merge;
 }
 
-export async function getScores(chain, gameId, address, teamName) {
+export async function getScores(
+  chain,
+  gameId,
+  gameIdFallback,
+  sport,
+  startTime,
+  endTime,
+  address,
+  teamName
+) {
   console.log({
     chain: chain,
     //gameId: parseFloat(gameId.toString()),
@@ -297,9 +312,10 @@ export async function getScores(chain, gameId, address, teamName) {
     query: GET_ENTRY_SUMMARY_ATHLETES,
     variables: {
       chain: chain,
-      gameId: gameId,
+      gameId: gameId !== 0 ? parseFloat(gameId.toString()) : parseFloat(gameIdFallback.toString()),
       address: address,
       teamName: teamName,
+      sport,
     },
   });
   let athletes = data.getEntrySummaryAthletes;
@@ -323,15 +339,32 @@ export async function getScores(chain, gameId, address, teamName) {
           : isSoul === true
           ? item.athlete.nftImageLocked
           : item.athlete.nftImage,
-      stats_breakdown:
-        item.athlete.stats
-          .filter((type) => type.type === 'weekly' && type.played === 1)
-          .reduce((accumulator, item) => {
-            return accumulator + item.fantasyScore;
-          }, 0) || 0,
+      stats_breakdown: 0,
     };
     return returnAthlete;
   });
+  const resultQuery = await client.query({
+    query: GET_ENTRY_SUMMARY_ATHLETES_WITH_SCORE,
+    variables: {
+      chain: chain,
+      gameId: gameId !== 0 ? parseFloat(gameId.toString()) : parseFloat(gameIdFallback.toString()),
+      address: address,
+      teamName: teamName,
+      sport: sport,
+      startTime: startTime,
+      endTime: endTime,
+    },
+  });
+  let results = resultQuery.data.getEntrySummaryAthletesWithScore;
+  console.log(results);
+  const arrayWithResults = arrayToReturn.map((item) => {
+    let tempResult = results.find((x) => x.athlete_id.toString() === item.athlete_id);
+    if (tempResult !== undefined) {
+      item.stats_breakdown = tempResult.total;
+    }
+    return item;
+  });
+  console.log(arrayWithResults);
   return arrayToReturn;
 }
 export async function getScoresSingleChain(lineup, currentSport) {
