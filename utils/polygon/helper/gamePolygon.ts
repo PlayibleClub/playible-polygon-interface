@@ -14,15 +14,16 @@ import {
   GET_ENTRY_SUMMARY_ATHLETES_WITH_SCORE,
 } from 'utils/queries';
 import { getConfig } from '..';
+import { GAME_BASKETBALL_POLYGON } from 'data/constants/polygonContracts';
 import { SPORT_NAME_LOOKUP } from 'data/constants/sportConstants';
 import client from 'apollo-client';
-export async function fetchAllGames() {
+export async function fetchAllGames(currentSport) {
   try {
     if (window.ethereum) {
       console.log('call function');
       await window.ethereum.request({ method: 'eth_requestAccounts' });
       const abi = game_storage as unknown as GameStorageABI;
-      const contract = new Contract(abi, GAME_NFL_POLYGON[getConfig()].storage);
+      const contract = new Contract(abi, getSportType(currentSport).gameContract.storage);
       contract.setProvider(window.ethereum);
       const result = await contract.methods.getAllGamesInfo().call({ gas: '30000000' });
       //console.log(result);
@@ -32,12 +33,12 @@ export async function fetchAllGames() {
     console.log(e);
   }
 }
-export async function fetchGame(gameId: number) {
+export async function fetchGame(gameId: number, currentSport: string) {
   try {
     if (window.ethereum) {
       await window.ethereum.request({ method: 'eth_requestAccounts' });
       const abi = game_storage as unknown as GameStorageABI;
-      const contract = new Contract(abi, GAME_NFL_POLYGON[getConfig()].storage);
+      const contract = new Contract(abi, getSportType(currentSport).gameContract.storage);
       contract.setProvider(window.ethereum);
       const result = await contract.methods.getGameInfo(gameId).call({ gas: '30000000' });
       return result;
@@ -46,12 +47,12 @@ export async function fetchGame(gameId: number) {
     console.log(e);
   }
 }
-export async function fetchGameCounter() {
+export async function fetchGameCounter(currentSport: string) {
   try {
     if (window.ethereum) {
       await window.ethereum.request({ method: 'eth_requestAccounts' });
       const abi = game_storage as unknown as GameStorageABI;
-      const contract = new Contract(abi, GAME_NFL_POLYGON[getConfig()].storage);
+      const contract = new Contract(abi, getSportType(currentSport).gameContract.storage);
       contract.setProvider(window.ethereum);
       const result = await contract.methods.getTotalGamesCounter().call();
       return result;
@@ -61,13 +62,13 @@ export async function fetchGameCounter() {
   }
 }
 
-export async function fetchPlayerTeams(accountId, gameId: number) {
+export async function fetchPlayerTeams(accountId, gameId: number, currentSport) {
   try {
     if (window.ethereum) {
       console.log(accountId);
       await window.ethereum.request({ method: 'eth_requestAccounts' });
       const abi = game_storage as unknown as GameStorageABI;
-      const contract = new Contract(abi, GAME_NFL_POLYGON[getConfig()].storage);
+      const contract = new Contract(abi, getSportType(currentSport).gameContract.storage);
       contract.setProvider(window.ethereum);
       const result = await contract.methods
         .getPlayerTeam(accountId, gameId)
@@ -80,12 +81,17 @@ export async function fetchPlayerTeams(accountId, gameId: number) {
   }
 }
 
-export async function fetchPlayerLineup(accountId: string, gameId: number, teamName: string) {
+export async function fetchPlayerLineup(
+  accountId: string,
+  gameId: number,
+  teamName: string,
+  currentSport
+) {
   try {
     if (window.ethereum) {
       await window.ethereum.request({ method: 'eth_requestAccounts' });
       const abi = game_storage as unknown as GameStorageABI;
-      const contract = new Contract(abi, GAME_NFL_POLYGON[getConfig()].storage);
+      const contract = new Contract(abi, getSportType(currentSport).gameContract.storage);
       contract.setProvider(window.ethereum);
       let result = await contract.methods
         .getPlayerLineup(accountId, gameId, teamName)
@@ -100,13 +106,13 @@ export async function fetchPlayerLineup(accountId: string, gameId: number, teamN
     console.log(e);
   }
 }
-export async function fetchJoinedPlayerCount(accountId, gameId: number) {
+export async function fetchJoinedPlayerCount(accountId, gameId: number, currentSport) {
   try {
     if (window.ethereum) {
       console.log(accountId);
       await window.ethereum.request({ method: 'eth_requestAccounts' });
       const abi = game_storage as unknown as GameStorageABI;
-      const contract = new Contract(abi, GAME_NFL_POLYGON[getConfig()].storage);
+      const contract = new Contract(abi, getSportType(currentSport).gameContract.storage);
       contract.setProvider(window.ethereum);
       const result = await contract.methods.viewPlayerJoinedCounter(gameId).call();
       //console.log(result);
@@ -117,12 +123,12 @@ export async function fetchJoinedPlayerCount(accountId, gameId: number) {
   }
 }
 
-export async function fetchJoinedAddresses(accountId: string, gameId: number) {
+export async function fetchJoinedAddresses(accountId: string, gameId: number, currentSport) {
   try {
     if (window.ethereum) {
       await window.ethereum.request({ method: 'eth_requestAccounts' });
       const abi = game_storage as unknown as GameStorageABI;
-      const contract = new Contract(abi, GAME_NFL_POLYGON[getConfig()].storage);
+      const contract = new Contract(abi, getSportType(currentSport).gameContract.storage);
       contract.setProvider(window.ethereum);
       const result = await contract.methods.getAddressesJoinedInGame(gameId).call();
       // console.log(result);
@@ -133,12 +139,12 @@ export async function fetchJoinedAddresses(accountId: string, gameId: number) {
   }
 }
 
-export async function fetchTeamsJoinedInGame(gameId: number) {
+export async function fetchTeamsJoinedInGame(gameId: number, currentSport) {
   try {
     if (window.ethereum) {
       await window.ethereum.request({ method: 'eth_requestAccounts' });
       const abi = game_storage as unknown as GameStorageABI;
-      const contract = new Contract(abi, GAME_NFL_POLYGON[getConfig()].storage);
+      const contract = new Contract(abi, getSportType(currentSport).gameContract.storage);
       contract.setProvider(window.ethereum);
       const result = await contract.methods.getTeamsJoinedInGame(gameId).call();
 
@@ -380,7 +386,7 @@ export async function computeScores(lineup, currentSport, startTime, endTime) {
   return arrayToReturn;
 }
 
-export async function executeAddGame(args: AddGameType, accountId: string) {
+export async function executeAddGame(args: AddGameType, accountId: string, currentSport) {
   return new Promise(async (resolve, reject) => {
     try {
       if (window.ethereum) {
