@@ -4,15 +4,15 @@ export const ATHLETE_NFL_POLYGON = {
     logic: '0x6F2501fEC1E0470a58AF79B30c5Ca74d2a8DEc88',
   },
   mainnet: {
-    storage: '',
-    logic: '',
+    storage: 'abcde',
+    logic: 'efggh',
   },
 };
 
 export const ATHLETE_BASKETBALL_POLYGON = {
   testnet: {
     storage: '0xC558a54872048fD649249608e9B156c025B29254',
-    logic: '0xC558a54872048fD649249608e9B156c025B29254',
+    logic: '0xfB82C6628298D9857051DE400Cf61BA8336457e4',
   },
   mainnet: {
     storage: '',
