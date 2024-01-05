@@ -807,7 +807,7 @@ export default function Index(props) {
   const endFormattedTimestamp = moment(dateEndFormatted).toLocaleString();
 
   async function getGameCurrentCounter() {
-    const result = await fetchGameCounter();
+    const result = await fetchGameCounter(currentSport);
     setTotalGames(Number(result));
   }
 
@@ -839,7 +839,7 @@ export default function Index(props) {
     //   setCompletedGames(completedGames);
     //   setOngoingGames(ongoingGames);
     // });
-    const result = await fetchAllGames(); //only gets NFL games for now
+    const result = await fetchAllGames(currentSport);
     console.log(result);
     setTotalGames(result.length);
     console.log(getUTCTimestampFromLocal());
@@ -901,7 +901,7 @@ export default function Index(props) {
       prizeDescription: prizeDescription,
       gameImage: gameImage,
     };
-    const success = await executeAddGame(args, wallet);
+    const success = await executeAddGame(args, wallet, currentSport);
     if (success) {
       alert(`Game ${parseInt(details.gameId)} for ${currentSport} successfully added`);
     } else {

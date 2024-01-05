@@ -86,10 +86,7 @@ const Portfolio = () => {
 
   const [positionList, setPositionList] = useState(SPORT_TYPES[0].positionList);
   const sportObj = SPORT_TYPES.filter(
-    (x) =>
-      x.sport !== SPORT_NAME_LOOKUP.cricket &&
-      x.sport !== SPORT_NAME_LOOKUP.basketball &&
-      x.sport !== SPORT_NAME_LOOKUP.baseball
+    (x) => x.sport !== SPORT_NAME_LOOKUP.cricket && x.sport !== SPORT_NAME_LOOKUP.baseball
   ).map((x) => ({
     name: x.sport,
     isActive: false,
@@ -342,6 +339,7 @@ const Portfolio = () => {
       getFilteredTokenSupplyForOwner('promo');
       setTotalRegularSupply(0);
     } else if (selectedRegular !== false && selectedPromo !== false) {
+      console.log('going here');
       getFilteredTokenSupplyForOwner('regular');
       getFilteredTokenSupplyForOwner('promo');
     } else {
