@@ -38,11 +38,12 @@ export async function fetchFilteredAthleteSupplyForOwner(
       let address = '';
       if (type === 'regular') {
         abi = regular_athlete_logic as unknown as RegularAthleteLogicABI;
-        address = ATHLETE_NFL_POLYGON[getConfig()].logic;
-        address = getSportType(currentSport).regContract[getConfig()].logic;
+        console.log(getSportType(currentSport).regContract);
+        address = getSportType(currentSport).regContract.logic;
+        console.log(address);
       } else if (type === 'promo' || type === 'soulbound') {
         abi = promo_athlete_logic as unknown as PromoAthleteLogicABI;
-        address = getSportType(currentSport).promoContract[getConfig()].logic;
+        address = getSportType(currentSport).promoContract.logic;
       }
       //const abi = promo_athlete_logic as unknown as PromoAthleteLogicABI;
       await window.ethereum.request({ method: 'eth_requestAccounts' });
@@ -95,11 +96,11 @@ export async function fetchFilteredAthleteTokensForOwner(
       });
       if (type === 'regular') {
         abi = regular_athlete_logic as unknown as RegularAthleteLogicABI;
-        address = getSportType(currentSport).regContract[getConfig()].logic;
+        address = getSportType(currentSport).regContract.logic;
       } else if (type === 'promo' || type === 'soulbound') {
         console.log('promo query 23');
         abi = promo_athlete_logic as unknown as PromoAthleteLogicABI;
-        address = getSportType(currentSport).promoContract[getConfig()].logic;
+        address = getSportType(currentSport).promoContract.logic;
       }
       console.log(type);
       //console.log(position);
@@ -203,11 +204,11 @@ export async function fetchAthleteTokenMetadataAndURIById(
       let address = '';
       if (type === 'regular') {
         abi = regular_athlete_logic as unknown as RegularAthleteLogicABI;
-        address = getSportType(currentSport).regContract[getConfig()].logic;
+        address = getSportType(currentSport).regContract.logic;
       } else if (type === 'promo' || type === 'soulbound') {
         console.log('promo query 23');
         abi = promo_athlete_logic as unknown as PromoAthleteLogicABI;
-        address = getSportType(currentSport).promoContract[getConfig()].logic;
+        address = getSportType(currentSport).promoContract.logic;
       }
       const contract = new Contract(abi, address);
       contract.setProvider(window.ethereum);
