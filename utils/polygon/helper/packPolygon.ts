@@ -56,18 +56,10 @@ export async function fetchPackTokensByOwner(account, fromIndex, limit, type, cu
       let address = '';
       if (type === 'regular') {
         abi = pack_nft_logic as unknown as packLogicABI;
-        if (currentSport === 'FOOTBALL') {
-          address = PACK_NFL_POLYGON[getConfig()].logic;
-        } else {
-          address = PACK_NBA_POLYGON[getConfig()].logic;
-        }
+        getSportType(currentSport).packContract.logic;
       } else if (type === 'promo' || type === 'soulbound') {
         abi = promo_pack_nft_logic as unknown as promoPackLogicABI;
-        if (currentSport === 'FOOTBALL') {
-          address = PROMO_PACK_NFL_POLYGON[getConfig()].logic;
-        } else {
-          address = PROMO_PACK_NBA_POLYGON[getConfig()].logic;
-        }
+        getSportType(currentSport).packPromoContract.logic;
       }
       console.log('Fetch regular pack tokens for owner function called');
       await window.ethereum.request({ method: 'eth_requestAccounts' });
@@ -92,18 +84,10 @@ export async function fetchAllPackTokensByOwner(account, type, currentSport) {
       let address = '';
       if (type === 'regular') {
         abi = pack_nft_logic as unknown as packLogicABI;
-        if (currentSport === 'FOOTBALL') {
-          address = PACK_NFL_POLYGON[getConfig()].logic;
-        } else {
-          address = PACK_NBA_POLYGON[getConfig()].logic;
-        }
+        getSportType(currentSport).packContract.logic;
       } else if (type === 'promo' || type === 'soulbound') {
         abi = promo_pack_nft_logic as unknown as promoPackLogicABI;
-        if (currentSport === 'FOOTBALL') {
-          address = PROMO_PACK_NFL_POLYGON[getConfig()].logic;
-        } else {
-          address = PROMO_PACK_NBA_POLYGON[getConfig()].logic;
-        }
+        getSportType(currentSport).packPromoContract.logic;
       }
       console.log('Fetch regular pack tokens for owner function called');
       await window.ethereum.request({ method: 'eth_requestAccounts' });
@@ -126,18 +110,10 @@ export async function fetchPackTokenSupplyByOwner(account, type, currentSport) {
       let address = '';
       if (type === 'regular') {
         abi = pack_nft_logic as unknown as packLogicABI;
-        if (currentSport === 'FOOTBALL') {
-          address = PACK_NFL_POLYGON[getConfig()].logic;
-        } else {
-          address = PACK_NBA_POLYGON[getConfig()].logic;
-        }
+        getSportType(currentSport).packContract.logic;
       } else if (type === 'promo' || type === 'soulbound') {
         abi = promo_pack_nft_logic as unknown as promoPackLogicABI;
-        if (currentSport === 'FOOTBALL') {
-          address = PROMO_PACK_NFL_POLYGON[getConfig()].logic;
-        } else {
-          address = PROMO_PACK_NBA_POLYGON[getConfig()].logic;
-        }
+        getSportType(currentSport).packPromoContract.logic;
       }
       console.log('Fetch regular pack tokens for owner function called');
       await window.ethereum.request({ method: 'eth_requestAccounts' });
@@ -161,9 +137,7 @@ export async function fetchAccountBalance(accountId, currentSport) {
       await window.ethereum.request({ method: 'eth_requestAccounts' });
       const contract = new Contract(
         packStorageNFLContractABI,
-        currentSport === 'FOOTBALL'
-          ? PACK_NFL_POLYGON[getConfig()].storage
-          : PACK_NBA_POLYGON[getConfig()].storage
+        getSportType(currentSport).packContract.storage
       );
       contract.setProvider(window.ethereum);
 
@@ -184,9 +158,7 @@ export async function fetchRegularPackPrice(currentSport) {
       await window.ethereum.request({ method: 'eth_requestAccounts' });
       const contract = new Contract(
         packStorageNFLContractABI,
-        currentSport === 'FOOTBALL'
-          ? PACK_NFL_POLYGON[getConfig()].storage
-          : PACK_NBA_POLYGON[getConfig()].storage
+        getSportType(currentSport).packContract.storage
       );
       contract.setProvider(window.ethereum);
 
@@ -202,10 +174,7 @@ export async function fetchRegularPackPrice(currentSport) {
 }
 
 export async function fetchMintedTokenAmount(accountId, currentSport) {
-  let packAddress =
-    currentSport === 'FOOTBALL'
-      ? PACK_NFL_POLYGON[getConfig()].logic
-      : PACK_NBA_POLYGON[getConfig()].logic;
+  let packAddress = getSportType(currentSport).packContract.storage;
   try {
     if (window.ethereum) {
       console.log('Fetch minted token amount called');
@@ -233,18 +202,10 @@ export async function checkTokenOwner(account, id, type, currentSport) {
       let address = '';
       if (type === 'regular') {
         abi = pack_nft_logic as unknown as packLogicABI;
-        if (currentSport === 'FOOTBALL') {
-          address = PACK_NFL_POLYGON[getConfig()].logic;
-        } else {
-          address = PACK_NBA_POLYGON[getConfig()].logic;
-        }
+        getSportType(currentSport).packContract.logic;
       } else if (type === 'promo' || type === 'soulbound') {
         abi = promo_pack_nft_logic as unknown as promoPackLogicABI;
-        if (currentSport === 'FOOTBALL') {
-          address = PROMO_PACK_NFL_POLYGON[getConfig()].logic;
-        } else {
-          address = PROMO_PACK_NBA_POLYGON[getConfig()].logic;
-        }
+        getSportType(currentSport).packPromoContract.logic;
       }
       console.log('Fetch check token owner called');
       await window.ethereum.request({ method: 'eth_requestAccounts' });
@@ -264,10 +225,7 @@ export async function checkTokenOwner(account, id, type, currentSport) {
 }
 
 export async function claimSoulboundPack(account, currentSport) {
-  let promoPackAddress =
-    currentSport === 'FOOTBALL'
-      ? PROMO_PACK_NFL_POLYGON[getConfig()].logic
-      : PROMO_PACK_NBA_POLYGON[getConfig()].logic;
+  let promoPackAddress = getSportType(currentSport).packPromoContract.logic;
   return new Promise(async (resolve, reject) => {
     try {
       if (window.ethereum) {
@@ -325,10 +283,7 @@ export async function claimSoulboundPack(account, currentSport) {
 }
 
 export async function fetchClaimSoulboundStatus(account, currentSport) {
-  let promoPackAddress =
-    currentSport === 'FOOTBALL'
-      ? PROMO_PACK_NFL_POLYGON[getConfig()].logic
-      : PROMO_PACK_NBA_POLYGON[getConfig()].logic;
+  let promoPackAddress = getSportType(currentSport).packPromoContract.logic;
   try {
     if (window.ethereum) {
       console.log('Fetch claim soulbound status function called');
