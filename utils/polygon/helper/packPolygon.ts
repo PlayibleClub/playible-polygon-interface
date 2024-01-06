@@ -2,6 +2,7 @@ import { Contract } from 'web3-eth-contract';
 import Web3 from 'web3';
 import { packStorageABI } from 'utils/polygon/ABI/pack_nft';
 import { packLogicABI } from 'utils/polygon/ABI/pack_nft_logic';
+import { getSportType } from 'data/constants/sportConstants';
 import { promoPackStorageABI } from 'utils/polygon/ABI/promo_pack_nft';
 import { promoPackLogicABI } from '../ABI/promo_pack_nft_logic';
 import pack_nft_storage from 'utils/polygon/ABI/pack_nft.json';
@@ -29,18 +30,10 @@ export async function fetchPackTokenMetadata(tokenId, type, currentSport) {
       let address = '';
       if (type === 'regular') {
         abi = pack_nft_logic as unknown as packLogicABI;
-        if (currentSport === 'FOOTBALL') {
-          address = PACK_NFL_POLYGON[getConfig()].logic;
-        } else {
-          address = PACK_NBA_POLYGON[getConfig()].logic;
-        }
+        address = getSportType(currentSport).packContract.logic;
       } else if (type === 'promo' || type === 'soulbound') {
         abi = promo_pack_nft_logic as unknown as promoPackLogicABI;
-        if (currentSport === 'FOOTBALL') {
-          address = PROMO_PACK_NFL_POLYGON[getConfig()].logic;
-        } else {
-          address = PROMO_PACK_NBA_POLYGON[getConfig()].logic;
-        }
+        address = getSportType(currentSport).packPromoContract.logic;
       }
       console.log('Fetch regular pack tokens for owner function called');
       await window.ethereum.request({ method: 'eth_requestAccounts' });
