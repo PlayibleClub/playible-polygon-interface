@@ -22,6 +22,7 @@ import {
   PROMO_OPENPACK_NFL_POLYGON,
 } from 'data/constants/polygonContracts';
 import { getConfig } from 'utils/polygon';
+import { getSportType } from 'data/constants/sportConstants';
 
 export default function PackDetails(props) {
   const {
@@ -41,6 +42,9 @@ export default function PackDetails(props) {
     sport: query.sport.toString().toUpperCase(),
   };
 
+  const currentSport = query.sport.toUpperCase();
+  const sportType = getSportType(currentSport);
+  console.log(sportType.abiLogic, '1371239812738912');
   const [packDetails, setPackDetails] = useState([]);
   const [hasFetchedData, setHasFetchedData] = useState(false);
   const [isOwner, setIsOwner] = useState(null);
@@ -58,8 +62,8 @@ export default function PackDetails(props) {
         await window.ethereum.request({ method: 'eth_requestAccounts' });
         const web3 = new Web3(window.ethereum);
         const contractLogic = new web3.eth.Contract(
-          nbaOpenPackLogic,
-          OPENPACK_NBA_POLYGON[getConfig()].logic
+          sportType.abiLogic,
+          sportType.openContract.logic
         );
         const accounts = await web3.eth.getAccounts();
         //@ts-ignore
@@ -125,12 +129,12 @@ export default function PackDetails(props) {
         const web3 = new Web3(window.ethereum);
 
         const contractStorage = new web3.eth.Contract(
-          nbaOpenPack,
-          OPENPACK_NBA_POLYGON[getConfig()].storage
+          sportType.abiStorage,
+          sportType.openContract.storage
         );
         const contractLogic = new web3.eth.Contract(
-          nbaOpenPackLogic,
-          OPENPACK_NBA_POLYGON[getConfig()].logic
+          sportType.abiLogic,
+          sportType.openContract.logic
         );
         const accounts = await web3.eth.getAccounts();
         //@ts-ignore
@@ -150,7 +154,7 @@ export default function PackDetails(props) {
 
           const mintTx = {
             from: accounts[0],
-            to: OPENPACK_NBA_POLYGON[getConfig()].logic,
+            to: sportType.openContract.logic,
             //@ts-ignore
             gas: parseInt(gasEstimate),
             gasPrice: gasPrice,
@@ -259,12 +263,12 @@ export default function PackDetails(props) {
         const web3 = new Web3(window.ethereum);
 
         const contractStorage = new web3.eth.Contract(
-          nbaOpenPack,
-          OPENPACK_NBA_POLYGON[getConfig()].storage
+          sportType.abiStorage,
+          sportType.openContract.storage
         );
         const contractLogic = new web3.eth.Contract(
-          nbaOpenPackLogic,
-          OPENPACK_NBA_POLYGON[getConfig()].logic
+          sportType.abiLogic,
+          sportType.openContract.logic
         );
         const accounts = await web3.eth.getAccounts();
 
@@ -277,7 +281,7 @@ export default function PackDetails(props) {
         const gasPrice = await web3.eth.getGasPrice();
         const tx = {
           from: accounts[0],
-          to: OPENPACK_NBA_POLYGON[getConfig()].storage,
+          to: sportType.openContract.storage,
           //@ts-ignore
           gas: parseInt(gasEstimate),
           gasPrice: gasPrice,
@@ -334,7 +338,7 @@ export default function PackDetails(props) {
 
                 const mintTx = {
                   from: accounts[0],
-                  to: OPENPACK_NBA_POLYGON[getConfig()].logic,
+                  to: sportType.openContract.logic,
                   //@ts-ignore
                   gas: parseInt(gasEstimate),
                   gasPrice: updatedGasPrice,
