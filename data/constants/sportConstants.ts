@@ -42,12 +42,20 @@ import {
   PROMO_OPENPACK_NFL_POLYGON,
   GAME_NFL_POLYGON,
   GAME_BASKETBALL_POLYGON,
+  OPENPACK_NBA_POLYGON,
 } from './polygonContracts';
 import { getContract } from 'utils/polygon';
 export const NFL_SCHEDULE = {
   nfl2022regstart: 1662566400,
   nfl2022poststart: 1673481600,
 };
+import openPackStorage from 'utils/polygon/ABI/openPackAbi.json';
+import openPackLogic from 'utils/polygon/ABI/openPackLogicAbi.json';
+import promoOpenPackStorage from 'utils/polygon/ABI/promoOpenPackStorageAbi.json';
+import promoOpenPackLogic from 'utils/polygon/ABI/promoOpenPackLogicAbi.json';
+import nbaOpenPack from 'utils/polygon/ABI/nbaOpenPackAbi.json';
+import nbaOpenPackLogic from 'utils/polygon/ABI/nbaOpenPackLogicAbi.json';
+
 export const NFL_POSITIONS = [
   {
     name: 'QUARTER BACK',
@@ -266,6 +274,10 @@ export const SPORT_TYPES = [
     openPromoContract: getContract(PROMO_OPENPACK_NFL_POLYGON),
     gameContract: getContract(GAME_NFL_POLYGON),
     positionList: NFL_POSITIONS,
+    abiStorage: openPackStorage,
+    abiLogic: openPackLogic,
+    abiPromoStorage: promoOpenPackStorage,
+    abiPromoLogic: promoOpenPackLogic,
     extra: EXTRA_NFL,
   },
   {
@@ -291,10 +303,12 @@ export const SPORT_TYPES = [
     packPromoContract: getContract(PACK_PROMO_BASKETBALL),
     regContract: getContract(ATHLETE_BASKETBALL_POLYGON),
     promoContract: getContract(ATHLETE_PROMO_BASKETBALL),
-    openContract: getContract(OPENPACK_BASKETBALL),
+    openContract: getContract(OPENPACK_NBA_POLYGON),
     openPromoContract: getContract(OPENPACK_PROMO_BASKETBALL),
     gameContract: getContract(GAME_BASKETBALL_POLYGON),
     positionList: NBA_POSITIONS,
+    abiStorage: nbaOpenPack,
+    abiLogic: nbaOpenPackLogic,
     extra: EXTRA_NBA,
   },
   {
