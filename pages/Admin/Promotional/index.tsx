@@ -51,10 +51,7 @@ export default function Promotional(props) {
         ? whitelistInfoNBA?.toString()
         : whitelistInfoCRICKET?.toString();
 
-    let promoPackAddress =
-      currentSport === 'FOOTBALL'
-        ? PROMO_PACK_NFL_POLYGON[getConfig()].logic
-        : PROMO_PACK_NBA_POLYGON[getConfig()].logic;
+    let promoPackAddress = getSportType(currentSport).packPromoContract.logic;
 
     try {
       if (window.ethereum) {
