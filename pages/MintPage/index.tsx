@@ -271,12 +271,7 @@ export default function Home(props) {
         );
 
         const allowance = await usdcContract.methods
-          .allowance(
-            wallet,
-            currentSport === 'FOOTBALL'
-              ? PACK_NFL_POLYGON[getConfig()].storage
-              : PACK_NBA_POLYGON[getConfig()].storage
-          )
+          .allowance(wallet, getSportType(currentSport).packContract.storage)
           .call();
 
         setAccountERC20ApprovalAmount(Number(allowance));
@@ -289,10 +284,7 @@ export default function Home(props) {
   async function approveERC20TokenSpending() {
     try {
       if (window.ethereum) {
-        let packAddress =
-          currentSport === 'FOOTBALL'
-            ? PACK_NFL_POLYGON[getConfig()].storage
-            : PACK_NBA_POLYGON[getConfig()].storage;
+        let packAddress = getSportType(currentSport).packContract.storage;
         await window.ethereum.request({ method: 'eth_requestAccounts' });
 
         const web3 = new Web3(window.ethereum);
@@ -378,10 +370,7 @@ export default function Home(props) {
       return;
     }
 
-    let packAddress =
-      currentSport === 'FOOTBALL'
-        ? PACK_NFL_POLYGON[getConfig()].logic
-        : PACK_NBA_POLYGON[getConfig()].logic;
+    let packAddress = getSportType(currentSport).packContract.logic;
 
     console.log(mint_cost);
     if (accountBalance < mint_cost && currentSport === 'FOOTBALL') {
