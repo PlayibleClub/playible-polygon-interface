@@ -393,7 +393,7 @@ export async function executeAddGame(args: AddGameType, accountId: string, curre
         await window.ethereum.request({ method: 'eth_requestAccounts' });
         const web3 = new Web3(window.ethereum);
         const abi = game_logic as unknown as GameLogicABI;
-        const contract = new web3.eth.Contract(abi, GAME_NFL_POLYGON[getConfig()].logic);
+        const contract = new web3.eth.Contract(abi, getSportType(currentSport).gameContract.logic);
 
         const gasEstimate = await contract.methods
           .addGameToStorage(
@@ -414,7 +414,7 @@ export async function executeAddGame(args: AddGameType, accountId: string, curre
         const gasPrice = await web3.eth.getGasPrice();
         const tx = {
           from: accountId,
-          to: GAME_NFL_POLYGON[getConfig()].logic,
+          to: getSportType(currentSport).gameContract.logic,
           gas: Number(gasEstimate).toString(),
           gasPrice: gasPrice,
           data: contract.methods
