@@ -56,10 +56,10 @@ export async function fetchPackTokensByOwner(account, fromIndex, limit, type, cu
       let address = '';
       if (type === 'regular') {
         abi = pack_nft_logic as unknown as packLogicABI;
-        getSportType(currentSport).packContract.logic;
+        address = getSportType(currentSport).packContract.logic;
       } else if (type === 'promo' || type === 'soulbound') {
         abi = promo_pack_nft_logic as unknown as promoPackLogicABI;
-        getSportType(currentSport).packPromoContract.logic;
+        address = getSportType(currentSport).packPromoContract.logic;
       }
       console.log('Fetch regular pack tokens for owner function called');
       await window.ethereum.request({ method: 'eth_requestAccounts' });
@@ -84,10 +84,10 @@ export async function fetchAllPackTokensByOwner(account, type, currentSport) {
       let address = '';
       if (type === 'regular') {
         abi = pack_nft_logic as unknown as packLogicABI;
-        getSportType(currentSport).packContract.logic;
+        address = getSportType(currentSport).packContract.logic;
       } else if (type === 'promo' || type === 'soulbound') {
         abi = promo_pack_nft_logic as unknown as promoPackLogicABI;
-        getSportType(currentSport).packPromoContract.logic;
+        address = getSportType(currentSport).packPromoContract.logic;
       }
       console.log('Fetch regular pack tokens for owner function called');
       await window.ethereum.request({ method: 'eth_requestAccounts' });
@@ -110,10 +110,10 @@ export async function fetchPackTokenSupplyByOwner(account, type, currentSport) {
       let address = '';
       if (type === 'regular') {
         abi = pack_nft_logic as unknown as packLogicABI;
-        getSportType(currentSport).packContract.logic;
+        address = getSportType(currentSport).packContract.logic;
       } else if (type === 'promo' || type === 'soulbound') {
         abi = promo_pack_nft_logic as unknown as promoPackLogicABI;
-        getSportType(currentSport).packPromoContract.logic;
+        address = getSportType(currentSport).packPromoContract.logic;
       }
       console.log('Fetch regular pack tokens for owner function called');
       await window.ethereum.request({ method: 'eth_requestAccounts' });
