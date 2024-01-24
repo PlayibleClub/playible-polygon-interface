@@ -7,12 +7,9 @@ import 'regenerator-runtime/runtime';
 import Select from 'react-select';
 import Usdc from '../../public/images/SVG/usdc';
 import { useWalletSelector } from '../../contexts/WalletSelectorContext';
-import BigNumber from 'bignumber.js';
-import { getRPCProvider } from '../../utils/near';
 import { useRouter } from 'next/router';
 import { useDispatch, useSelector } from 'react-redux';
 import Modal from 'components/modals/Modal';
-import PortfolioContainer from '../../components/containers/PortfolioContainer';
 import { POL141USDC } from '../../data/constants/polygonContracts';
 import { MINT_STORAGE_COST, DEFAULT_MAX_FEES } from 'data/constants/gasFees';
 import { getConfig } from 'utils/polygon';
@@ -105,10 +102,6 @@ export default function Home(props) {
   const [hour, setHour] = useState(0);
   const [minute, setMinute] = useState(0);
   const [second, setSecond] = useState(0);
-  const [discountDay, setDiscountDay] = useState(0);
-  const [discountHour, setDiscountHour] = useState(0);
-  const [discountMinute, setDiscountMinute] = useState(0);
-  const [discountSecond, setDiscountSecond] = useState(0);
   const [editModal, setEditModal] = useState(false);
   const [installMetamaskModal, setInstallMetamaskModal] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -238,6 +231,17 @@ export default function Home(props) {
       hours: format_hours,
       days: format_days,
     };
+  }
+
+  function showClaimButton(claimed, sport, label, handleButtonClick) {
+    return claimed ? null : (
+      <button
+        className="w-60 flex text-center justify-center items-center iphone5:w-64 bg-indigo-buttonblue font-montserrat text-indigo-white p-3 mb-4 md:mr-4 text-xs"
+        onClick={(e) => handleButtonClick(e, sport)}
+      >
+        {label}
+      </button>
+    );
   }
 
   async function fetchUserMintedTokenAmount() {
@@ -597,30 +601,23 @@ export default function Home(props) {
               <div className="ml-8">
                 <ModalPortfolioContainer title="MINT PACKS" textcolor="text-indigo-black" />
               </div>
-              {isSignedIn ? (
-                <div className="ml-12 mt-4 md:flex md:flex-row md:ml-8">
-                  {isClaimedFootball ? (
-                    ''
-                  ) : (
-                    <button
-                      className="w-60 flex text-center justify-center items-center iphone5:w-64 bg-indigo-buttonblue font-montserrat text-indigo-white p-3 mb-4 md:mr-4 text-xs "
-                      onClick={(e) => handleClaimButton()}
-                    >
-                      CLAIM FOOTBALL PACK
-                    </button>
-                  )}
-                </div>
-              ) : (
-                <div className="ml-12 mt-4 md:flex md:flex-row md:ml-8">
+              <div className="ml-12 mt-4 md:flex md:flex-row md:ml-8">
+                {isSignedIn ? (
+                  showClaimButton(
+                    isClaimedFootball,
+                    'FOOTBALL',
+                    'CLAIM FOOTBALL PACK',
+                    handleClaimButton
+                  )
+                ) : (
                   <button
-                    className="w-60 flex text-center justify-center items-center iphone5:w-64 bg-indigo-buttonblue font-montserrat text-indigo-white p-3 mb-4 md:mr-4 text-xs "
+                    className="w-60 flex text-center justify-center items-center iphone5:w-64 bg-indigo-buttonblue font-montserrat text-indigo-white p-3 mb-4 md:mr-4 text-xs"
                     // onClick={logIn}
                   >
                     CONNECT WALLET TO CLAIM FOOTBALL PACK
                   </button>
-                </div>
-              )}
-
+                )}
+              </div>
               <div className="md:mr- md:mt-0 ml-6 mt-4">
                 <form>
                   <select
