@@ -3,36 +3,18 @@ import Link from 'next/link';
 import { useDispatch, useSelector } from 'react-redux';
 import LoadingPageDark from '../../components/loading/LoadingPageDark';
 import Container from '../../components/containers/Container';
-import HeaderBase from '../../components/headers/HeaderBase';
-import Navbar from '../../components/navbars/Navbar';
+
 import TokenComponent from '../../components/TokenComponent';
 import Main from '../../components/Main';
-import { useRouter } from 'next/router';
 import 'regenerator-runtime/runtime';
 import { BrowserView, MobileView, isBrowser, isMobile } from 'react-device-detect';
-import { transactions, utils, WalletConnection, providers } from 'near-api-js';
-import { getRPCProvider, getContract } from 'utils/near';
-import { useWalletSelector } from 'contexts/WalletSelectorContext';
-import { decode } from 'js-base64';
-import { useLazyQuery, useQuery } from '@apollo/client';
-import client from 'apollo-client';
-import {
-  getAthleteInfoById,
-  convertNftToAthlete,
-  getCricketAthleteInfoById,
-  convertPolygonNftToAthlete,
-  getAthleteInfoByApiId,
-  getAthleteInfoByApiIdTokenDraw,
-} from 'utils/athlete/helper';
+import { getAthleteInfoByApiIdTokenDraw } from 'utils/athlete/helper';
 import {
   SPORT_NAME_LOOKUP,
   SPORT_CONTRACT_LOOKUP,
   SPORT_TYPES,
 } from 'data/constants/sportConstants';
-import { query_nft_tokens_for_owner } from 'utils/near/helper';
-import { query_nft_tokens_by_id } from 'utils/near/helper';
 import Web3 from 'web3';
-import { GET_ATHLETE_BY_ID } from 'utils/queries';
 import { ATHLETE_NFL_POLYGON } from 'data/constants/polygonContracts';
 import { getConfig } from 'utils/polygon';
 

@@ -1,10 +1,7 @@
 import Container from 'components/containers/Container';
 import { useState } from 'react';
-import { SPORT_TYPES, getSportType, SPORT_NAME_LOOKUP } from 'data/constants/sportConstants';
+import { SPORT_NAME_LOOKUP } from 'data/constants/sportConstants';
 import { useWalletSelector } from 'contexts/WalletSelectorContext';
-import { DEFAULT_MAX_FEES, MINT_STORAGE_COST } from 'data/constants/gasFees';
-import BigNumber from 'bignumber.js';
-import { Contract } from 'web3-eth-contract';
 import Web3 from 'web3';
 import { promoPackStorageABI } from 'utils/polygon/ABI/promo_pack_nft';
 import { promoPackLogicABI } from 'utils/polygon/ABI/promo_pack_nft_logic';

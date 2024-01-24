@@ -12,7 +12,7 @@ import { useRouter } from 'next/router';
 import { useMutation } from '@apollo/client';
 import { CREATE_GAME } from '../../../utils/mutations';
 import { useWalletSelector } from 'contexts/WalletSelectorContext';
-import { getGameInfoById, AddGameType, PositionsType, mapGameInfo } from 'utils/game/helper';
+import { AddGameType, mapGameInfo } from 'utils/game/helper';
 import AdminGameComponent from './components/AdminGameComponent';
 import moment, { utc } from 'moment';
 import { getUTCDateFromLocal, getUTCTimestampFromLocal } from 'utils/date/helper';
@@ -20,12 +20,10 @@ import { MERGE_INTO_LEADERBOARD, GET_GAME } from 'utils/queries';
 import ReactPaginate from 'react-paginate';
 import ReactS3Client from 'react-aws-s3-typescript';
 import secretKeys from 's3config';
-import { getSport } from 'redux/athlete/athleteSlice';
 import Modal from 'components/modals/Modal';
 import { fetchGameCounter, executeAddGame, fetchAllGames } from 'utils/polygon/helper/gamePolygon';
 import { useSelector } from 'react-redux';
 import { getIsAdmin } from 'redux/admin/adminSlice';
-import { ens } from 'web3/lib/commonjs/eth.exports';
 import AdminGameFilter from './components/AdminGameFiilter';
 TimeAgo.addDefaultLocale(en);
 
@@ -34,22 +32,14 @@ export default function Index(props) {
   const {
     state: { wallet },
   } = useWalletSelector();
-  const connectedWallet = {};
   const router = useRouter();
   const isAdmin = useSelector(getIsAdmin);
   const [loading, setLoading] = useState(false);
-  const [contentLoading, setContentLoading] = useState(true);
-  const [gameType, setGameType] = useState('new');
-  const [content, setContent] = useState(false);
-  const [gameDuration, setGameDuration] = useState(0);
   const [totalGames, setTotalGames] = useState(0);
-  const [gameIdToAdd, setGameIdToAdd] = useState(0);
   //gameinfo
-  const [gameInfo, setGameInfo] = useState({});
   const [whitelistInfo, setWhitelistInfo] = useState(null);
   const [gameDescription, setGameDescription] = useState(null);
   const [prizeDescription, setPrizeDescription] = useState(null);
-  const [lineupLength, setLineupLength] = useState(0);
   const [gameImage, setGameImage] = useState(null);
   const [imageList, setImageList] = useState([]);
   const [radioSelected, setRadioSelected] = useState(null);
@@ -130,25 +120,19 @@ export default function Index(props) {
       percentage: 2,
     },
   ]);
-  const [games, setGames] = useState([]);
   const [newGames, setNewGames] = useState([]);
   const [completedGames, setCompletedGames] = useState([]);
   const [ongoingGames, setOngoingGames] = useState([]);
-  const [gameId, setGameId] = useState(null);
   const [gamesLimit, setGamesLimit] = useState(10);
   const [pageCount, setPageCount] = useState(0);
   const [gamesOffset, setGamesOffset] = useState(0);
   const [currentTotal, setCurrentTotal] = useState(0);
-  const [err, setErr] = useState(null);
   const [endLoading, setEndLoading] = useState(false);
   const [confirmModal, setConfirmModal] = useState(false);
   const [endModal, setEndModal] = useState(false);
   const [imageModal, setImageModal] = useState(false);
   const [radioValue, setRadioValue] = useState('');
-  const [msg, setMsg] = useState({
-    title: '',
-    content: '',
-  });
+
   const [positionsInfo, setPositionsInfo] = useState([
     { positions: ['QB'], amount: 1 },
     { positions: ['RB'], amount: 2 },

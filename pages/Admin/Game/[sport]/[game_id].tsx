@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import { useRouter } from 'next/router';
 import { getContract, getRPCProvider } from 'utils/near';
 import { providers } from 'near-api-js';
 import { compute_scores, query_game_data, query_player_lineup } from 'utils/near/helper';
@@ -8,7 +7,6 @@ import { getSportType, SPORT_TYPES, SPORT_NAME_LOOKUP } from 'data/constants/spo
 
 export default function AdminPlayerLineup(props) {
   const { query } = props;
-  const router = useRouter();
   const [week, setWeek] = useState(0);
   const [nflSeason, setNflSeason] = useState('');
   const sportObj = SPORT_TYPES.map((x) => ({ name: x.sport, isActive: false }));
