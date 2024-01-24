@@ -1,6 +1,4 @@
 import React, { Component, useState, useEffect } from 'react';
-import PropTypes from 'prop-types';
-import Image from 'next/image';
 import moment from 'moment';
 import { getUTCDateFromLocal } from 'utils/date/helper';
 
@@ -26,7 +24,9 @@ const PlayDetailsComponent = (props) => {
     setSecond(0);
     const id = setInterval(() => {
       const currentDate = getUTCDateFromLocal();
-      const end = moment.utc(moment(startDate) <= moment() && moment(endDate) > moment() ? endDate : startDate);
+      const end = moment.utc(
+        moment(startDate) <= moment() && moment(endDate) > moment() ? endDate : startDate
+      );
       setDay(formatTime(Math.floor(end.diff(currentDate, 'second') / 3600 / 24)));
       setHour(formatTime(Math.floor((end.diff(currentDate, 'second') / 3600) % 24)));
       setMinute(formatTime(Math.floor((end.diff(currentDate, 'second') / 60) % 60)));

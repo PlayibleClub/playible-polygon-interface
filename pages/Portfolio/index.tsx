@@ -12,11 +12,6 @@ import 'regenerator-runtime/runtime';
 import { useWalletSelector } from 'contexts/WalletSelectorContext';
 
 import {
-  query_filter_supply_for_owner,
-  query_filter_tokens_for_owner,
-  query_mixed_tokens_pagination,
-} from 'utils/near/helper';
-import {
   fetchFilteredAthleteTokensForOwner,
   fetchFilteredAthleteSupplyForOwner,
   fetchFilteredMixedTokensForOwner,

@@ -21,11 +21,9 @@ import PackComponent from './components/PackComponent';
 import ReactPaginate from 'react-paginate';
 
 import { getIsPromoRedux, getSportTypeRedux, setSportTypeRedux } from 'redux/athlete/sportSlice';
-import { persistor } from 'redux/athlete/store';
 import Modal from 'components/modals/Modal';
 import { SPORT_TYPES, getSportType, SPORT_NAME_LOOKUP } from 'data/constants/sportConstants';
 import { useWalletSelector } from 'contexts/WalletSelectorContext';
-import { current } from '@reduxjs/toolkit';
 export default function Packs() {
   const router = useRouter();
   const reduxDispatch = useDispatch();

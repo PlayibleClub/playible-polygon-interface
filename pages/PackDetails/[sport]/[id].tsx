@@ -7,9 +7,7 @@ import {
 } from 'utils/polygon/helper/promoPackPolygon';
 import Container from 'components/containers/Container';
 import 'regenerator-runtime/runtime';
-import BackFunction from 'components/buttons/BackFunction';
 import Image from 'next/image';
-import Link from 'next/link';
 import { useWalletSelector } from 'contexts/WalletSelectorContext';
 import openPackStorage from 'utils/polygon/ABI/openPackAbi.json';
 import openPackLogic from 'utils/polygon/ABI/openPackLogicAbi.json';

@@ -5,17 +5,14 @@ import ModalPortfolioContainer from 'components/containers/ModalPortfolioContain
 import Container from 'components/containers/Container';
 import BackFunction from 'components/buttons/BackFunction';
 import { useRouter } from 'next/router';
-import Link from 'next/link';
 import { providers } from 'near-api-js';
 import 'regenerator-runtime/runtime';
 import { useWalletSelector } from 'contexts/WalletSelectorContext';
 import ViewTeamsContainer from 'components/containers/ViewTeamsContainer';
-import { compute_scores, query_player_lineup, query_player_teams } from 'utils/near/helper';
+import { compute_scores, query_player_lineup } from 'utils/near/helper';
 import { Provider, useDispatch } from 'react-redux';
 import { store, persistor } from 'redux/athlete/store';
-import { query_game_data } from 'utils/near/helper';
 import { getSportType } from 'data/constants/sportConstants';
-import { setTeamName, setAccountId, setGameId, setSport2 } from 'redux/athlete/teamSlice';
 import { setGameStartDate, setGameEndDate } from 'redux/athlete/athleteSlice';
 import { formatToUTCDate } from 'utils/date/helper';
 import { getRPCProvider } from 'utils/near';

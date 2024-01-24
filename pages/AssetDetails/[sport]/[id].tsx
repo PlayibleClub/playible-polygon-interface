@@ -1,14 +1,8 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import Container from 'components/containers/Container';
-import {
-  getCricketAthleteInfoById,
-  convertNftToAthlete,
-  getPortfolioAssetDetailsById,
-} from 'utils/athlete/helper';
 import BackFunction from 'components/buttons/BackFunction';
 import StatsComponent from '../components/StatsComponent';
 import Link from 'next/link';
-import { query_nft_tokens_by_id } from 'utils/near/helper';
 import { fetchAthleteTokenMetadataAndURIById } from 'utils/polygon/helper/athletePolygon';
 import { getSportType } from 'data/constants/sportConstants';
 import { checkInjury } from 'utils/athlete/helper';
